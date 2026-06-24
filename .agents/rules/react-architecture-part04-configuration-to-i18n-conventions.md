@@ -8,14 +8,15 @@ import HttpBackend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 i18n.use(HttpBackend).use(LanguageDetector).use(initReactI18next).init({
-    fallbackLng: 'en',
-    supportedLngs: ['en', 'es'],
-    ns: ['common'],
+    fallbackLng: 'es',
+    supportedLngs: ['es', 'en'],
+    ns: ['common', 'landing', 'dashboard', 'auth'],
     defaultNS: 'common',
     backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
     detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'] },
     interpolation: { escapeValue: false },
-    react: { useSuspense: true },
+    react: { useSuspense: false },
+    preload: ['es', 'en'],
 });
 
 export default i18n;
@@ -67,23 +68,20 @@ function Dashboard() {
 
 ```tsx
 import { useTranslation } from 'react-i18next';
-
-const LANGUAGES = [
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'es', label: 'Español', flag: '🇩🇴' },
-] as const;
+import { Globe } from 'lucide-react';
 
 export function LanguageSwitcher() {
     const { i18n } = useTranslation();
+
+    const toggleLanguage = () => {
+        i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es');
+    };
+
     return (
-        <div role="radiogroup" aria-label="Language">
-            {LANGUAGES.map(l => (
-                <button key={l.code} onClick={() => i18n.changeLanguage(l.code)}
-                    aria-pressed={i18n.language === l.code}>
-                    {l.flag} {l.label}
-                </button>
-            ))}
-        </div>
+        <button onClick={toggleLanguage} aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}>
+            <Globe size={14} />
+            <span>{i18n.language === 'es' ? 'ES' : 'EN'}</span>
+        </button>
     );
 }
 ```
@@ -125,9 +123,9 @@ export function useFormatters() {
 | Rule | Details |
 |---|---|
 | Key naming | Dot-notation: `section.subsection.key` |
-| Namespaces | One per feature (`common`, `auth`, `dashboard`) |
-| Fallback | Always `fallbackLng: 'en'` |
-| Source of truth | English (`en/`) — all locales mirror its structure |
+| Namespaces | One per feature (`common`, `landing`, `dashboard`, `auth`) |
+| Fallback | `fallbackLng: 'es'` |
+| Source of truth | Spanish (`es/`) — all locales mirror its structure |
 | Interpolation | `{{variable}}` — never concatenate |
 | Plurals | `_one`, `_other` suffixes |
 | Dates/Numbers | Always `Intl` formatters |

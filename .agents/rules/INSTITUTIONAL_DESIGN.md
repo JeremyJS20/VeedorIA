@@ -23,6 +23,8 @@ Theme management is handled by **HeroUI's `useTheme()` hook** (`@heroui/react`).
 
 CSS custom properties on `:root` define light tokens; `[data-theme="dark"]` blocks override them. HeroUI syncs the attribute — the CSS is passive.
 
+> **Note:** As a fallback when HeroUI hasn't initialized yet, `index.css` includes a `@media (prefers-color-scheme: dark)` block with `:root:not([data-theme="light"])` selectors to provide dark mode at the CSS level independently of JavaScript.
+
 ```html
 <html data-theme="light">  <!-- or "dark" — set by HeroUI -->
 ```
