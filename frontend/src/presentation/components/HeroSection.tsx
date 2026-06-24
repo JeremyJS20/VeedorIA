@@ -27,7 +27,7 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
-            <h1 className="font-display-lg text-[64px] leading-tight mb-md hero-title">
+            <h1 className="font-display-lg text-[64px] leading-tight mb-md text-gradient">
               {t('hero.title')}
             </h1>
           </motion.div>
