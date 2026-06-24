@@ -344,6 +344,18 @@ body {
   color: transparent;
 }
 
+/* ── Hero Title ── */
+.hero-title {
+  color: var(--on-surface);
+}
+[data-theme="dark"] .hero-title {
+  background: linear-gradient(to right, #b2c5ff, #4d8fd6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 /* ── Green Sync Indicator ── */
 @keyframes pulse-green {
   0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
