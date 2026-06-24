@@ -1,0 +1,147 @@
+{
+  "navbar": {
+    "login": "Entrar al Sistema",
+    "links": {
+      "citizen": "Buscador Ciudadano",
+      "business": "Para Empresas",
+      "institutions": "Para Instituciones"
+    }
+  },
+  "hero": {
+    "badge": "Sistema de Veeduría y Análisis de Compras Públicas",
+    "title": "Inteligencia de Datos para Compras Públicas Claras y Competitivas",
+    "subtitle": "La plataforma definitiva para ciudadanos, empresas y gobiernos. Audite gastos, optimice procesos de venta y garantice la transparencia mediante el análisis profundo de datos abiertos.",
+    "cta_search": "Buscar una Licitación Gratis",
+    "cta_demo": "Solicitar Demostración B2G",
+    "dashboard_label": "MONITOR DE GOBERNANZA SOBERANA",
+    "dashboard_monitored": "MONTO MONITOREADO",
+    "dashboard_transparency": "ÍNDICE DE TRANSPARENCIA",
+    "dashboard_alerts_title": "ALERTAS DE GOBERNANZA",
+    "alert_mopc_title": "MOPC: Alerta de Precio Resuelta",
+    "alert_mopc_desc": "Ajuste automático de presupuesto",
+    "alert_sns_title": "SNS: Auditoría de Insumos",
+    "alert_sns_desc": "Eficiencia detectada: +15%",
+    "alert_savings": "AHORRO"
+  },
+  "social_proof": {
+    "ocds": "OCDS",
+    "dgcp": "DGCP Datos Abiertos",
+    "open_contracting": "Open Contracting",
+    "ai_models": "AI Models OS"
+  },
+  "portals": {
+    "civic_tech": {
+      "title": "CivicTech",
+      "desc": "Empoderamiento ciudadano total. Acceda a dashboards interactivos de gasto público y denuncie anomalías con respaldo de datos oficiales.",
+      "cta": "ACCESO GRATUITO"
+    },
+    "b2b": {
+      "title": "Proveedores B2B",
+      "desc": "Gane más licitaciones. Análisis predictivo de competencia y alertas inteligentes de oportunidades antes que nadie en el mercado.",
+      "cta": "IMPULSE SUS VENTAS",
+      "badge": "CRECIMIENTO"
+    },
+    "b2g": {
+      "title": "Auditoría B2G",
+      "desc": "Gobernanza basada en IA para instituciones. Detección proactiva de riesgos de cumplimiento y optimización de presupuestos públicos.",
+      "cta": "COMPLIANCE TOTAL"
+    }
+  },
+  "price_checker": {
+    "title": "Compara los Precios del Estado con la Realidad del Mercado",
+    "subtitle": "Nuestro motor de IA escanea catálogos globales para detectar variaciones atípicas.",
+    "search_placeholder": "Laptops Educativas Intel Core i5 (MINERD)",
+    "gov_label": "ESTADO: LICITACIÓN MINERD-2026",
+    "market_label": "MERCADO PROMEDIO (REFERENCIA)",
+    "unit": "/ unidad",
+    "overprice_badge": "SOBREPRECIO DETECTADO: +104.8%",
+    "chart_tender": "LICITACIÓN",
+    "chart_market": "MERCADO"
+  },
+  "metrics": {
+    "funds": "Fondos Monitoreados",
+    "suppliers": "Proveedores Analizados",
+    "accuracy": "Precisión de IA",
+    "deviations": "Desviaciones Identificadas"
+  },
+  "pricing": {
+    "title": "Planes de Inteligencia",
+    "subtitle": "Acceso libre para la ciudadanía y herramientas avanzadas para profesionales.",
+    "pyme": {
+      "name": "Plan PyME",
+      "price": "RD$ 5,000",
+      "period": "/ mes",
+      "features": [
+        "Alertas de su sector en tiempo real",
+        "Perfil de competencia básico",
+        "Buscador avanzado ilimitado"
+      ],
+      "cta": "Empezar Ahora"
+    },
+    "corporate": {
+      "name": "Plan Corporativo",
+      "price": "RD$ 20,000",
+      "period": "/ mes",
+      "badge": "Empresas Líderes",
+      "features": [
+        "Análisis de precios histórico IA",
+        "Monitoreo de entidades objetivo",
+        "Reportes de inteligencia mensual",
+        "Soporte prioritario 24/7"
+      ],
+      "cta": "Contactar Ventas"
+    },
+    "audit": {
+      "name": "Plan Auditoría",
+      "price": "RD$ 30,000",
+      "period": "/ mes",
+      "from": "Desde",
+      "features": [
+        "Dashboard de control institucional",
+        "Detección de colusión avanzada",
+        "Integración API Soberana"
+      ],
+      "cta": "Solicitar Demo"
+    },
+    "free_note": "* El acceso CivicTech para ciudadanos y prensa es y siempre será",
+    "free_note_highlight": "Gratuito"
+  },
+  "faq": {
+    "title": "Transparencia y Metodología",
+    "q1": {
+      "q": "¿De dónde provienen exactamente los datos de VeedorIA?",
+      "a": "VeedorIA se conecta directamente a las APIs de Datos Abiertos de la DGCP, el portal de Transparencia Fiscal y fuentes del OCDS. Utilizamos oráculos de precios internacionales para el benchmarking en tiempo real."
+    },
+    "q2": {
+      "q": "¿Cómo garantiza la plataforma la neutralidad del análisis?",
+      "a": "Nuestros modelos de IA son de arquitectura abierta (Sovereign AI). Los algoritmos de detección de sobreprecio son públicos y auditables por cualquier organización de la sociedad civil."
+    },
+    "q3": {
+      "q": "¿Qué es la 'Gobernanza Soberana' que mencionan?",
+      "a": "Es nuestro compromiso con la propiedad de los datos. Toda la infraestructura de análisis reside en servidores seguros y bajo protocolos que permiten a las instituciones dominicanas auditar sus propios procesos sin depender de cajas negras tecnológicas extranjeras."
+    }
+  },
+  "cta_final": {
+    "title": "Transforme la Auditoría Pública en Inteligencia de Valor",
+    "subtitle": "Únase a la red de veeduría más avanzada de la región y contribuya a un ecosistema de compras eficiente y ético.",
+    "cta_primary": "Crear Mi Cuenta Gratis",
+    "cta_secondary": "Agendar Demo Institucional"
+  },
+  "footer": {
+    "tagline": "Inteligencia para la Transparencia — Monitoreo de contrataciones públicas con inteligencia artificial",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "methodology": "Metodología",
+    "contact": "Contacto",
+    "badge": "Powered by Datos Abiertos DGCP",
+    "copyright": "© 2026 VeedorIA. Todos los derechos reservados."
+  },
+  "theme_toggler": {
+    "light": "Activar modo claro",
+    "dark": "Activar modo oscuro"
+  },
+  "language_switcher": {
+    "switch_en": "Switch to English",
+    "switch_es": "Cambiar a Español"
+  }
+}

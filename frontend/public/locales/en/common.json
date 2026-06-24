@@ -1,0 +1,22 @@
+{
+  "common": {
+    "app_name": "VeedorIA",
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "search": "Search"
+  },
+  "landing": {
+    "hero_title": "VeedorIA",
+    "hero_subtitle": "Intelligent public procurement monitoring",
+    "cta_button": "Explore Dashboard"
+  },
+  "auth": {
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "register": "Register"
+  }
+}

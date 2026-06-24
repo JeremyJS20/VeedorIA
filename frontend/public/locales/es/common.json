@@ -1,0 +1,22 @@
+{
+  "common": {
+    "app_name": "VeedorIA",
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "search": "Buscar"
+  },
+  "landing": {
+    "hero_title": "VeedorIA",
+    "hero_subtitle": "Monitoreo inteligente de contrataciones públicas",
+    "cta_button": "Explorar Dashboard"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "register": "Registrarse"
+  }
+}

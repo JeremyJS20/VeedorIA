@@ -1,0 +1,15 @@
+# VeedorIA — Cursor Rules Configuration
+
+Before proposing or implementing ANY change, you MUST read the relevant
+architecture and/or design rules in `.agents/rules/`. Changes that violate
+these rules must be flagged and discussed with the user.
+
+## Active Rules Folder
+Refer to the rules in `.agents/rules/` for all guidelines:
+- Design: `INSTITUTIONAL_DESIGN.md` & `design-part*.md`
+- Frontend React: `REACT_VITE_TS_ARCHITECTURE.md` & `react-architecture-part*.md`
+- Backend Python: `PYTHON_FASTAPI_ARCHITECTURE.md` & `architecture-part*.md`
+
+## Stack Overview
+- **Frontend:** React, Vite, TypeScript, HeroUI, TailwindCSS 4, React Router 7
+- **Backend:** Python, FastAPI, Prisma Client Python, SQLite (local), JWT auth, scikit-learn

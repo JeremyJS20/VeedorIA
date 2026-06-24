@@ -1,0 +1,147 @@
+{
+  "navbar": {
+    "login": "Sign In",
+    "links": {
+      "citizen": "Citizen Search",
+      "business": "For Businesses",
+      "institutions": "For Institutions"
+    }
+  },
+  "hero": {
+    "badge": "Public Procurement Oversight & Analytics System",
+    "title": "Data Intelligence for Clear and Competitive Public Procurement",
+    "subtitle": "The ultimate platform for citizens, businesses, and governments. Audit spending, optimize sales processes, and guarantee transparency through deep open data analysis.",
+    "cta_search": "Search a Tender for Free",
+    "cta_demo": "Request B2G Demo",
+    "dashboard_label": "SOVEREIGN GOVERNANCE MONITOR",
+    "dashboard_monitored": "MONITORED AMOUNT",
+    "dashboard_transparency": "TRANSPARENCY INDEX",
+    "dashboard_alerts_title": "GOVERNANCE ALERTS",
+    "alert_mopc_title": "MOPC: Price Alert Resolved",
+    "alert_mopc_desc": "Automatic budget adjustment",
+    "alert_sns_title": "SNS: Supplies Audit",
+    "alert_sns_desc": "Efficiency detected: +15%",
+    "alert_savings": "SAVINGS"
+  },
+  "social_proof": {
+    "ocds": "OCDS",
+    "dgcp": "DGCP Open Data",
+    "open_contracting": "Open Contracting",
+    "ai_models": "AI Models OS"
+  },
+  "portals": {
+    "civic_tech": {
+      "title": "CivicTech",
+      "desc": "Total citizen empowerment. Access interactive public spending dashboards and report anomalies backed by official data.",
+      "cta": "FREE ACCESS"
+    },
+    "b2b": {
+      "title": "B2B Suppliers",
+      "desc": "Win more tenders. Predictive competitor analysis and smart opportunity alerts before anyone else in the market.",
+      "cta": "BOOST YOUR SALES",
+      "badge": "GROWTH"
+    },
+    "b2g": {
+      "title": "B2G Audit",
+      "desc": "AI-powered governance for institutions. Proactive compliance risk detection and public budget optimization.",
+      "cta": "TOTAL COMPLIANCE"
+    }
+  },
+  "price_checker": {
+    "title": "Compare State Prices with Market Reality",
+    "subtitle": "Our AI engine scans global catalogs to detect atypical variations.",
+    "search_placeholder": "Educational Laptops Intel Core i5 (MINERD)",
+    "gov_label": "STATE: MINERD-2026 TENDER",
+    "market_label": "AVERAGE MARKET (REFERENCE)",
+    "unit": "/ unit",
+    "overprice_badge": "OVERPRICE DETECTED: +104.8%",
+    "chart_tender": "TENDER",
+    "chart_market": "MARKET"
+  },
+  "metrics": {
+    "funds": "Funds Monitored",
+    "suppliers": "Suppliers Analyzed",
+    "accuracy": "AI Accuracy",
+    "deviations": "Deviations Identified"
+  },
+  "pricing": {
+    "title": "Intelligence Plans",
+    "subtitle": "Free access for citizens and advanced tools for professionals.",
+    "pyme": {
+      "name": "SME Plan",
+      "price": "RD$ 5,000",
+      "period": "/ mo",
+      "features": [
+        "Real-time sector alerts",
+        "Basic competitor profile",
+        "Unlimited advanced search"
+      ],
+      "cta": "Start Now"
+    },
+    "corporate": {
+      "name": "Corporate Plan",
+      "price": "RD$ 20,000",
+      "period": "/ mo",
+      "badge": "Leading Enterprises",
+      "features": [
+        "Historical AI price analysis",
+        "Target entity monitoring",
+        "Monthly intelligence reports",
+        "24/7 priority support"
+      ],
+      "cta": "Contact Sales"
+    },
+    "audit": {
+      "name": "Audit Plan",
+      "price": "RD$ 30,000",
+      "period": "/ mo",
+      "from": "From",
+      "features": [
+        "Institutional control dashboard",
+        "Advanced collusion detection",
+        "Sovereign API Integration"
+      ],
+      "cta": "Request Demo"
+    },
+    "free_note": "* CivicTech access for citizens and press is and always will be",
+    "free_note_highlight": "Free"
+  },
+  "faq": {
+    "title": "Transparency & Methodology",
+    "q1": {
+      "q": "Where does VeedorIA's data come from?",
+      "a": "VeedorIA connects directly to DGCP Open Data APIs, the Fiscal Transparency portal, and OCDS sources. We use international price oracles for real-time benchmarking."
+    },
+    "q2": {
+      "q": "How does the platform guarantee analysis neutrality?",
+      "a": "Our AI models use open architecture (Sovereign AI). The overprice detection algorithms are public and auditable by any civil society organization."
+    },
+    "q3": {
+      "q": "What is 'Sovereign Governance'?",
+      "a": "It is our commitment to data ownership. All analysis infrastructure resides on secure servers under protocols that allow Dominican institutions to audit their own processes without relying on foreign technological black boxes."
+    }
+  },
+  "cta_final": {
+    "title": "Transform Public Audit into Actionable Intelligence",
+    "subtitle": "Join the most advanced oversight network in the region and contribute to an efficient and ethical procurement ecosystem.",
+    "cta_primary": "Create Free Account",
+    "cta_secondary": "Schedule Institutional Demo"
+  },
+  "footer": {
+    "tagline": "Intelligence for Transparency — Public procurement monitoring powered by artificial intelligence",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "methodology": "Methodology",
+    "contact": "Contact",
+    "badge": "Powered by Datos Abiertos DGCP",
+    "copyright": "© 2026 VeedorIA. All rights reserved."
+  },
+  "theme_toggler": {
+    "light": "Switch to light mode",
+    "dark": "Switch to dark mode"
+  },
+  "language_switcher": {
+    "switch_en": "Switch to English",
+    "switch_es": "Switch to Spanish"
+  }
+}
