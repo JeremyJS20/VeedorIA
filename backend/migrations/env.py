@@ -3,7 +3,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from sqlmodel import SQLModel
-from src.models import User, Institution, Process, Contract, Item, Supplier, Anomaly, AuditLog
+from src.models import User, Institution, Process, Contract, Item, Supplier, Anomaly, AuditLog, SyncLog
 from src.config import settings
 
 config = context.config

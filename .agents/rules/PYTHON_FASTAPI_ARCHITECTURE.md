@@ -206,3 +206,317 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+---
+
+## 5. Manejo de Errores y Respuestas API
+
+Toda respuesta de API debe seguir un formato unificado, tanto en éxito como en error. Esto permite al frontend parsear siempre la misma estructura sin importar el endpoint.
+
+### 5.1 — Esquema de Respuesta Unificado (`ApiResponse[T]`)
+
+```python
+from pydantic import BaseModel
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
+
+class ApiResponse(BaseModel, Generic[T]):
+    success: bool = True
+    data: T | None = None
+    message: str = ""
+
+class ApiErrorResponse(BaseModel):
+    success: bool = False
+    error: str
+    details: list[dict] = []
+```
+
+**Reglas:**
+- `ApiResponse[T]` se usa para respuestas exitosas (2xx).
+- `ApiErrorResponse` se usa para respuestas de error (4xx/5xx).
+- El campo `error` es un mensaje legible para el frontend.
+- El campo `details` contiene errores de validación por campo (ej. de Pydantic 422).
+
+### 5.2 — Jerarquía de Excepciones (`AppError`)
+
+```python
+class AppError(Exception):
+    def __init__(self, message: str, status_code: int = 400, details: list[dict] | None = None):
+        self.message = message
+        self.status_code = status_code
+        self.details = details or []
+        super().__init__(message)
+
+class NotFoundError(AppError):
+    def __init__(self, message: str = "Recurso no encontrado"):
+        super().__init__(message, status_code=404)
+
+class AuthenticationError(AppError):
+    def __init__(self, message: str = "Credenciales incorrectas"):
+        super().__init__(message, status_code=401)
+
+class AuthorizationError(AppError):
+    def __init__(self, message: str = "No autorizado para realizar esta accion"):
+        super().__init__(message, status_code=403)
+```
+
+**Uso en servicios:** Lanza `AppError` desde la capa de servicios. El handler global lo captura y retorna `ApiErrorResponse`.
+
+### 5.3 — Global Exception Handler
+
+```python
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+# Capturar AppError controlados
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ApiErrorResponse(
+            success=False,
+            error=exc.message,
+            details=exc.details
+        ).model_dump()
+    )
+
+# Capturar errores inesperados (500)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception")  # Siempre loggear el stack trace
+    return JSONResponse(
+        status_code=500,
+        content=ApiErrorResponse(
+            success=False,
+            error="Error interno del servidor",
+            details=[]
+        ).model_dump()
+    )
+```
+
+**Reglas:**
+- Los `AppError` controlados retornan códigos específicos (400, 401, 403, 404).
+- Las excepciones NO controladas (`Exception`) retornan 500 genérico sin exponer detalles internos.
+- Siempre loggear `logger.exception()` antes de retornar 500 para tener trazabilidad.
+
+### 5.4 — Mapeo de Errores de Validación Pydantic (422)
+
+FastAPI retorna errores 422 en un formato diferente. Debes registrar un handler para unificarlo:
+
+```python
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    details = [
+        {"field": err["loc"][-1], "issue": err["msg"], "type": err["type"]}
+        for err in exc.errors()
+    ]
+    return JSONResponse(
+        status_code=422,
+        content=ApiErrorResponse(
+            success=False,
+            error="Error de validacion",
+            details=details
+        ).model_dump()
+    )
+```
+
+---
+
+## 6. Tareas Asíncronas, Background Tasks y Job Tracking
+
+FastAPI permite ejecutar tareas después de enviar la respuesta HTTP. Este patrón es útil para ingestiones de datos, notificaciones y logs de auditoría.
+
+### 6.1 — Uso de `BackgroundTasks`
+
+```python
+from fastapi import BackgroundTasks, APIRouter
+
+router = APIRouter()
+
+@router.post("/sync-data", status_code=202)
+async def trigger_sync(background_tasks: BackgroundTasks):
+    background_tasks.add_task(safe_sync_task)
+    return {"message": "Sincronizacion iniciada"}
+```
+
+**Advertencia:** `BackgroundTasks` **silencia errores**. Si la tarea lanza una excepción, esta se pierde sin log ni notificación. Nunca pases una tarea cruda — usa siempre un wrapper seguro.
+
+### 6.2 — Safe Wrapper para Background Tasks
+
+```python
+import asyncio
+import logging
+from datetime import datetime, timezone
+
+logger = logging.getLogger("app.background")
+
+async def safe_background_task(task_id: int, session):
+    """Wrapper que captura y loggea errores, actualizando el estado persistente."""
+    started_at = datetime.now(timezone.utc)
+    try:
+        logger.info("Task %s started", task_id)
+        await run_actual_task(session)
+        await update_job_status(session, task_id, "completed", started_at)
+        logger.info("Task %s completed", task_id)
+    except Exception as e:
+        logger.exception("Task %s failed: %s", task_id, e)
+        await update_job_status(session, task_id, "failed", started_at, str(e))
+        raise  # Opcional: re-lanzar si hay un handler global
+
+# En el router:
+background_tasks.add_task(safe_background_task, task_id=123, session=session)
+```
+
+**Reglas:**
+- Siempre envolver background tasks con un `try/except` que loggee el error.
+- Registrar el estado inicial antes de ejecutar y actualizar al finalizar.
+- Usar `logger.exception()` para capturar el stack trace completo.
+
+### 6.3 — Persistent Job Tracking Model
+
+```python
+from sqlmodel import SQLModel, Field
+from datetime import datetime, timezone
+
+class JobLog(SQLModel, table=True):
+    """Registro genérico de ejecución de tareas. Renombrar según dominio (SyncLog, ETLLog...)."""
+    __tablename__ = "job_log"
+
+    id: int | None = Field(default=None, primary_key=True)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: datetime | None = None
+    records_processed: int = 0
+    status: str = Field(default="running")  # running | completed | partial | failed
+    error_message: str | None = None
+    triggered_by: str = Field(default="unknown")  # cli | api | cron
+```
+
+**Uso:**
+- Crear un `JobLog` al iniciar la tarea.
+- Actualizar `status` y `completed_at` al finalizar.
+- Si falla, guardar `error_message` y marcar `failed`.
+
+### 6.4 — Retry con Exponential Backoff
+
+Para operaciones que llaman APIs externas (ej. DGCP, cualquier API HTTP pública):
+
+```python
+import asyncio
+import httpx
+
+async def fetch_with_retry(client: httpx.AsyncClient, url: str, max_retries: int = 3) -> dict:
+    """GET con retry exponencial. Retry solo en 5xx, timeouts y errores de red."""
+    for attempt in range(max_retries):
+        try:
+            response = await client.get(url)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code >= 500 and attempt < max_retries - 1:
+                wait = 2 ** attempt
+                logger.warning("Retry %d/%d after %ds: %s", attempt + 1, max_retries, wait, e)
+                await asyncio.sleep(wait)
+            else:
+                raise  # 4xx no se retry, 5xx final también falla
+        except (httpx.TimeoutException, httpx.NetworkError) as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt
+                logger.warning("Retry %d/%d after %ds: %s", attempt + 1, max_retries, wait, e)
+                await asyncio.sleep(wait)
+            else:
+                raise
+```
+
+**Reglas de retry:**
+| Código | ¿Retry? | Razón |
+|---|---|---|
+| 2xx | ✅ Éxito | Continuar |
+| 4xx (400, 401, 403, 404, 422) | ❌ No | Error del cliente, no del servidor |
+| 5xx (500, 502, 503, 504) | ✅ Sí | Error transitorio del servidor |
+| Timeout / NetworkError | ✅ Sí | Error de red transitorio |
+
+**Parámetros recomendados:**
+- `max_retries`: 3 (mínimo), 5 (máximo)
+- `backoff`: `2^attempt` segundos (1s, 2s, 4s, 8s...)
+- `jitter`: Opcional, agregar ±random(0, 1) segundo para evitar thundering herd
+
+---
+
+## 7. Logging y Observabilidad
+
+### 7.1 — Convención de Named Loggers
+
+```python
+import logging
+
+# Nombre: <app>.<layer>.<component>
+logger = logging.getLogger("app.services.sync_service")
+logger = logging.getLogger("app.infrastructure.dgcp_client")
+logger = logging.getLogger("app.presentation.main")
+logger = logging.getLogger("app.infrastructure.database")
+```
+
+Patrón: `app.` seguido del módulo (capa) y el archivo (componente).
+
+### 7.2 — Guía de Niveles de Log
+
+| Nivel | Cuándo usarlo | Ejemplo |
+|---|---|---|
+| `DEBUG` | Desarrollo, diagnóstico interno | "Parsing release OCDS-123" |
+| `INFO` | Eventos de negocio importantes | "Sync completed: 15000 records" |
+| `WARNING` | Problemas no críticos que no detienen el flujo | "Rate limit approaching, slowing down" |
+| `ERROR` | Fallos que requieren atención | "DGCP API returned 503" |
+| `CRITICAL` | Fallos catastróficos que detienen la app | "Database connection failed at startup" |
+
+### 7.3 — Configuración en `main.py`
+
+```python
+import logging
+from src.config import settings
+
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL),
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger("app")
+```
+
+Variable de entorno requerida: `LOG_LEVEL` (default `INFO`).
+
+### 7.4 — Qué Loggear (y qué NO)
+
+**Sí loggear:**
+- Ciclo de vida de la app (inicio, shutdown)
+- Ejecución de tareas batch (inicio, progreso, fin, errores)
+- Excepciones no esperadas (con stack trace completo)
+- Eventos de autenticación (login exitoso, fallido)
+- Cambios de estado de entidades críticas
+
+**NO loggear:**
+- Contraseñas, tokens JWT, API keys
+- Datos personales (nombres completos, emails en logs)
+- Body completo de requests (riesgo de exponer datos sensibles)
+- Información de depuración en producción (usar DEBUG local)
+
+---
+
+## 8. Seguridad
+
+Ver la guía específica en:
+- [architecture-part06-security-hardening-cors-to-jwt-auth.md](./architecture-part06-security-hardening-cors-to-jwt-auth.md)
+
+### Resumen de principios:
+
+| Principio | Implementación |
+|---|---|
+| **Passwords** | Hash directo con `bcrypt` (costo 12), sin `passlib` |
+| **JWT** | `PyJWT` con HMAC-SHA256, access token 15 min, refresh token 7 días |
+| **CORS** | Permitir solo orígenes conocidos (VITE_FRONTEND_URL) en producción |
+| **Roles** | `RoleChecker` dependencia para RBAC: ADMIN, AUDITOR, BIDDER, CITIZEN |
+| **Auditoría** | Modelo `AuditLog` con append-only, registrando acción, entidad, antes/después |
