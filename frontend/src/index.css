@@ -324,7 +324,7 @@ body {
 
 /* ── Text Gradient ── */
 .text-gradient {
-  background: linear-gradient(to right, #4d8fd6, #003d9b);
+  background-image: linear-gradient(to right, #4d8fd6, #003d9b);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -333,11 +333,11 @@ body {
 
 [data-theme="light"] .text-gradient,
 :root:not([data-theme="dark"]) .text-gradient {
-  background: linear-gradient(to right, #003d9b, #4d8fd6);
+  background-image: linear-gradient(to right, #003d9b, #4d8fd6);
 }
 
 [data-theme="dark"] .text-gradient {
-  background: linear-gradient(to right, #b2c5ff, #4d8fd6);
+  background-image: linear-gradient(to right, #b2c5ff, #4d8fd6);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
