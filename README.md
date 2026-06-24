@@ -8,7 +8,7 @@ Plataforma premium de monitoreo de contrataciones públicas para la República D
 |---|---|
 | **Frontend** | React 19, TypeScript 6, Vite 8, TailwindCSS 4, HeroUI v3, React Router DOM 7, Framer Motion, Lucide React, i18next |
 | **Backend** | Python 3.11+, FastAPI, SQLModel + SQLAlchemy 2.0, Alembic, PyJWT, bcrypt, scikit-learn |
-| **Database** | SQLite (local) con aiosqlite |
+| **Database** | SQLite (local) con aiosqlite → **PostgreSQL (Supabase)** planeado |
 | **Diseño** | Institutional Design (Navy `#1B2A4A`, Teals, Cyan `#00B4D8`), doble tema, glassmorphism |
 | **Tools** | Poetry, Ruff, ESLint, pytest |
 
@@ -134,6 +134,15 @@ Copiar `backend/.env.example` a `backend/.env`:
 - **Tokens** — CSS variables en `@theme` block de TailwindCSS 4
 - **Glass** — `blur(16px)` con `rgba(255,255,255,0.7)` light / `rgba(17,19,25,0.7)` dark
 - **Colores** — Navy `#003d9b` light / `#b2c5ff` dark (remapped for contrast)
+
+## Roadmap
+
+- [ ] Fase 1: Landing page + Backend API (actual)
+- [ ] Fase 2: ETL Pipeline — ingesta de datos DGCP
+- [ ] Fase 3: Migración SQLite → PostgreSQL (Supabase)
+- [ ] Fase 4: Dashboard autenticado con panel de control
+- [ ] Fase 5: Análisis ML — detección de anomalías en contrataciones
+- [ ] Fase 6: Portales B2C / B2B / B2G
 
 ## Contribuir
 
