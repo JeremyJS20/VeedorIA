@@ -344,6 +344,37 @@ body {
   color: transparent;
 }
 
+/* ── Hero Section (no isDark) ── */
+.hero-blur {
+  background: rgba(0, 61, 155, 0.1);
+}
+[data-theme="dark"] .hero-blur {
+  background: rgba(178, 197, 255, 0.2);
+}
+
+.hero-card {
+  border: 1px solid var(--outline-variant);
+}
+[data-theme="dark"] .hero-card {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-alert-card {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--outline-variant);
+}
+[data-theme="dark"] .hero-alert-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+}
+
+.hero-alert-card-alt {
+  border: 1px solid var(--outline-variant);
+}
+[data-theme="dark"] .hero-alert-card-alt {
+  border: none;
+}
+
 /* ── Green Sync Indicator ── */
 @keyframes pulse-green {
   0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }

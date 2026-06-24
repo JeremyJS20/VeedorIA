@@ -4,18 +4,13 @@ import { useTranslation } from 'react-i18next'
 import SectionContainer from './SectionContainer'
 import Button from './ui/Button'
 import GlassCard from './ui/GlassCard'
-import { useTheme } from '@heroui/react'
 
 export default function HeroSection() {
   const { t } = useTranslation('landing')
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
 
   return (
     <header className="relative min-h-screen pt-xl flex items-center px-margin-desktop overflow-hidden">
-      <div className={`absolute -bottom-10 -right-10 w-64 h-64 ${
-        isDark ? 'bg-primary/20' : 'bg-primary/10'
-      } blur-[120px] rounded-full -z-10`} />
+      <div className="absolute -bottom-10 -right-10 w-64 h-64 hero-blur blur-[120px] rounded-full -z-10" />
 
       <SectionContainer className="w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
@@ -49,7 +44,7 @@ export default function HeroSection() {
         </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }} className="md:col-span-5 relative mt-lg md:mt-0">
-          <GlassCard glow className={`w-full${isDark ? ' border border-white/5' : ' border border-outline-variant/20'}`}>
+          <GlassCard glow className="w-full hero-card">
             <div className="flex justify-between items-center mb-md">
               <span className="text-[10px] font-bold tracking-widest text-primary uppercase">
                 {t('hero.dashboard_label')}
@@ -83,9 +78,7 @@ export default function HeroSection() {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-sm">
                   {t('hero.dashboard_alerts_title')}
                 </p>
-              <div className={`glass p-sm rounded-xl flex items-center gap-sm ${
-                isDark ? 'bg-white/5' : 'bg-white/40 border border-outline-variant/20'
-              } mb-xs`}>
+              <div className="glass p-sm rounded-xl flex items-center gap-sm hero-alert-card mb-xs">
                 <div className="p-xs rounded-lg bg-primary/10 text-primary">
                   <Shield size={16} />
                 </div>
@@ -98,9 +91,7 @@ export default function HeroSection() {
                   <span className="text-[8px] text-green-600 font-bold uppercase">{t('hero.alert_savings')}</span>
                 </div>
               </div>
-              <div className={`glass p-sm rounded-xl flex items-center gap-sm opacity-80${
-                isDark ? '' : ' border border-outline-variant/10'
-              }`}>
+              <div className="glass p-sm rounded-xl flex items-center gap-sm opacity-80 hero-alert-card-alt">
                 <div className="p-xs rounded-xl bg-error/10 text-error">
                   <Bell size={16} />
                 </div>
