@@ -1,0 +1,80 @@
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class AnomalyResponse(BaseModel):
+    id: str
+    process_id: int | None = None
+    contract_id: int | None = None
+    anomaly_type: str
+    severity: float
+    score: float | None = None
+    description: str
+    status: str
+    reviewer_id: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    amount: float | None = None
+    process_code: str | None = None
+    supplier_name: str | None = None
+    institution_name: str | None = None
+
+
+class AnomalyListResponse(BaseModel):
+    items: list[AnomalyResponse]
+    total: int
+    page: int = 1
+    limit: int = 50
+
+
+class AnomalyReviewPayload(BaseModel):
+    status: str = Field(..., pattern=r"^(CONFIRMED|DISMISSED)$")
+    reviewer_id: str = Field(..., min_length=1)
+    notes: str | None = Field(None, min_length=10)
+
+
+class AnomalyStats(BaseModel):
+    total: int = 0
+    total_by_type: dict[str, int]
+    total_by_status: dict[str, int]
+    avg_severity: float
+
+
+class MarketPrice(BaseModel):
+    contract_id: int
+    supplier_name: str | None = None
+    unit_price: float
+    is_anomaly: bool = False
+    description: str | None = None
+
+
+class TimelineEntry(BaseModel):
+    date: str
+    reference: str
+    title: str
+    amount: float
+    is_alert: bool = False
+    alert_message: str | None = None
+
+
+class CollusionLink(BaseModel):
+    source: str
+    target: str
+    reason: str
+    weight: float
+
+
+class AnomalyContext(BaseModel):
+    anomaly_type: str
+    severity: float
+    score: float | None = None
+    confidence: float = 0.0
+    amount: float | None = None
+    process_code: str | None = None
+    supplier_name: str | None = None
+    institution_name: str | None = None
+    market_prices: list[MarketPrice] = []
+    recent_contracts: list[TimelineEntry] = []
+    collusion_links: list[CollusionLink] = []

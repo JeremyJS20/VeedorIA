@@ -1,9 +1,8 @@
 import argparse
 import asyncio
 import logging
-from datetime import date, datetime, timezone
 
-from src.infrastructure.database import async_session_maker
+from src.infrastructure.database import async_session_maker, engine
 from src.services.sync_service import run_sync
 
 logger = logging.getLogger("veedoria.cli.sync_dgcp")
@@ -11,31 +10,52 @@ logger = logging.getLogger("veedoria.cli.sync_dgcp")
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Sincronizar datos con la API DGCP")
-    parser.add_argument("--start-date", type=str, help="Fecha de inicio (YYYY-MM-DD)")
-    parser.add_argument("--end-date", type=str, help="Fecha de fin (YYYY-MM-DD)")
-    parser.add_argument("--incremental", action="store_true", help="Sync incremental desde último sync")
-    parser.add_argument("--batch-size", type=int, default=500, help="Registros por batch")
+    parser.add_argument("--full", action="store_true", help="Full rebuild: JSON contracts + JSON items + JSON suppliers (~11 min con --rate-limit 5.0)")
+    parser.add_argument("--days-back", type=int, help="Días hacia atrás para contratos (default: config)")
+    parser.add_argument("--skip-institutions", action="store_true", help="Omitir fase de instituciones")
+    parser.add_argument("--skip-processes", action="store_true", help="Omitir fase de procesos")
+    parser.add_argument("--skip-contracts", action="store_true", help="Omitir fase de contratos JSON")
+    parser.add_argument("--skip-items", action="store_true", help="Omitir items de contratos")
+    parser.add_argument("--skip-suppliers", action="store_true", help="Omitir suppliers")
+    parser.add_argument("--rate-limit", type=float, help="Sobreescribir rate limit (req/s)")
+
     args = parser.parse_args()
 
-    start_date: date | None = None
-    end_date: date | None = None
+    def compute_sync_type() -> str:
+        if not args.full:
+            return "incremental"
+        if not (args.skip_institutions or args.skip_processes or args.skip_contracts or args.skip_items or args.skip_suppliers):
+            return "full"
+        parts = []
+        if not args.skip_institutions:
+            parts.append("institutions")
+        if not args.skip_processes:
+            parts.append("processes")
+        if not args.skip_contracts:
+            parts.append("contracts")
+        if not args.skip_items:
+            parts.append("items")
+        if not args.skip_suppliers:
+            parts.append("suppliers")
+        return "+".join(parts)
 
-    if args.start_date:
-        start_date = datetime.strptime(args.start_date, "%Y-%m-%d").date()
-    if args.end_date:
-        end_date = datetime.strptime(args.end_date, "%Y-%m-%d").date()
+    sync_type = compute_sync_type()
 
-    logger.info("Starting sync (incremental=%s, start=%s, end=%s)", args.incremental, start_date, end_date)
-
+    await engine.dispose()
     async with async_session_maker() as session:
-        result = await run_sync(
-            session=session,
-            start_date=start_date,
-            end_date=end_date,
-            incremental=args.incremental,
-            triggered_by="cli",
-        )
-
+            result = await run_sync(
+                session=session,
+                full=args.full,
+                days_back=args.days_back,
+                skip_institutions=args.skip_institutions,
+                skip_processes=args.skip_processes,
+                skip_contracts=args.skip_contracts,
+                skip_items=args.skip_items,
+                skip_suppliers=args.skip_suppliers,
+                rate_limit=args.rate_limit,
+                triggered_by="cli",
+                sync_type=sync_type,
+            )
     logger.info(
         "Sync %s: status=%s, records=%d, duration=%.1fs",
         result.id,

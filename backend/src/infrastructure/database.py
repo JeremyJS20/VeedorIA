@@ -1,5 +1,4 @@
 import logging
-from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,6 +12,8 @@ engine = create_async_engine(
     settings.database_url,
     echo=False,
     future=True,
+    pool_size=5,
+    max_overflow=10,
 )
 
 async_session_maker = sessionmaker(
@@ -20,14 +21,6 @@ async_session_maker = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
-
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
 
 
 async def verify_db_health() -> bool:

@@ -14,3 +14,7 @@ class Item(SQLModel, table=True):
     unit_price: float | None = Field(default=None)
     total_amount: float | None = Field(default=None)
     unspsc_code: str | None = Field(default=None, max_length=8)
+    process_code: str | None = Field(default=None, max_length=50, index=True)
+    unspsc_family: str | None = Field(default=None, max_length=8)
+    unspsc_class: str | None = Field(default=None, max_length=8)
+    budget_account: str | None = Field(default=None, max_length=20)

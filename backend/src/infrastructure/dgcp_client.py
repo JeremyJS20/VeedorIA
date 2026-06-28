@@ -1,7 +1,8 @@
 import asyncio
 import logging
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -25,15 +26,19 @@ class DGCPClientError(Exception):
 
 
 class DGCPClient:
-    def __init__(self) -> None:
+    def __init__(self, rate_limit: float | None = None, burst: int = 3) -> None:
         self.base_url = settings.dgcp_api_base_url
+        self.rate_limit = rate_limit if rate_limit is not None else settings.sync_rate_limit
         self._client: httpx.AsyncClient | None = None
         self._request_count = 0
-        self._last_request_time = 0.0
+        self._burst = burst
+        self._semaphore = asyncio.Semaphore(burst)
+        self._tokens = burst
+        self._min_interval = 1.0 / self.rate_limit
+        self._last_refill = 0.0
 
     async def __aenter__(self) -> "DGCPClient":
         self._client = httpx.AsyncClient(
-            base_url=self.base_url,
             timeout=settings.dgcp_request_timeout,
             headers={"User-Agent": "VeedorIA/1.0"},
         )
@@ -44,12 +49,23 @@ class DGCPClient:
             await self._client.aclose()
 
     async def _rate_limit(self) -> None:
-        now = asyncio.get_running_loop().time()
-        elapsed = now - self._last_request_time
-        min_interval = 1.0 / settings.sync_rate_limit
-        if elapsed < min_interval:
-            await asyncio.sleep(min_interval - elapsed)
-        self._last_request_time = asyncio.get_running_loop().time()
+        async with self._semaphore:
+            now = asyncio.get_running_loop().time()
+            if self._last_refill == 0.0:
+                self._last_refill = now
+                self._tokens = self._burst
+            elapsed = now - self._last_refill
+            new_tokens = int(elapsed / self._min_interval)
+            if new_tokens > 0:
+                self._tokens = min(self._burst, self._tokens + new_tokens)
+                self._last_refill = now
+            if self._tokens <= 0:
+                wait_time = self._min_interval - (now - self._last_refill)
+                if wait_time > 0:
+                    await asyncio.sleep(wait_time)
+                self._tokens = 1
+                self._last_refill = asyncio.get_running_loop().time()
+            self._tokens -= 1
         self._request_count += 1
 
     async def _request(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -146,10 +162,19 @@ class DGCPClient:
             params["numero_documento"] = rnc
         return await self.fetch_all_paginated("/proveedores", params)
 
-    async def fetch_ocds_releases(self, start_date: date, end_date: date) -> list[dict[str, Any]]:
-        params = {
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
-            "limit": 1000,
-        }
-        return await self.fetch_all_paginated("/ocds/releases/all", params)
+    async def fetch_all_contracts(self) -> list[dict[str, Any]]:
+        return await self.fetch_all_paginated("/contratos")
+
+    async def download_tabla_xlsx(self, endpoint: str, dest_dir: str | Path) -> Path:
+        if not self._client:
+            raise DGCPClientError("Client not initialized. Use async with.")
+        dest = Path(dest_dir)
+        dest.mkdir(parents=True, exist_ok=True)
+        url = f"{self.base_url}/tablas/{endpoint}?tipo=xlsx"
+        filename = endpoint.replace("/", "_") + ".xlsx"
+        filepath = dest / filename
+        response = await self._client.get(url)
+        response.raise_for_status()
+        filepath.write_bytes(response.content)
+        logger.info("Downloaded XLSX %s -> %s (%d bytes)", endpoint, filepath, len(response.content))
+        return filepath

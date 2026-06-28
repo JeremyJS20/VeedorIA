@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///../database/veedoria.db"
+    database_url: str = "sqlite+aiosqlite:///C:/Users/jsjer/AppData/Local/Temp/VeedorIA-mp3wxzgzaek/veedoria.db"
     postgres_url: str | None = None
 
     # Auth
@@ -22,9 +22,13 @@ class Settings(BaseSettings):
     dgcp_retry_base_delay: float = 1.0
 
     # Sync
-    sync_incremental: bool = False
+    sync_days_back: int = 90
     sync_batch_size: int = 500
-    sync_rate_limit: float = 1.0
+    sync_rate_limit: float = 5.0
+
+    # Sync schedule (APScheduler, production only)
+    sync_cron_hour: int = 6
+    sync_cron_minute: int = 0
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

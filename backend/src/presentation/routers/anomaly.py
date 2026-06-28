@@ -1,0 +1,105 @@
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.domain.schemas.anomaly import AnomalyContext, AnomalyListResponse, AnomalyResponse, AnomalyReviewPayload, AnomalyStats
+from src.domain.types import ApiResponse
+from src.infrastructure.database import async_session_maker
+from src.presentation.dependencies import get_anomaly_service
+from src.services.anomaly_service import AnomalyService
+
+logger = logging.getLogger("veedoria.presentation.routers.anomaly")
+router = APIRouter(prefix="/anomalies", tags=["anomalies"])
+
+
+@router.post("/detect", status_code=202)
+async def detect_anomalies(
+    background_tasks: BackgroundTasks,
+    service: AnomalyService = Depends(get_anomaly_service),
+) -> ApiResponse:
+    async def _run(svc: AnomalyService) -> None:
+        async with async_session_maker() as session:
+            try:
+                svc_with_session = AnomalyService(db=session)
+                result = await svc_with_session.run_full_detection()
+                logger.info("Detection complete: %s", result)
+            except Exception as e:
+                logger.exception("Detection failed: %s", e)
+
+    background_tasks.add_task(_run, service)
+    return ApiResponse(success=True, message="Detección de anomalías iniciada en segundo plano.")
+
+
+@router.get("", response_model=ApiResponse[AnomalyListResponse])
+async def list_anomalies(
+    service: AnomalyService = Depends(get_anomaly_service),
+    anomaly_type: str | None = Query(None, description="Filtrar por tipo (PRICE_ANOMALY, FRAGMENTATION, COLLUSION)"),
+    status: str | None = Query(None, description="Filtrar por estado (PENDING, CONFIRMED, DISMISSED)"),
+    min_severity: float | None = Query(None, ge=0.0, le=1.0, description="Severidad mínima"),
+    limit: int = Query(50, ge=1, le=200),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+) -> ApiResponse[AnomalyListResponse]:
+    offset = (page - 1) * limit
+    items, total = await service.get_anomalies(
+        anomaly_type=anomaly_type,
+        status=status,
+        min_severity=min_severity,
+        limit=limit,
+        offset=offset,
+    )
+    return ApiResponse(
+        data=AnomalyListResponse(
+            items=[AnomalyResponse.model_validate(a, from_attributes=True) for a in items],
+            total=total,
+            page=page,
+            limit=limit,
+        )
+    )
+
+
+@router.get("/stats", response_model=ApiResponse[AnomalyStats])
+async def get_stats(
+    service: AnomalyService = Depends(get_anomaly_service),
+) -> ApiResponse[AnomalyStats]:
+    stats = await service.get_anomaly_stats()
+    return ApiResponse(data=AnomalyStats(**stats))
+
+
+@router.get("/{anomaly_id}", response_model=ApiResponse[AnomalyResponse])
+async def get_anomaly(
+    anomaly_id: str,
+    service: AnomalyService = Depends(get_anomaly_service),
+) -> ApiResponse[AnomalyResponse]:
+    anomaly = await service.get_anomaly(anomaly_id)
+    if not anomaly:
+        return ApiResponse(success=False, message="Anomalía no encontrada")
+    return ApiResponse(data=AnomalyResponse.model_validate(anomaly, from_attributes=True))
+
+
+@router.get("/{anomaly_id}/context", response_model=ApiResponse[AnomalyContext])
+async def get_anomaly_context(
+    anomaly_id: str,
+    service: AnomalyService = Depends(get_anomaly_service),
+) -> ApiResponse[AnomalyContext]:
+    ctx = await service.get_anomaly_context(anomaly_id)
+    if not ctx:
+        return ApiResponse(success=False, message="Anomalía no encontrada")
+    return ApiResponse(data=AnomalyContext(**ctx))
+
+
+@router.patch("/{anomaly_id}", response_model=ApiResponse[AnomalyResponse])
+async def review_anomaly(
+    anomaly_id: str,
+    payload: AnomalyReviewPayload,
+    service: AnomalyService = Depends(get_anomaly_service),
+) -> ApiResponse[AnomalyResponse]:
+    anomaly = await service.review_anomaly(
+        anomaly_id=anomaly_id,
+        reviewer_id=payload.reviewer_id,
+        status=payload.status,
+        notes=payload.notes,
+    )
+    if not anomaly:
+        return ApiResponse(success=False, message="Anomalía no encontrada")
+    return ApiResponse(data=AnomalyResponse.model_validate(anomaly, from_attributes=True))

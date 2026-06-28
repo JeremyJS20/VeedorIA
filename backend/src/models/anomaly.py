@@ -33,8 +33,13 @@ class Anomaly(SQLModel, table=True):
     description: str = Field(max_length=2000)
     status: str = Field(default=AnomalyStatus.PENDING.value, max_length=20)
     reviewer_id: str | None = Field(default=None, foreign_key="user.id")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC).replace(tzinfo=None))
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(UTC)},
+        default_factory=lambda: datetime.now(UTC).replace(tzinfo=None),
+        sa_column_kwargs={"onupdate": lambda: datetime.now(UTC).replace(tzinfo=None)},
     )
+
+    amount: float | None = Field(default=None)
+    process_code: str | None = Field(default=None, max_length=100)
+    supplier_name: str | None = Field(default=None, max_length=500)
+    institution_name: str | None = Field(default=None, max_length=500)
