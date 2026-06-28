@@ -49,7 +49,7 @@ async def trigger_dgcp_sync(
     stmt = select(SyncLog).where(SyncLog.status == "running")
     result = await session.execute(stmt)
     if result.scalars().first():
-        return ApiResponse(success=False, error="Sync ya está en progreso")
+        return ApiResponse(success=False, message="Sync ya está en progreso")
 
     sync_type = _compute_sync_type(full, skip_institutions, skip_processes, skip_contracts, skip_items, skip_suppliers)
     try:
@@ -64,7 +64,7 @@ async def trigger_dgcp_sync(
             rate_limit=rate_limit,
         )
     except RuntimeError as e:
-        return ApiResponse(success=False, error=str(e))
+        return ApiResponse(success=False, message=str(e))
     return ApiResponse(success=True, data={"pid": pid, "sync_type": sync_type}, message="Sync started")
 
 

@@ -18,17 +18,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-_veedoria_logger = logging.getLogger("veedoria")
-_veedoria_logger.setLevel(getattr(logging, settings.log_level))
-if not _veedoria_logger.handlers:
-    _handler = logging.StreamHandler()
-    _handler.setFormatter(logging.Formatter(
-        "%(asctime)s | %(name)s | %(levelname)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    ))
-    _veedoria_logger.addHandler(_handler)
-    _veedoria_logger.propagate = False
-
 logger = logging.getLogger("veedoria.app")
 
 scheduler = AsyncIOScheduler()
@@ -65,8 +54,22 @@ async def _daily_sync() -> None:
         logger.warning("Scheduled sync skipped: %s", e)
 
 
+def _ensure_veedoria_handler() -> None:
+    veedoria_logger = logging.getLogger("veedoria")
+    veedoria_logger.setLevel(getattr(logging, settings.log_level))
+    if not veedoria_logger.handlers:
+        _handler = logging.StreamHandler()
+        _handler.setFormatter(logging.Formatter(
+            "%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        ))
+        veedoria_logger.addHandler(_handler)
+        veedoria_logger.propagate = False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _ensure_veedoria_handler()
     logger.info("Initializing database...")
     await init_db()
     scheduler.add_job(

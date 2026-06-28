@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { X } from "lucide-react"
+import { toast } from "@heroui/react"
 import type { Anomaly } from "../../domain/anomaly"
 import { useAnomalyContext, useReviewAnomaly } from "../hooks/useAnomalyQueries"
 import Button from "./ui/Button"
@@ -9,6 +10,7 @@ import PriceScatter from "./PriceScatter"
 import FragmentationBarChart from "./FragmentationBarChart"
 import CollusionNetwork from "./CollusionNetwork"
 import InstitutionTimeline from "./InstitutionTimeline"
+import SectionErrorBoundary from "./SectionErrorBoundary"
 
 interface AnomalyDrawerProps {
   anomaly: Anomaly
@@ -34,9 +36,10 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
 
   const handleReview = async (status: "CONFIRMED" | "DISMISSED") => {
     if (notes.trim().length < 10) {
-      alert(t("drawer.notes_required"))
+      toast.danger(t("drawer.notes_required"))
       return
     }
+    toast.success(status === "CONFIRMED" ? "Anomalía confirmada" : "Anomalía descartada")
     try {
       await reviewMutation.mutateAsync({
         id: anomaly.id,
@@ -96,57 +99,84 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <SeverityGauge value={anomaly.severity * 100} confidence={ctx?.confidence} />
         </div>
 
-        {isPriceAnomaly && marketPrices.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-end">
-              <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-                {t("drawer.price_analysis")}
-              </h4>
-              <span className="font-data text-[10px] text-outline">{t("drawer.market_region")}</span>
-            </div>
-            <PriceScatter data={marketPrices} median={contextMedian} />
-            {ctx?.supplier_name && (
-              <p className="text-[11px] text-outline">
-                Proveedor: <span className="font-semibold text-on-surface">{ctx.supplier_name}</span>
-              </p>
-            )}
-          </div>
-        )}
-
-        {isFragmentation && ctx?.recent_contracts && ctx.recent_contracts.length > 0 && (
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-              Contratos recientes
-            </h4>
-            <FragmentationBarChart
-              entries={ctx.recent_contracts}
-              threshold={FRAGMENTATION_THRESHOLD}
-            />
-            <InstitutionTimeline entries={ctx.recent_contracts} />
-          </div>
-        )}
-
-        {isCollusion && ctx?.collusion_links && ctx.collusion_links.length > 0 && (
-          <div className="space-y-4">
-            <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-              Red de proveedores
-            </h4>
-            <CollusionNetwork links={ctx.collusion_links} />
-            <div className="space-y-2">
-              {ctx.collusion_links.map((link, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px] bg-background rounded-xl p-3 border border-outline-variant/20">
-                  <span className="font-semibold text-on-surface">{link.source}</span>
-                  <span className="text-outline mx-2">⟷</span>
-                  <span className="font-semibold text-on-surface">{link.target}</span>
-                  <span className="text-outline ml-auto text-[10px]">{link.reason.replace(/_/g, " ")}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {ctxLoading && (
-          <div className="text-center py-8 text-outline text-sm">{t("anomalies.loading")}</div>
+          <div className="space-y-4 animate-pulse">
+            <div className="h-3 w-24 bg-outline-variant/30 rounded" />
+            <div className="h-[200px] bg-outline-variant/20 rounded-2xl" />
+            <div className="h-3 w-48 bg-outline-variant/30 rounded" />
+            <div className="h-[200px] bg-outline-variant/20 rounded-2xl" />
+          </div>
+        )}
+
+        {!ctxLoading && isPriceAnomaly && (
+          <SectionErrorBoundary title="price analysis">
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                  {t("drawer.price_analysis")}
+                </h4>
+                <span className="font-data text-[10px] text-outline">{t("drawer.market_region")}</span>
+              </div>
+              {marketPrices.length > 0 ? (
+                <PriceScatter data={marketPrices} median={contextMedian} />
+              ) : (
+                <p className="text-sm text-outline text-center py-8">No hay datos de mercado disponibles</p>
+              )}
+              {ctx?.supplier_name && (
+                <p className="text-[11px] text-outline">
+                  Proveedor: <span className="font-semibold text-on-surface">{ctx.supplier_name}</span>
+                </p>
+              )}
+            </div>
+          </SectionErrorBoundary>
+        )}
+
+        {!ctxLoading && isFragmentation && (
+          <SectionErrorBoundary title="fragmentation">
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                Contratos recientes
+              </h4>
+              {ctx?.recent_contracts && ctx.recent_contracts.length > 0 ? (
+                <>
+                  <FragmentationBarChart
+                    entries={ctx.recent_contracts}
+                    threshold={FRAGMENTATION_THRESHOLD}
+                  />
+                  <InstitutionTimeline entries={ctx.recent_contracts} />
+                </>
+              ) : (
+                <p className="text-sm text-outline text-center py-8">No hay contratos recientes para esta institución</p>
+              )}
+            </div>
+          </SectionErrorBoundary>
+        )}
+
+        {!ctxLoading && isCollusion && (
+          <SectionErrorBoundary title="collusion network">
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                Red de proveedores
+              </h4>
+              {ctx?.collusion_links && ctx.collusion_links.length > 0 ? (
+                <>
+                  <CollusionNetwork links={ctx.collusion_links} />
+                  <div className="space-y-2">
+                    {ctx.collusion_links.map((link, i) => (
+                      <div key={i} className="flex items-center justify-between text-[11px] bg-background rounded-xl p-3 border border-outline-variant/20">
+                        <span className="font-semibold text-on-surface">{link.source}</span>
+                        <span className="text-outline mx-2">⟷</span>
+                        <span className="font-semibold text-on-surface">{link.target}</span>
+                        <span className="text-outline ml-auto text-[10px]">{link.reason.replace(/_/g, " ")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-outline text-center py-8">No se detectaron vínculos de colusión</p>
+              )}
+            </div>
+          </SectionErrorBoundary>
         )}
       </div>
 

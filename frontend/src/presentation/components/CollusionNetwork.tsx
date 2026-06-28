@@ -137,7 +137,13 @@ export default function CollusionNetwork({ links, className = "" }: CollusionNet
     }
   }, [links])
 
-  if (links.length === 0) return null
+  if (links.length === 0) {
+    return (
+      <div className={`bg-background rounded-2xl p-6 border border-outline-variant/20 text-center ${className}`}>
+        <p className="text-sm text-outline">Sin vínculos de colusión detectados</p>
+      </div>
+    )
+  }
 
   const usedReasons = new Set(links.map((l) => l.reason))
 

@@ -109,7 +109,13 @@ export default function FragmentationBarChart({ entries, threshold, className = 
       .text((d) => d.date)
   }, [entries, threshold])
 
-  if (entries.length === 0) return null
+  if (entries.length === 0) {
+    return (
+      <div className={`bg-background rounded-2xl p-6 border border-outline-variant/20 text-center ${className}`}>
+        <p className="text-sm text-outline">Sin datos de contratos para mostrar</p>
+      </div>
+    )
+  }
 
   return (
     <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${className}`}>

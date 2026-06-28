@@ -17,7 +17,7 @@ async def detect_anomalies() -> ApiResponse:
     try:
         pid = await run_detection()
     except RuntimeError as e:
-        return ApiResponse(success=False, error=str(e))
+        return ApiResponse(success=False, message=str(e))
     return ApiResponse(success=True, data={"pid": pid}, message="Detección de anomalías iniciada en segundo plano.")
 
 
