@@ -7,9 +7,10 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from src.config import settings
 from src.domain.types import ApiErrorResponse
-from src.infrastructure.database import async_session_maker, engine, init_db
+from src.infrastructure.database import engine, init_db
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.sync import router as sync_router
+from src.presentation.runners import run_detection, run_sync
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
@@ -48,32 +49,20 @@ class NotFoundError(AppError):
 
 async def _daily_anomaly_detection() -> None:
     logger.info("Scheduled daily anomaly detection starting...")
-    async with async_session_maker() as session:
-        from src.services.anomaly_service import AnomalyService
-        try:
-            svc = AnomalyService(db=session)
-            result = await svc.run_full_detection()
-            logger.info(
-                "Scheduled anomaly detection: %d price, %d fragmentation, %d collusion",
-                result.get("price_anomalies", 0),
-                result.get("fragmentation", 0),
-                result.get("collusion", 0),
-            )
-        except Exception as e:
-            logger.exception("Scheduled anomaly detection failed: %s", e)
+    try:
+        pid = await run_detection()
+        logger.info("Scheduled anomaly detection launched (pid=%d)", pid)
+    except RuntimeError as e:
+        logger.warning("Scheduled anomaly detection skipped: %s", e)
 
 
 async def _daily_sync() -> None:
     logger.info("Scheduled daily sync starting...")
-    async with async_session_maker() as session:
-        from src.infrastructure.dgcp_client import DGCPClient
-        from src.services.sync_service import sync_incremental_optimized
-        try:
-            async with DGCPClient(rate_limit=0.5) as client:
-                c, i, s = await sync_incremental_optimized(client, session)
-                logger.info("Scheduled daily sync: %d contracts, %d items, %d suppliers", c, i, s)
-        except Exception as e:
-            logger.exception("Scheduled sync failed: %s", e)
+    try:
+        pid = await run_sync()
+        logger.info("Scheduled daily sync launched (pid=%d)", pid)
+    except RuntimeError as e:
+        logger.warning("Scheduled sync skipped: %s", e)
 
 
 @asynccontextmanager

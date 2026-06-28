@@ -1,12 +1,11 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, Query
 
 from src.domain.schemas.anomaly import AnomalyContext, AnomalyListResponse, AnomalyResponse, AnomalyReviewPayload, AnomalyStats
 from src.domain.types import ApiResponse
-from src.infrastructure.database import async_session_maker
 from src.presentation.dependencies import get_anomaly_service
+from src.presentation.runners import run_detection
 from src.services.anomaly_service import AnomalyService
 
 logger = logging.getLogger("veedoria.presentation.routers.anomaly")
@@ -14,21 +13,12 @@ router = APIRouter(prefix="/anomalies", tags=["anomalies"])
 
 
 @router.post("/detect", status_code=202)
-async def detect_anomalies(
-    background_tasks: BackgroundTasks,
-    service: AnomalyService = Depends(get_anomaly_service),
-) -> ApiResponse:
-    async def _run(svc: AnomalyService) -> None:
-        async with async_session_maker() as session:
-            try:
-                svc_with_session = AnomalyService(db=session)
-                result = await svc_with_session.run_full_detection()
-                logger.info("Detection complete: %s", result)
-            except Exception as e:
-                logger.exception("Detection failed: %s", e)
-
-    background_tasks.add_task(_run, service)
-    return ApiResponse(success=True, message="Detección de anomalías iniciada en segundo plano.")
+async def detect_anomalies() -> ApiResponse:
+    try:
+        pid = await run_detection()
+    except RuntimeError as e:
+        return ApiResponse(success=False, error=str(e))
+    return ApiResponse(success=True, data={"pid": pid}, message="Detección de anomalías iniciada en segundo plano.")
 
 
 @router.get("", response_model=ApiResponse[AnomalyListResponse])

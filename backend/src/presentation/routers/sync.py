@@ -1,16 +1,14 @@
 import logging
-from datetime import datetime, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import desc
 
 from src.domain.types import ApiResponse
-from src.infrastructure.database import async_session_maker
 from src.infrastructure.dependencies import get_db
 from src.models.sync_log import SyncLog
-from src.services.sync_service import run_sync
+from src.presentation.runners import run_sync as launch_sync
 
 logger = logging.getLogger("veedoria.presentation.routers.sync")
 router = APIRouter(prefix="/sync", tags=["sync"])
@@ -38,7 +36,6 @@ def _compute_sync_type(full: bool, skip_institutions: bool, skip_processes: bool
 
 @router.post("/dgcp", status_code=202)
 async def trigger_dgcp_sync(
-    background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_db),
     full: bool = Query(False, description="Full rebuild: all entities from DGCP JSON API"),
     skip_institutions: bool = Query(False, description="Omitir fase de instituciones"),
@@ -55,43 +52,20 @@ async def trigger_dgcp_sync(
         return ApiResponse(success=False, error="Sync ya está en progreso")
 
     sync_type = _compute_sync_type(full, skip_institutions, skip_processes, skip_contracts, skip_items, skip_suppliers)
-    sync_log = SyncLog(status="running", triggered_by="api", sync_type=sync_type)
-    session.add(sync_log)
-    await session.commit()
-    await session.refresh(sync_log)
-    sync_id = sync_log.id
-
-    async def _run(task_id: int) -> None:
-        async with async_session_maker() as s:
-            try:
-                result = await run_sync(
-                    session=s,
-                    full=full,
-                    days_back=days_back,
-                    skip_institutions=skip_institutions,
-                    skip_processes=skip_processes,
-                    skip_contracts=skip_contracts,
-                    skip_items=skip_items,
-                    skip_suppliers=skip_suppliers,
-                    rate_limit=rate_limit,
-                    triggered_by="api",
-                    sync_log_id=task_id,
-                    sync_type=sync_type,
-                )
-                logger.info("Sync task %d completed: %d records", task_id, result.records_synced)
-            except Exception as e:
-                logger.exception("Sync task %d failed: %s", task_id, e)
-                stmt = select(SyncLog).where(SyncLog.id == task_id)
-                r = await s.execute(stmt)
-                log = r.scalar_one_or_none()
-                if log:
-                    log.status = "failed"
-                    log.error_message = str(e)
-                    log.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
-                    await s.commit()
-
-    background_tasks.add_task(_run, sync_id)
-    return ApiResponse(success=True, data={"sync_id": sync_id}, message="Sync started")
+    try:
+        pid = await launch_sync(
+            full=full,
+            days_back=days_back,
+            skip_institutions=skip_institutions,
+            skip_processes=skip_processes,
+            skip_contracts=skip_contracts,
+            skip_items=skip_items,
+            skip_suppliers=skip_suppliers,
+            rate_limit=rate_limit,
+        )
+    except RuntimeError as e:
+        return ApiResponse(success=False, error=str(e))
+    return ApiResponse(success=True, data={"pid": pid, "sync_type": sync_type}, message="Sync started")
 
 
 @router.get("/status")

@@ -21,6 +21,7 @@ frontend/dist/
 # Design docs (internal)
 docs/internal/
 docs/stitch_assets/
+docs/pages_concept/
 
 # Empty directory
 prisma/
