@@ -18,15 +18,18 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
 
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "fixed pointer-events-none z-[60] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
+      .style("display", "none")
+
     const width = svgRef.current.clientWidth
     const height = fullscreen ? svgRef.current.clientHeight : 200
     const margin = { top: 16, right: 16, bottom: 48, left: 64 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
 
-    svg.attr("viewBox", `0 0 ${width} ${height}`)
-
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`)
+    const zoomG = svg.append("g")
+    const g = zoomG.append("g").attr("transform", `translate(${margin.left},${margin.top})`)
 
     const maxAmount = d3.max(entries, (d) => d.amount) ?? 1
     const paddedMax = Math.max(maxAmount, threshold) * 1.2
@@ -81,7 +84,47 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
       .attr("height", (d) => innerHeight - yScale(d.amount))
       .attr("fill", (d) => (d.is_alert ? "var(--color-error)" : "var(--color-primary)"))
       .attr("fill-opacity", (d) => (d.is_alert ? 1 : 0.3))
+      .attr("stroke", (d) => d.is_alert ? "var(--color-error)" : "none")
+      .attr("stroke-width", (d) => d.is_alert ? 2 : 0)
+      .attr("stroke-dasharray", (d) => d.is_alert ? "5,3" : "none")
       .attr("rx", 4)
+      .attr("cursor", "pointer")
+      .on("mouseover", function (event, d) {
+        const e = d as TimelineEntry
+        d3.select(this)
+          .transition().duration(150)
+          .attr("fill-opacity", 1)
+          .attr("filter", "brightness(1.3)")
+
+        g.selectAll("rect").filter(function () { return this !== event.currentTarget })
+          .transition().duration(150)
+          .attr("fill-opacity", 0.08)
+
+        tooltip
+          .style("display", "block")
+          .html(`
+            <div class="font-semibold text-on-surface">${e.title || "Contrato"}</div>
+            <div class="text-outline mt-0.5">${e.date} · RD$ ${d3.format(",.2f")(e.amount)}</div>
+            ${e.is_alert ? '<div class="text-error font-bold mt-0.5">⚠ SUPERÓ UMBRAL</div>' : ""}
+          `)
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 12}px`)
+          .style("top", `${event.pageY - 10}px`)
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition().duration(150)
+          .attr("fill-opacity", (d: unknown) => ((d as TimelineEntry).is_alert ? 1 : 0.3))
+          .attr("filter", "none")
+
+        g.selectAll("rect")
+          .transition().duration(150)
+          .attr("fill-opacity", (d: unknown) => ((d as TimelineEntry).is_alert ? 1 : 0.3))
+
+        tooltip.style("display", "none")
+      })
       .each(function (d: unknown) {
         const e = d as TimelineEntry
         if (e.is_alert) {
@@ -93,11 +136,15 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
             .attr("repeatCount", "indefinite")
         }
       })
-      .append("title")
-      .text((d: unknown) => {
-        const e = d as TimelineEntry
-        return `${e.title}: RD$ ${d3.format(",.2f")(e.amount)}${e.is_alert ? " | ANOMALÍA" : ""}`
-      })
+
+    g.selectAll("text.amount")
+      .data(entries)
+      .join("text")
+      .attr("class", "text-[9px] fill-on-surface font-semibold amount pointer-events-none")
+      .attr("x", (_, i) => xScale(String(i))! + barWidth / 2)
+      .attr("y", (d) => yScale(d.amount) - 6)
+      .attr("text-anchor", "middle")
+      .text((d) => `RD$${d3.format(".2s")(d.amount)}`)
 
     g.selectAll("text.label")
       .data(entries)
@@ -108,7 +155,21 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
       .attr("text-anchor", "end")
       .attr("transform", (_, i) => `rotate(-35, ${xScale(String(i))! + barWidth / 2}, ${innerHeight + 14})`)
       .text((d) => d.date)
-  }, [entries, threshold])
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on("zoom", (event) => zoomG.attr("transform", event.transform))
+
+    svg.call(zoom)
+    svg.on("dblclick.zoom", null)
+    svg.on("dblclick", () => {
+      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
+    })
+
+    return () => {
+      tooltip.remove()
+    }
+  }, [entries, threshold, fullscreen])
 
   if (entries.length === 0) {
     return (

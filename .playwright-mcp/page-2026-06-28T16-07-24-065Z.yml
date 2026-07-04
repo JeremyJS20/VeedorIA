@@ -1,0 +1,1141 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - link "VeedorIA" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - img "VeedorIA" [ref=e9]
+      - button "Collapse sidebar" [ref=e10]:
+        - img [ref=e11]
+    - generic [ref=e16]:
+      - paragraph [ref=e17]: Consola Auditor
+      - link "Overview" [ref=e18] [cursor=pointer]:
+        - /url: /app/overview
+        - img [ref=e19]
+        - generic [ref=e24]: Overview
+      - link "Procesos" [ref=e25] [cursor=pointer]:
+        - /url: /app/processes
+        - img [ref=e26]
+        - generic [ref=e31]: Procesos
+      - link "Bandeja de Alertas 12" [ref=e32] [cursor=pointer]:
+        - /url: /app/bandeja
+        - img [ref=e34]
+        - generic [ref=e37]: Bandeja de Alertas
+        - generic [ref=e38]: "12"
+      - generic [ref=e39]:
+        - img [ref=e40]
+        - generic [ref=e46]: Red de Colusión
+        - img [ref=e47]
+      - generic [ref=e50]:
+        - img [ref=e51]
+        - generic [ref=e60]: Configuración IA
+        - img [ref=e61]
+    - button "CM Carlos Mendizábal Auditor B2G" [ref=e65]:
+      - generic [ref=e68]: CM
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: Carlos Mendizábal
+        - text: Auditor B2G
+      - img [ref=e72]
+  - main [ref=e76]:
+    - generic [ref=e77]:
+      - navigation [ref=e78]:
+        - generic [ref=e79] [cursor=pointer]: Consola Auditor
+        - img [ref=e80]
+        - generic [ref=e82]: Bandeja de Alertas
+      - generic [ref=e83]:
+        - generic [ref=e85] [cursor=pointer]:
+          - generic [ref=e86]: "Simular Rol:"
+          - generic [ref=e87]: Auditor
+          - img [ref=e88]
+        - generic [ref=e90]:
+          - button [ref=e91]:
+            - img [ref=e92]
+          - button [ref=e95]:
+            - img [ref=e96]
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: Total Anomalías
+            - generic [ref=e107]: "2346"
+          - generic [ref=e108]:
+            - paragraph [ref=e109]: Críticas / Alta Severidad
+            - generic [ref=e111]: "2346"
+          - generic [ref=e112]:
+            - paragraph [ref=e113]: En Investigación
+            - generic [ref=e115]: "0"
+          - generic [ref=e116]:
+            - paragraph [ref=e117]: Resueltas (Mes)
+            - generic [ref=e119]: "0"
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - textbox "Buscar por expediente, proveedor o entidad..." [ref=e123]
+              - img [ref=e124]
+            - generic [ref=e127]:
+              - combobox [ref=e128] [cursor=pointer]:
+                - 'option "Estado: Pendientes" [selected]'
+                - option "Pendientes"
+                - option "Confirmadas"
+                - option "Descartadas"
+              - combobox [ref=e129] [cursor=pointer]:
+                - 'option "Tipo: Todos" [selected]'
+                - option "Sobreprecio"
+                - option "Fraccionamiento"
+                - option "Colusión"
+              - combobox [ref=e130] [cursor=pointer]:
+                - 'option "Severidad: Todas" [selected]'
+                - option "Alta"
+                - option "Media"
+                - option "Baja"
+          - button "Ejecutar Detección" [ref=e131] [cursor=pointer]:
+            - img
+            - text: Ejecutar Detección
+        - generic [ref=e132]:
+          - generic [ref=e133] [cursor=pointer]:
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - generic [ref=e136]: Fraccionamiento
+                - generic [ref=e137]: DESARROLLO PROVINCIA-MAE-PEEN-2026-0001
+              - 'heading "Posible fraccionamiento: contratos DESARROLLO PROVINCIA-2026-00032 y DESARROLLO PROVINCIA-2026-00033 suman DOP $122,123,509.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e138]'
+              - generic [ref=e139]:
+                - generic [ref=e140]:
+                  - text: Monto
+                  - paragraph [ref=e141]: RD$ 57,579,589.00
+                - generic [ref=e142]:
+                  - text: Proveedor
+                  - paragraph [ref=e143]: Construcciones & Servicios AT & JM, SRL
+                - generic [ref=e144]:
+                  - text: Fecha
+                  - paragraph [ref=e145]: 2026-06-28
+            - button "Investigar" [active] [ref=e146]:
+              - text: Investigar
+              - img
+          - generic [ref=e147] [cursor=pointer]:
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - generic [ref=e150]: Fraccionamiento
+                - generic [ref=e151]: CPADB-MAE-PEEN-2026-0001
+              - 'heading "Posible fraccionamiento: contratos CPADB-2026-00089 y CPADB-2026-00090 suman DOP $65,718,709.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e152]'
+              - generic [ref=e153]:
+                - generic [ref=e154]:
+                  - text: Monto
+                  - paragraph [ref=e155]: RD$ 21,903,252.00
+                - generic [ref=e156]:
+                  - text: Proveedor
+                  - paragraph [ref=e157]: CONAGREMIX, SRL
+                - generic [ref=e158]:
+                  - text: Fecha
+                  - paragraph [ref=e159]: 2026-06-28
+            - button "Investigar" [ref=e160]:
+              - text: Investigar
+              - img
+          - generic [ref=e161] [cursor=pointer]:
+            - generic [ref=e162]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: Fraccionamiento
+                - generic [ref=e165]: MOPC-MAE-PEEN-2026-0001
+              - 'heading "Posible fraccionamiento: contratos MOPC-2026-00109 y MOPC-2026-00110 suman DOP $700,000,000.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e166]'
+              - generic [ref=e167]:
+                - generic [ref=e168]:
+                  - text: Monto
+                  - paragraph [ref=e169]: RD$ 350,000,000.00
+                - generic [ref=e170]:
+                  - text: Proveedor
+                  - paragraph [ref=e171]: Remix, S.A
+                - generic [ref=e172]:
+                  - text: Fecha
+                  - paragraph [ref=e173]: 2026-06-28
+            - button "Investigar" [ref=e174]:
+              - text: Investigar
+              - img
+          - generic [ref=e175] [cursor=pointer]:
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]: Fraccionamiento
+                - generic [ref=e179]: "24777"
+              - 'heading "Posible fraccionamiento: contratos FONPER-2026-00038 y FONPER-2026-00039 suman DOP $29,907,646.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e180]'
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - text: Monto
+                  - paragraph [ref=e183]: RD$ 25,404,586.00
+                - generic [ref=e184]:
+                  - text: Proveedor
+                  - paragraph [ref=e185]: Construcciones Dipen, SRL
+                - generic [ref=e186]:
+                  - text: Fecha
+                  - paragraph [ref=e187]: 2026-06-28
+            - button "Investigar" [ref=e188]:
+              - text: Investigar
+              - img
+          - generic [ref=e189] [cursor=pointer]:
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - generic [ref=e192]: Fraccionamiento
+                - generic [ref=e193]: SRSCNE-CCC-CP-2026-0002
+              - 'heading "Posible fraccionamiento: contratos SRSCNE-2026-00054 y SRSCNE-2026-00055 suman DOP $16,074,935.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e194]'
+              - generic [ref=e195]:
+                - generic [ref=e196]:
+                  - text: Monto
+                  - paragraph [ref=e197]: RD$ 7,391,846.00
+                - generic [ref=e198]:
+                  - text: Proveedor
+                  - paragraph [ref=e199]: Indugrasantos, EIRL
+                - generic [ref=e200]:
+                  - text: Fecha
+                  - paragraph [ref=e201]: 2026-06-28
+            - button "Investigar" [ref=e202]:
+              - text: Investigar
+              - img
+          - generic [ref=e203] [cursor=pointer]:
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic [ref=e206]: Fraccionamiento
+                - generic [ref=e207]: MIDEREC-CCC-PEPB-2026-0002
+              - 'heading "Posible fraccionamiento: contratos MIDEREC-2026-00235 y MIDEREC-2026-00239 suman DOP $350,385,005.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e208]'
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - text: Monto
+                  - paragraph [ref=e211]: RD$ 385,000.00
+                - generic [ref=e212]:
+                  - text: Proveedor
+                  - paragraph [ref=e213]: Mena Deportes, SRL
+                - generic [ref=e214]:
+                  - text: Fecha
+                  - paragraph [ref=e215]: 2026-06-28
+            - button "Investigar" [ref=e216]:
+              - text: Investigar
+              - img
+          - generic [ref=e217] [cursor=pointer]:
+            - generic [ref=e218]:
+              - generic [ref=e219]:
+                - generic [ref=e220]: Fraccionamiento
+                - generic [ref=e221]: ERD-DAF-CM-2026-0065
+              - 'heading "Posible fraccionamiento: contratos ERD-2026-00156 y ERD-2026-00157 suman DOP $41,907,838.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e222]'
+              - generic [ref=e223]:
+                - generic [ref=e224]:
+                  - text: Monto
+                  - paragraph [ref=e225]: RD$ 22,375,807.00
+                - generic [ref=e226]:
+                  - text: Proveedor
+                  - paragraph [ref=e227]: Zoec Civil, SRL
+                - generic [ref=e228]:
+                  - text: Fecha
+                  - paragraph [ref=e229]: 2026-06-28
+            - button "Investigar" [ref=e230]:
+              - text: Investigar
+              - img
+          - generic [ref=e231] [cursor=pointer]:
+            - generic [ref=e232]:
+              - generic [ref=e233]:
+                - generic [ref=e234]: Fraccionamiento
+                - generic [ref=e235]: ETED-CCC-LPN-2026-0024
+              - 'heading "Posible fraccionamiento: contratos ETED-2026-00967 y ETED-2026-00969 suman DOP $41,000,000.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e236]'
+              - generic [ref=e237]:
+                - generic [ref=e238]:
+                  - text: Monto
+                  - paragraph [ref=e239]: RD$ 22,000,000.00
+                - generic [ref=e240]:
+                  - text: Proveedor
+                  - paragraph [ref=e241]: Next Dominicana, SA
+                - generic [ref=e242]:
+                  - text: Fecha
+                  - paragraph [ref=e243]: 2026-06-28
+            - button "Investigar" [ref=e244]:
+              - text: Investigar
+              - img
+          - generic [ref=e245] [cursor=pointer]:
+            - generic [ref=e246]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: Fraccionamiento
+                - generic [ref=e249]: INFOTEP-CCC-CP-2026-0001
+              - 'heading "Posible fraccionamiento: contratos INFOTEP-2026-00648 y INFOTEP-2026-00649 suman DOP $12,800,000.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e250]'
+              - generic [ref=e251]:
+                - generic [ref=e252]:
+                  - text: Monto
+                  - paragraph [ref=e253]: RD$ 6,400,000.00
+                - generic [ref=e254]:
+                  - text: Proveedor
+                  - paragraph [ref=e255]: Martínez Torres Traveling, SRL
+                - generic [ref=e256]:
+                  - text: Fecha
+                  - paragraph [ref=e257]: 2026-06-28
+            - button "Investigar" [ref=e258]:
+              - text: Investigar
+              - img
+          - generic [ref=e259] [cursor=pointer]:
+            - generic [ref=e260]:
+              - generic [ref=e261]:
+                - generic [ref=e262]: Fraccionamiento
+                - generic [ref=e263]: TSS-CCC-PEPU-2026-0004
+              - 'heading "Posible fraccionamiento: contratos TSS-2026-00043 y TSS-2026-00044 suman DOP $11,719,894.00 superando el umbral de licitación (DOP $8,000,000.00) con ítems de descripción similar." [level=3] [ref=e264]'
+              - generic [ref=e265]:
+                - generic [ref=e266]:
+                  - text: Monto
+                  - paragraph [ref=e267]: RD$ 11,540,163.00
+                - generic [ref=e268]:
+                  - text: Proveedor
+                  - paragraph [ref=e269]: Báez Technologies, SRL
+                - generic [ref=e270]:
+                  - text: Fecha
+                  - paragraph [ref=e271]: 2026-06-28
+            - button "Investigar" [ref=e272]:
+              - text: Investigar
+              - img
+          - generic [ref=e273] [cursor=pointer]:
+            - generic [ref=e274]:
+              - generic [ref=e275]:
+                - generic [ref=e276]: Sobreprecio
+                - generic [ref=e277]: ETED-DAF-CM-2026-0094
+              - heading "Precio unitario de DOP $1,494,975.00 por 'Agua' supera en un 1107289% la mediana del mercado (DOP $135.00) para la categoría UNSPSC 50202301." [level=3] [ref=e278]
+              - generic [ref=e279]:
+                - generic [ref=e280]:
+                  - text: Monto
+                  - paragraph [ref=e281]: RD$ 2,040,975.00
+                - generic [ref=e282]:
+                  - text: Proveedor
+                  - paragraph [ref=e283]: Planeta Azul, SA
+                - generic [ref=e284]:
+                  - text: Fecha
+                  - paragraph [ref=e285]: 2026-06-28
+            - button "Investigar" [ref=e286]:
+              - text: Investigar
+              - img
+          - generic [ref=e287] [cursor=pointer]:
+            - generic [ref=e288]:
+              - generic [ref=e289]:
+                - generic [ref=e290]: Sobreprecio
+                - generic [ref=e291]: "38319"
+              - heading "Precio unitario de DOP $31,333,977.30 por 'Aires acondicionados' supera en un 73156% la mediana del mercado (DOP $42,773.31) para la categoría UNSPSC 40101701." [level=3] [ref=e292]
+              - generic [ref=e293]:
+                - generic [ref=e294]:
+                  - text: Monto
+                  - paragraph [ref=e295]: RD$ 85,651,304.00
+                - generic [ref=e296]:
+                  - text: Proveedor
+                  - paragraph [ref=e297]: Constructora Electromecánica Alcántara Hermanos, SRL
+                - generic [ref=e298]:
+                  - text: Fecha
+                  - paragraph [ref=e299]: 2026-06-28
+            - button "Investigar" [ref=e300]:
+              - text: Investigar
+              - img
+          - generic [ref=e301] [cursor=pointer]:
+            - generic [ref=e302]:
+              - generic [ref=e303]:
+                - generic [ref=e304]: Sobreprecio
+                - generic [ref=e305]: CGLEA-DAF-CD-2026-0161
+              - heading "Precio unitario de DOP $145,000.00 por 'Queso procesado' supera en un 51686% la mediana del mercado (DOP $280.00) para la categoría UNSPSC 50131802." [level=3] [ref=e306]
+              - generic [ref=e307]:
+                - generic [ref=e308]:
+                  - text: Monto
+                  - paragraph [ref=e309]: RD$ 219,113.00
+                - generic [ref=e310]:
+                  - text: Proveedor
+                  - paragraph [ref=e311]: Grupo Antace, SRL
+                - generic [ref=e312]:
+                  - text: Fecha
+                  - paragraph [ref=e313]: 2026-06-28
+            - button "Investigar" [ref=e314]:
+              - text: Investigar
+              - img
+          - generic [ref=e315] [cursor=pointer]:
+            - generic [ref=e316]:
+              - generic [ref=e317]:
+                - generic [ref=e318]: Sobreprecio
+                - generic [ref=e319]: MAPRE-DAF-CM-2026-0011
+              - heading "Precio unitario de DOP $2,000,000.00 por 'Acetaminofén' supera en un 399900% la mediana del mercado (DOP $500.00) para la categoría UNSPSC 51142001." [level=3] [ref=e320]
+              - generic [ref=e321]:
+                - generic [ref=e322]:
+                  - text: Monto
+                  - paragraph [ref=e323]: RD$ 2,000,000.00
+                - generic [ref=e324]:
+                  - text: Proveedor
+                  - paragraph [ref=e325]: Los Hidalgos, S.A.S
+                - generic [ref=e326]:
+                  - text: Fecha
+                  - paragraph [ref=e327]: 2026-06-28
+            - button "Investigar" [ref=e328]:
+              - text: Investigar
+              - img
+          - generic [ref=e329] [cursor=pointer]:
+            - generic [ref=e330]:
+              - generic [ref=e331]:
+                - generic [ref=e332]: Sobreprecio
+                - generic [ref=e333]: HUMNSA-DAF-CD-2026-0163
+              - heading "Precio unitario de DOP $17,500.00 por 'Blocs o cuadernos de papel' supera en un 17057% la mediana del mercado (DOP $102.00) para la categoría UNSPSC 14111514." [level=3] [ref=e334]
+              - generic [ref=e335]:
+                - generic [ref=e336]:
+                  - text: Monto
+                  - paragraph [ref=e337]: RD$ 103,250.00
+                - generic [ref=e338]:
+                  - text: Proveedor
+                  - paragraph [ref=e339]: Lahmedom, SRL
+                - generic [ref=e340]:
+                  - text: Fecha
+                  - paragraph [ref=e341]: 2026-06-28
+            - button "Investigar" [ref=e342]:
+              - text: Investigar
+              - img
+          - generic [ref=e343] [cursor=pointer]:
+            - generic [ref=e344]:
+              - generic [ref=e345]:
+                - generic [ref=e346]: Sobreprecio
+                - generic [ref=e347]: HPRL-MAE-PEUR-2026-0001
+              - heading "Precio unitario de DOP $6,271,187.00 por 'Reparación o calibración de pruebas de equipo' supera en un 335329% la mediana del mercado (DOP $1,869.60) para la categoría UNSPSC 81141504." [level=3] [ref=e348]
+              - generic [ref=e349]:
+                - generic [ref=e350]:
+                  - text: Monto
+                  - paragraph [ref=e351]: RD$ 7,400,001.00
+                - generic [ref=e352]:
+                  - text: Proveedor
+                  - paragraph [ref=e353]: Planet Medical Services, SRL
+                - generic [ref=e354]:
+                  - text: Fecha
+                  - paragraph [ref=e355]: 2026-06-28
+            - button "Investigar" [ref=e356]:
+              - text: Investigar
+              - img
+          - generic [ref=e357] [cursor=pointer]:
+            - generic [ref=e358]:
+              - generic [ref=e359]:
+                - generic [ref=e360]: Sobreprecio
+                - generic [ref=e361]: HGENSA-DAF-CD-2026-0046
+              - heading "Precio unitario de DOP $220,245.76 por 'Adaptadores para plomería' supera en un 638294% la mediana del mercado (DOP $34.50) para la categoría UNSPSC 40141719." [level=3] [ref=e362]
+              - generic [ref=e363]:
+                - generic [ref=e364]:
+                  - text: Monto
+                  - paragraph [ref=e365]: RD$ 259,890.00
+                - generic [ref=e366]:
+                  - text: Proveedor
+                  - paragraph [ref=e367]: Rgcruz Comercial, SRL
+                - generic [ref=e368]:
+                  - text: Fecha
+                  - paragraph [ref=e369]: 2026-06-28
+            - button "Investigar" [ref=e370]:
+              - text: Investigar
+              - img
+          - generic [ref=e371] [cursor=pointer]:
+            - generic [ref=e372]:
+              - generic [ref=e373]:
+                - generic [ref=e374]: Sobreprecio
+                - generic [ref=e375]: HGENSA-DAF-CD-2026-0064
+              - heading "Precio unitario de DOP $101,208.00 por 'Brochas' supera en un 87997% la mediana del mercado (DOP $114.88) para la categoría UNSPSC 31211904." [level=3] [ref=e376]
+              - generic [ref=e377]:
+                - generic [ref=e378]:
+                  - text: Monto
+                  - paragraph [ref=e379]: RD$ 267,862.00
+                - generic [ref=e380]:
+                  - text: Proveedor
+                  - paragraph [ref=e381]: Blad Company, SRL
+                - generic [ref=e382]:
+                  - text: Fecha
+                  - paragraph [ref=e383]: 2026-06-28
+            - button "Investigar" [ref=e384]:
+              - text: Investigar
+              - img
+          - generic [ref=e385] [cursor=pointer]:
+            - generic [ref=e386]:
+              - generic [ref=e387]:
+                - generic [ref=e388]: Sobreprecio
+                - generic [ref=e389]: PRO CONSUMIDOR-DAF-CD-2026-0041
+              - heading "Precio unitario de DOP $181,459.01 por 'Comidas combinadas de repisa' supera en un 30932% la mediana del mercado (DOP $584.75) para la categoría UNSPSC 50192703." [level=3] [ref=e390]
+              - generic [ref=e391]:
+                - generic [ref=e392]:
+                  - text: Monto
+                  - paragraph [ref=e393]: RD$ 214,122.00
+                - generic [ref=e394]:
+                  - text: Proveedor
+                  - paragraph [ref=e395]: Supermercado Caribe, SRL
+                - generic [ref=e396]:
+                  - text: Fecha
+                  - paragraph [ref=e397]: 2026-06-28
+            - button "Investigar" [ref=e398]:
+              - text: Investigar
+              - img
+          - generic [ref=e399] [cursor=pointer]:
+            - generic [ref=e400]:
+              - generic [ref=e401]:
+                - generic [ref=e402]: Sobreprecio
+                - generic [ref=e403]: CGLEA-DAF-CD-2026-0159
+              - heading "Precio unitario de DOP $283,239.00 por 'Carnes procesadas y preparadas congelado' supera en un 131029% la mediana del mercado (DOP $216.00) para la categoría UNSPSC 50112002." [level=3] [ref=e404]
+              - generic [ref=e405]:
+                - generic [ref=e406]:
+                  - text: Monto
+                  - paragraph [ref=e407]: RD$ 294,001.00
+                - generic [ref=e408]:
+                  - text: Proveedor
+                  - paragraph [ref=e409]: Grupo Antace, SRL
+                - generic [ref=e410]:
+                  - text: Fecha
+                  - paragraph [ref=e411]: 2026-06-28
+            - button "Investigar" [ref=e412]:
+              - text: Investigar
+              - img
+          - generic [ref=e413] [cursor=pointer]:
+            - generic [ref=e414]:
+              - generic [ref=e415]:
+                - generic [ref=e416]: Sobreprecio
+                - generic [ref=e417]: "36634"
+              - heading "Precio unitario de DOP $2,118,644.07 por 'Baterías para vehículos' supera en un 20671% la mediana del mercado (DOP $10,200.00) para la categoría UNSPSC 26111703." [level=3] [ref=e418]
+              - generic [ref=e419]:
+                - generic [ref=e420]:
+                  - text: Monto
+                  - paragraph [ref=e421]: RD$ 2,500,000.00
+                - generic [ref=e422]:
+                  - text: Proveedor
+                  - paragraph [ref=e423]: HYL, SA
+                - generic [ref=e424]:
+                  - text: Fecha
+                  - paragraph [ref=e425]: 2026-06-28
+            - button "Investigar" [ref=e426]:
+              - text: Investigar
+              - img
+          - generic [ref=e427] [cursor=pointer]:
+            - generic [ref=e428]:
+              - generic [ref=e429]:
+                - generic [ref=e430]: Sobreprecio
+                - generic [ref=e431]: HGENSA-DAF-CD-2026-0063
+              - heading "Precio unitario de DOP $162,000.00 por 'Pilas alcalinas' supera en un 124038% la mediana del mercado (DOP $130.50) para la categoría UNSPSC 26111702." [level=3] [ref=e432]
+              - generic [ref=e433]:
+                - generic [ref=e434]:
+                  - text: Monto
+                  - paragraph [ref=e435]: RD$ 191,160.00
+                - generic [ref=e436]:
+                  - text: Proveedor
+                  - paragraph [ref=e437]: Multiservicios CG, SRL
+                - generic [ref=e438]:
+                  - text: Fecha
+                  - paragraph [ref=e439]: 2026-06-28
+            - button "Investigar" [ref=e440]:
+              - text: Investigar
+              - img
+          - generic [ref=e441] [cursor=pointer]:
+            - generic [ref=e442]:
+              - generic [ref=e443]:
+                - generic [ref=e444]: Sobreprecio
+                - generic [ref=e445]: ASDE-DAF-CM-2026-0015
+              - heading "Precio unitario de DOP $1,299,099.43 por 'Kits de limpieza para uso general' supera en un 811837% la mediana del mercado (DOP $160.00) para la categoría UNSPSC 47132102." [level=3] [ref=e446]
+              - generic [ref=e447]:
+                - generic [ref=e448]:
+                  - text: Monto
+                  - paragraph [ref=e449]: RD$ 1,299,099.00
+                - generic [ref=e450]:
+                  - text: Proveedor
+                  - paragraph [ref=e451]: Brymada SRL
+                - generic [ref=e452]:
+                  - text: Fecha
+                  - paragraph [ref=e453]: 2026-06-28
+            - button "Investigar" [ref=e454]:
+              - text: Investigar
+              - img
+          - generic [ref=e455] [cursor=pointer]:
+            - generic [ref=e456]:
+              - generic [ref=e457]:
+                - generic [ref=e458]: Sobreprecio
+                - generic [ref=e459]: Inst. Nac. de Cancer-DAF-CD-2026-0079
+              - heading "Precio unitario de DOP $65,000.00 por 'Filtros de aire' supera en un 8151% la mediana del mercado (DOP $787.77) para la categoría UNSPSC 40161505." [level=3] [ref=e460]
+              - generic [ref=e461]:
+                - generic [ref=e462]:
+                  - text: Monto
+                  - paragraph [ref=e463]: RD$ 153,400.00
+                - generic [ref=e464]:
+                  - text: Proveedor
+                  - paragraph [ref=e465]: Cajufa, SRL
+                - generic [ref=e466]:
+                  - text: Fecha
+                  - paragraph [ref=e467]: 2026-06-28
+            - button "Investigar" [ref=e468]:
+              - text: Investigar
+              - img
+          - generic [ref=e469] [cursor=pointer]:
+            - generic [ref=e470]:
+              - generic [ref=e471]:
+                - generic [ref=e472]: Sobreprecio
+                - generic [ref=e473]: "37035"
+              - heading "Precio unitario de DOP $66,500.00 por 'Folders' supera en un 20052% la mediana del mercado (DOP $330.00) para la categoría UNSPSC 44122011." [level=3] [ref=e474]
+              - generic [ref=e475]:
+                - generic [ref=e476]:
+                  - text: Monto
+                  - paragraph [ref=e477]: RD$ 78,470.00
+                - generic [ref=e478]:
+                  - text: Proveedor
+                  - paragraph [ref=e479]: Distribuidora y Servicios Diversos DISOPE, SRL
+                - generic [ref=e480]:
+                  - text: Fecha
+                  - paragraph [ref=e481]: 2026-06-28
+            - button "Investigar" [ref=e482]:
+              - text: Investigar
+              - img
+          - generic [ref=e483] [cursor=pointer]:
+            - generic [ref=e484]:
+              - generic [ref=e485]:
+                - generic [ref=e486]: Sobreprecio
+                - generic [ref=e487]: CESAC-DAF-CM-2026-0060
+              - heading "Precio unitario de DOP $73,600.00 por 'Bolsas plásticas' supera en un 95846% la mediana del mercado (DOP $76.71) para la categoría UNSPSC 24111503." [level=3] [ref=e488]
+              - generic [ref=e489]:
+                - generic [ref=e490]:
+                  - text: Monto
+                  - paragraph [ref=e491]: RD$ 1,997,504.00
+                - generic [ref=e492]:
+                  - text: Proveedor
+                  - paragraph [ref=e493]: Comercializadora Garcia NG, SRL
+                - generic [ref=e494]:
+                  - text: Fecha
+                  - paragraph [ref=e495]: 2026-06-28
+            - button "Investigar" [ref=e496]:
+              - text: Investigar
+              - img
+          - generic [ref=e497] [cursor=pointer]:
+            - generic [ref=e498]:
+              - generic [ref=e499]:
+                - generic [ref=e500]: Sobreprecio
+                - generic [ref=e501]: 911-DAF-CD-2026-0005
+              - heading "Precio unitario de DOP $215,822.04 por 'Pinturas de esmalte' supera en un 8186% la mediana del mercado (DOP $2,604.80) para la categoría UNSPSC 31211501." [level=3] [ref=e502]
+              - generic [ref=e503]:
+                - generic [ref=e504]:
+                  - text: Monto
+                  - paragraph [ref=e505]: RD$ 254,670.00
+                - generic [ref=e506]:
+                  - text: Proveedor
+                  - paragraph [ref=e507]: Ariconsu & Asoc, SRL
+                - generic [ref=e508]:
+                  - text: Fecha
+                  - paragraph [ref=e509]: 2026-06-28
+            - button "Investigar" [ref=e510]:
+              - text: Investigar
+              - img
+          - generic [ref=e511] [cursor=pointer]:
+            - generic [ref=e512]:
+              - generic [ref=e513]:
+                - generic [ref=e514]: Sobreprecio
+                - generic [ref=e515]: HME-DAF-CD-2026-0108
+              - heading "Precio unitario de DOP $55,400.00 por 'Tazas o vasos o tapas desechables para uso doméstico' supera en un 4375% la mediana del mercado (DOP $1,237.88) para la categoría UNSPSC 52151504." [level=3] [ref=e516]
+              - generic [ref=e517]:
+                - generic [ref=e518]:
+                  - text: Monto
+                  - paragraph [ref=e519]: RD$ 88,087.00
+                - generic [ref=e520]:
+                  - text: Proveedor
+                  - paragraph [ref=e521]: Comercializadora Jomeca, SRL
+                - generic [ref=e522]:
+                  - text: Fecha
+                  - paragraph [ref=e523]: 2026-06-28
+            - button "Investigar" [ref=e524]:
+              - text: Investigar
+              - img
+          - generic [ref=e525] [cursor=pointer]:
+            - generic [ref=e526]:
+              - generic [ref=e527]:
+                - generic [ref=e528]: Sobreprecio
+                - generic [ref=e529]: ASC-DAF-CD-2026-0017
+              - heading "Precio unitario de DOP $246,985.80 por 'Azucares naturales o productos endulzantes' supera en un 142510% la mediana del mercado (DOP $173.19) para la categoría UNSPSC 50161509." [level=3] [ref=e530]
+              - generic [ref=e531]:
+                - generic [ref=e532]:
+                  - text: Monto
+                  - paragraph [ref=e533]: RD$ 246,986.00
+                - generic [ref=e534]:
+                  - text: Proveedor
+                  - paragraph [ref=e535]: Ardion, SRL
+                - generic [ref=e536]:
+                  - text: Fecha
+                  - paragraph [ref=e537]: 2026-06-28
+            - button "Investigar" [ref=e538]:
+              - text: Investigar
+              - img
+          - generic [ref=e539] [cursor=pointer]:
+            - generic [ref=e540]:
+              - generic [ref=e541]:
+                - generic [ref=e542]: Sobreprecio
+                - generic [ref=e543]: "26007"
+              - heading "Precio unitario de DOP $3,347,457.62 por 'Extintores' supera en un 83456% la mediana del mercado (DOP $4,006.25) para la categoría UNSPSC 46191601." [level=3] [ref=e544]
+              - generic [ref=e545]:
+                - generic [ref=e546]:
+                  - text: Monto
+                  - paragraph [ref=e547]: RD$ 3,950,000.00
+                - generic [ref=e548]:
+                  - text: Proveedor
+                  - paragraph [ref=e549]: Maxx Extintores, SRL
+                - generic [ref=e550]:
+                  - text: Fecha
+                  - paragraph [ref=e551]: 2026-06-28
+            - button "Investigar" [ref=e552]:
+              - text: Investigar
+              - img
+          - generic [ref=e553] [cursor=pointer]:
+            - generic [ref=e554]:
+              - generic [ref=e555]:
+                - generic [ref=e556]: Sobreprecio
+                - generic [ref=e557]: INFOTEP-DAF-CD-2026-0304
+              - heading "Precio unitario de DOP $35,386.01 por 'Hierbas frescas' supera en un 35286% la mediana del mercado (DOP $100.00) para la categoría UNSPSC 50171548." [level=3] [ref=e558]
+              - generic [ref=e559]:
+                - generic [ref=e560]:
+                  - text: Monto
+                  - paragraph [ref=e561]: RD$ 35,386.00
+                - generic [ref=e562]:
+                  - text: Proveedor
+                  - paragraph [ref=e563]: Centro Cuesta Nacional, SAS
+                - generic [ref=e564]:
+                  - text: Fecha
+                  - paragraph [ref=e565]: 2026-06-28
+            - button "Investigar" [ref=e566]:
+              - text: Investigar
+              - img
+          - generic [ref=e567] [cursor=pointer]:
+            - generic [ref=e568]:
+              - generic [ref=e569]:
+                - generic [ref=e570]: Sobreprecio
+                - generic [ref=e571]: IDEICE-DAF-CD-2026-0026
+              - heading "Precio unitario de DOP $43,600.00 por 'Pañitos o toallas para limpiar' supera en un 58033% la mediana del mercado (DOP $75.00) para la categoría UNSPSC 47131502." [level=3] [ref=e572]
+              - generic [ref=e573]:
+                - generic [ref=e574]:
+                  - text: Monto
+                  - paragraph [ref=e575]: RD$ 51,448.00
+                - generic [ref=e576]:
+                  - text: Proveedor
+                  - paragraph [ref=e577]: Mecoparts RD. SRL.
+                - generic [ref=e578]:
+                  - text: Fecha
+                  - paragraph [ref=e579]: 2026-06-28
+            - button "Investigar" [ref=e580]:
+              - text: Investigar
+              - img
+          - generic [ref=e581] [cursor=pointer]:
+            - generic [ref=e582]:
+              - generic [ref=e583]:
+                - generic [ref=e584]: Sobreprecio
+                - generic [ref=e585]: "39679"
+              - heading "Precio unitario de DOP $1,576,271.19 por 'Neumáticos para automoviles o camiones ligeros' supera en un 19149% la mediana del mercado (DOP $8,188.76) para la categoría UNSPSC 25172504." [level=3] [ref=e586]
+              - generic [ref=e587]:
+                - generic [ref=e588]:
+                  - text: Monto
+                  - paragraph [ref=e589]: RD$ 1,860,000.00
+                - generic [ref=e590]:
+                  - text: Proveedor
+                  - paragraph [ref=e591]: Moiro, SRL
+                - generic [ref=e592]:
+                  - text: Fecha
+                  - paragraph [ref=e593]: 2026-06-28
+            - button "Investigar" [ref=e594]:
+              - text: Investigar
+              - img
+          - generic [ref=e595] [cursor=pointer]:
+            - generic [ref=e596]:
+              - generic [ref=e597]:
+                - generic [ref=e598]: Sobreprecio
+                - generic [ref=e599]: HDRJM-DAF-CD-2026-0109
+              - heading "Precio unitario de DOP $198,755.00 por 'Cementos de base de agua de uso odontológico' supera en un 14974% la mediana del mercado (DOP $1,318.55) para la categoría UNSPSC 42152424." [level=3] [ref=e600]
+              - generic [ref=e601]:
+                - generic [ref=e602]:
+                  - text: Monto
+                  - paragraph [ref=e603]: RD$ 256,275.00
+                - generic [ref=e604]:
+                  - text: Proveedor
+                  - paragraph [ref=e605]: Marian Group, SRL
+                - generic [ref=e606]:
+                  - text: Fecha
+                  - paragraph [ref=e607]: 2026-06-28
+            - button "Investigar" [ref=e608]:
+              - text: Investigar
+              - img
+          - generic [ref=e609] [cursor=pointer]:
+            - generic [ref=e610]:
+              - generic [ref=e611]:
+                - generic [ref=e612]: Sobreprecio
+                - generic [ref=e613]: "38133"
+              - heading "Precio unitario de DOP $63,695,835.00 por 'Arrendamiento de instalaciones comerciales o industriales' supera en un 18383% la mediana del mercado (DOP $344,625.00) para la categoría UNSPSC 80131502." [level=3] [ref=e614]
+              - generic [ref=e615]:
+                - generic [ref=e616]:
+                  - text: Monto
+                  - paragraph [ref=e617]: RD$ 75,161,085.00
+                - generic [ref=e618]:
+                  - text: Proveedor
+                  - paragraph [ref=e619]: Edixon Antonio Mateo Quezada
+                - generic [ref=e620]:
+                  - text: Fecha
+                  - paragraph [ref=e621]: 2026-06-28
+            - button "Investigar" [ref=e622]:
+              - text: Investigar
+              - img
+          - generic [ref=e623] [cursor=pointer]:
+            - generic [ref=e624]:
+              - generic [ref=e625]:
+                - generic [ref=e626]: Sobreprecio
+                - generic [ref=e627]: PASAPORTES-DAF-CD-2026-0020
+              - heading "Precio unitario de DOP $127,100.00 por 'Carpetas' supera en un 55768% la mediana del mercado (DOP $227.50) para la categoría UNSPSC 44122003." [level=3] [ref=e628]
+              - generic [ref=e629]:
+                - generic [ref=e630]:
+                  - text: Monto
+                  - paragraph [ref=e631]: RD$ 149,978.00
+                - generic [ref=e632]:
+                  - text: Proveedor
+                  - paragraph [ref=e633]: AH Editora Offset, SRL
+                - generic [ref=e634]:
+                  - text: Fecha
+                  - paragraph [ref=e635]: 2026-06-28
+            - button "Investigar" [ref=e636]:
+              - text: Investigar
+              - img
+          - generic [ref=e637] [cursor=pointer]:
+            - generic [ref=e638]:
+              - generic [ref=e639]:
+                - generic [ref=e640]: Sobreprecio
+                - generic [ref=e641]: CGLEA-DAF-CD-2026-0128
+              - heading "Precio unitario de DOP $30,932.20 por 'Refrescador de aire' supera en un 10245% la mediana del mercado (DOP $299.00) para la categoría UNSPSC 47131812." [level=3] [ref=e642]
+              - generic [ref=e643]:
+                - generic [ref=e644]:
+                  - text: Monto
+                  - paragraph [ref=e645]: RD$ 119,147.00
+                - generic [ref=e646]:
+                  - text: Proveedor
+                  - paragraph [ref=e647]: Hypco Group, SRL
+                - generic [ref=e648]:
+                  - text: Fecha
+                  - paragraph [ref=e649]: 2026-06-28
+            - button "Investigar" [ref=e650]:
+              - text: Investigar
+              - img
+          - generic [ref=e651] [cursor=pointer]:
+            - generic [ref=e652]:
+              - generic [ref=e653]:
+                - generic [ref=e654]: Sobreprecio
+                - generic [ref=e655]: HMRA-DAF-CD-2026-0344
+              - heading "Precio unitario de DOP $17,000.00 por 'Escalpelos o bisturí ' supera en un 9397% la mediana del mercado (DOP $179.00) para la categoría UNSPSC 42291613." [level=3] [ref=e656]
+              - generic [ref=e657]:
+                - generic [ref=e658]:
+                  - text: Monto
+                  - paragraph [ref=e659]: RD$ 200,600.00
+                - generic [ref=e660]:
+                  - text: Proveedor
+                  - paragraph [ref=e661]: Morami, SRL
+                - generic [ref=e662]:
+                  - text: Fecha
+                  - paragraph [ref=e663]: 2026-06-28
+            - button "Investigar" [ref=e664]:
+              - text: Investigar
+              - img
+          - generic [ref=e665] [cursor=pointer]:
+            - generic [ref=e666]:
+              - generic [ref=e667]:
+                - generic [ref=e668]: Sobreprecio
+                - generic [ref=e669]: ASC-DAF-CD-2026-0015
+              - heading "Precio unitario de DOP $246,915.00 por 'Judías secas' supera en un 157895% la mediana del mercado (DOP $156.28) para la categoría UNSPSC 50101543." [level=3] [ref=e670]
+              - generic [ref=e671]:
+                - generic [ref=e672]:
+                  - text: Monto
+                  - paragraph [ref=e673]: RD$ 246,915.00
+                - generic [ref=e674]:
+                  - text: Proveedor
+                  - paragraph [ref=e675]: Telvent, SRL
+                - generic [ref=e676]:
+                  - text: Fecha
+                  - paragraph [ref=e677]: 2026-06-28
+            - button "Investigar" [ref=e678]:
+              - text: Investigar
+              - img
+          - generic [ref=e679] [cursor=pointer]:
+            - generic [ref=e680]:
+              - generic [ref=e681]:
+                - generic [ref=e682]: Sobreprecio
+                - generic [ref=e683]: "28682"
+              - heading "Precio unitario de DOP $4,745,762.71 por 'Impresión digital' supera en un 2372781% la mediana del mercado (DOP $200.00) para la categoría UNSPSC 82121503." [level=3] [ref=e684]
+              - generic [ref=e685]:
+                - generic [ref=e686]:
+                  - text: Monto
+                  - paragraph [ref=e687]: RD$ 5,600,000.00
+                - generic [ref=e688]:
+                  - text: Proveedor
+                  - paragraph [ref=e689]: Publicom, SRL
+                - generic [ref=e690]:
+                  - text: Fecha
+                  - paragraph [ref=e691]: 2026-06-28
+            - button "Investigar" [ref=e692]:
+              - text: Investigar
+              - img
+          - generic [ref=e693] [cursor=pointer]:
+            - generic [ref=e694]:
+              - generic [ref=e695]:
+                - generic [ref=e696]: Sobreprecio
+                - generic [ref=e697]: CESAC-DAF-CD-2026-0055
+              - heading "Precio unitario de DOP $227,118.64 por 'Cerraduras' supera en un 26835% la mediana del mercado (DOP $843.22) para la categoría UNSPSC 31162402." [level=3] [ref=e698]
+              - generic [ref=e699]:
+                - generic [ref=e700]:
+                  - text: Monto
+                  - paragraph [ref=e701]: RD$ 268,000.00
+                - generic [ref=e702]:
+                  - text: Proveedor
+                  - paragraph [ref=e703]: Perez-Cab Global Group, SRL
+                - generic [ref=e704]:
+                  - text: Fecha
+                  - paragraph [ref=e705]: 2026-06-28
+            - button "Investigar" [ref=e706]:
+              - text: Investigar
+              - img
+          - generic [ref=e707] [cursor=pointer]:
+            - generic [ref=e708]:
+              - generic [ref=e709]:
+                - generic [ref=e710]: Sobreprecio
+                - generic [ref=e711]: "39759"
+              - heading "Precio unitario de DOP $6,012,050.00 por 'Aires acondicionados' supera en un 13956% la mediana del mercado (DOP $42,773.31) para la categoría UNSPSC 40101701." [level=3] [ref=e712]
+              - generic [ref=e713]:
+                - generic [ref=e714]:
+                  - text: Monto
+                  - paragraph [ref=e715]: RD$ 48,849,314.00
+                - generic [ref=e716]:
+                  - text: Proveedor
+                  - paragraph [ref=e717]: Sinergit, SA
+                - generic [ref=e718]:
+                  - text: Fecha
+                  - paragraph [ref=e719]: 2026-06-28
+            - button "Investigar" [ref=e720]:
+              - text: Investigar
+              - img
+          - generic [ref=e721] [cursor=pointer]:
+            - generic [ref=e722]:
+              - generic [ref=e723]:
+                - generic [ref=e724]: Sobreprecio
+                - generic [ref=e725]: HDMTD-DAF-CD-2026-0091
+              - heading "Precio unitario de DOP $45,000.00 por 'Lente intraocular iol' supera en un 607% la mediana del mercado (DOP $6,366.00) para la categoría UNSPSC 42295524." [level=3] [ref=e726]
+              - generic [ref=e727]:
+                - generic [ref=e728]:
+                  - text: Monto
+                  - paragraph [ref=e729]: RD$ 71,430.00
+                - generic [ref=e730]:
+                  - text: Proveedor
+                  - paragraph [ref=e731]: Infalab, SRL
+                - generic [ref=e732]:
+                  - text: Fecha
+                  - paragraph [ref=e733]: 2026-06-28
+            - button "Investigar" [ref=e734]:
+              - text: Investigar
+              - img
+          - generic [ref=e735] [cursor=pointer]:
+            - generic [ref=e736]:
+              - generic [ref=e737]:
+                - generic [ref=e738]: Sobreprecio
+                - generic [ref=e739]: MINISTERIO HACIENDA-DAF-CD-2026-0065
+              - heading "Precio unitario de DOP $112,808.42 por 'Sillas para ejecutivos' supera en un 1171% la mediana del mercado (DOP $8,875.00) para la categoría UNSPSC 56112104." [level=3] [ref=e740]
+              - generic [ref=e741]:
+                - generic [ref=e742]:
+                  - text: Monto
+                  - paragraph [ref=e743]: RD$ 133,114.00
+                - generic [ref=e744]:
+                  - text: Proveedor
+                  - paragraph [ref=e745]: BII Dominicana, SAS
+                - generic [ref=e746]:
+                  - text: Fecha
+                  - paragraph [ref=e747]: 2026-06-28
+            - button "Investigar" [ref=e748]:
+              - text: Investigar
+              - img
+          - generic [ref=e749] [cursor=pointer]:
+            - generic [ref=e750]:
+              - generic [ref=e751]:
+                - generic [ref=e752]: Sobreprecio
+                - generic [ref=e753]: INABIE-DAF-CM-2026-0046
+              - heading "Precio unitario de DOP $28,600.00 por 'Tazas o vasos o tapas desechables para uso doméstico' supera en un 2210% la mediana del mercado (DOP $1,237.88) para la categoría UNSPSC 52151504." [level=3] [ref=e754]
+              - generic [ref=e755]:
+                - generic [ref=e756]:
+                  - text: Monto
+                  - paragraph [ref=e757]: RD$ 1,453,877.00
+                - generic [ref=e758]:
+                  - text: Proveedor
+                  - paragraph [ref=e759]: Comercial Liskamp, E.I.R.L
+                - generic [ref=e760]:
+                  - text: Fecha
+                  - paragraph [ref=e761]: 2026-06-28
+            - button "Investigar" [ref=e762]:
+              - text: Investigar
+              - img
+          - generic [ref=e763] [cursor=pointer]:
+            - generic [ref=e764]:
+              - generic [ref=e765]:
+                - generic [ref=e766]: Sobreprecio
+                - generic [ref=e767]: MINJUS-DAF-CD-2026-0007
+              - heading "Precio unitario de DOP $11,112.00 por 'Cubiertos desechables para uso doméstico' supera en un 4715% la mediana del mercado (DOP $230.77) para la categoría UNSPSC 52151503." [level=3] [ref=e768]
+              - generic [ref=e769]:
+                - generic [ref=e770]:
+                  - text: Monto
+                  - paragraph [ref=e771]: RD$ 32,345.00
+                - generic [ref=e772]:
+                  - text: Proveedor
+                  - paragraph [ref=e773]: Moncali, SRL
+                - generic [ref=e774]:
+                  - text: Fecha
+                  - paragraph [ref=e775]: 2026-06-28
+            - button "Investigar" [ref=e776]:
+              - text: Investigar
+              - img
+          - generic [ref=e777] [cursor=pointer]:
+            - generic [ref=e778]:
+              - generic [ref=e779]:
+                - generic [ref=e780]: Sobreprecio
+                - generic [ref=e781]: CGLEA-DAF-CD-2026-0139
+              - heading "Precio unitario de DOP $292,938.00 por 'Verduras frescas' supera en un 439770% la mediana del mercado (DOP $66.60) para la categoría UNSPSC 50101538." [level=3] [ref=e782]
+              - generic [ref=e783]:
+                - generic [ref=e784]:
+                  - text: Monto
+                  - paragraph [ref=e785]: RD$ 294,000.00
+                - generic [ref=e786]:
+                  - text: Proveedor
+                  - paragraph [ref=e787]: Grupo Antace, SRL
+                - generic [ref=e788]:
+                  - text: Fecha
+                  - paragraph [ref=e789]: 2026-06-28
+            - button "Investigar" [ref=e790]:
+              - text: Investigar
+              - img
+          - generic [ref=e791] [cursor=pointer]:
+            - generic [ref=e792]:
+              - generic [ref=e793]:
+                - generic [ref=e794]: Sobreprecio
+                - generic [ref=e795]: CGLEA-DAF-CD-2026-0160
+              - heading "Precio unitario de DOP $292,938.00 por 'Verduras frescas' supera en un 439770% la mediana del mercado (DOP $66.60) para la categoría UNSPSC 50101538." [level=3] [ref=e796]
+              - generic [ref=e797]:
+                - generic [ref=e798]:
+                  - text: Monto
+                  - paragraph [ref=e799]: RD$ 294,000.00
+                - generic [ref=e800]:
+                  - text: Proveedor
+                  - paragraph [ref=e801]: Grupo Antace, SRL
+                - generic [ref=e802]:
+                  - text: Fecha
+                  - paragraph [ref=e803]: 2026-06-28
+            - button "Investigar" [ref=e804]:
+              - text: Investigar
+              - img
+          - generic [ref=e805] [cursor=pointer]:
+            - generic [ref=e806]:
+              - generic [ref=e807]:
+                - generic [ref=e808]: Sobreprecio
+                - generic [ref=e809]: "35625"
+              - heading "Precio unitario de DOP $4,237,288.00 por 'Impresión digital' supera en un 2118544% la mediana del mercado (DOP $200.00) para la categoría UNSPSC 82121503." [level=3] [ref=e810]
+              - generic [ref=e811]:
+                - generic [ref=e812]:
+                  - text: Monto
+                  - paragraph [ref=e813]: RD$ 5,000,000.00
+                - generic [ref=e814]:
+                  - text: Proveedor
+                  - paragraph [ref=e815]: Jola Industrial, SRL
+                - generic [ref=e816]:
+                  - text: Fecha
+                  - paragraph [ref=e817]: 2026-06-28
+            - button "Investigar" [ref=e818]:
+              - text: Investigar
+              - img
+          - generic [ref=e819] [cursor=pointer]:
+            - generic [ref=e820]:
+              - generic [ref=e821]:
+                - generic [ref=e822]: Sobreprecio
+                - generic [ref=e823]: CGLEA-DAF-CD-2026-0168
+              - heading "Precio unitario de DOP $173,592.00 por 'Grano de cereal' supera en un 117942% la mediana del mercado (DOP $147.06) para la categoría UNSPSC 50221101." [level=3] [ref=e824]
+              - generic [ref=e825]:
+                - generic [ref=e826]:
+                  - text: Monto
+                  - paragraph [ref=e827]: RD$ 256,960.00
+                - generic [ref=e828]:
+                  - text: Proveedor
+                  - paragraph [ref=e829]: Grupo Antace, SRL
+                - generic [ref=e830]:
+                  - text: Fecha
+                  - paragraph [ref=e831]: 2026-06-28
+            - button "Investigar" [ref=e832]:
+              - text: Investigar
+              - img
+      - complementary [ref=e833]:
+        - generic [ref=e834]:
+          - generic [ref=e835]:
+            - paragraph [ref=e836]: Detalle de Auditoría
+            - 'heading "Caso: DESARROLLO PROVINCIA-MAE-PEEN-2026-0001" [level=2] [ref=e837]'
+            - generic [ref=e838]:
+              - generic [ref=e839]: Construcciones & Servicios AT & JM, SRL
+              - generic [ref=e840]: · Comisión Presidencial Apoyo Desarrollo Provincial
+              - generic [ref=e841]: · RD$ 57,579,589.00
+          - button [ref=e842] [cursor=pointer]:
+            - img
+        - generic [ref=e843]:
+          - generic [ref=e844]:
+            - heading "Índice de Severidad AI" [level=4] [ref=e845]
+            - generic [ref=e846]:
+              - generic [ref=e847]:
+                - img [ref=e848]
+                - generic [ref=e852]: "100"
+              - generic [ref=e853]:
+                - text: RIESGO CRÍTICO
+                - paragraph [ref=e854]: 99% de confianza — 4 factor(es) de riesgo detectados
+          - generic [ref=e855]:
+            - heading "Contratos recientes" [level=4] [ref=e856]
+            - img [ref=e858]:
+              - generic [ref=e859]:
+                - generic [ref=e860]:
+                  - generic [ref=e861]: RD$0
+                  - generic [ref=e863]: RD$20,000,000
+                  - generic [ref=e865]: RD$40,000,000
+                  - generic [ref=e867]: RD$60,000,000
+                - text: Umbral DOP 8,000,000
+                - 'generic "ADQUISICIÓN DE QUINCE MIL (15,000), GALONES DE GASOIL ÓPTIMO, PARA EL USO DE MAQUINARIAS PESADAS UTILIZADAS EN LAS OBRAS ASIGNADAS A ESTA INSTITUCIÓN CPADP.: RD$ 3,991,500.00" [ref=e870]'
+                - 'generic "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 20,855,199.00" [ref=e871]'
+                - 'generic "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 19,030,731.00" [ref=e872]'
+                - 'generic "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 64,543,920.00" [ref=e873]'
+                - 'generic "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 57,579,589.00 | ANOMALÍA" [ref=e874]'
+                - 'generic "ADQUISICION DEL INMUBLE IDENTIFICADO COMO PARCELA 58-REF-POR-172, DEL DISTRITO CASTRAL NO.04, QUE TIENE UNA EXTESION SUPERFICIAL DE 288 METROS CUADRADOS, Y UN AREA DE CONSTRUCCION DE 178 METROS CUADRA: RD$ 9,000,000.00" [ref=e875]'
+                - 'generic "ADQUISICIÓN DE TICKETS DE GASOLINA PARA LOS VEHICULOS ASIGNADOS A LA INSTITUCIÓN: RD$ 1,700,000.00" [ref=e876]'
+                - 'generic "ADQUISICIÓN DE ALMUERZO PARA EL PERSONAL QUE LABORA EN ESTA INSTITUCIÓN CPADP PARA EL SEGUNDO TRIMESTRE DEL AÑO 2026.: RD$ 1,539,900.00" [ref=e877]'
+                - 'generic "LICITACION PUBLICA NACIONAL: RD$ 87,320.00" [ref=e878]'
+                - 'generic "LICITACION PUBLICA NACIONAL: RD$ 81,420.00" [ref=e879]'
+                - text: 2026-06-112026-06-092026-06-092026-06-092026-06-092026-06-082026-05-082026-05-082026-04-212026-04-21
+            - generic [ref=e880]:
+              - generic [ref=e881]:
+                - generic [ref=e883]:
+                  - generic [ref=e884]: 2026-06-11
+                  - generic [ref=e885]: DESARROLLO PROVINCIA-2026-00036
+                - paragraph [ref=e886]: "ADQUISICIÓN DE QUINCE MIL (15,000), GALONES DE GASOIL ÓPTIMO, PARA EL USO DE MAQUINARIAS PESADAS UTILIZADAS EN LAS OBRAS ASIGNADAS A ESTA INSTITUCIÓN CPADP.: RD$ 3,991,500"
+              - generic [ref=e887]:
+                - generic [ref=e889]:
+                  - generic [ref=e890]: 2026-06-09
+                  - generic [ref=e891]: DESARROLLO PROVINCIA-2026-00035
+                - paragraph [ref=e892]: "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 20,855,199"
+              - generic [ref=e893]:
+                - generic [ref=e895]:
+                  - generic [ref=e896]: 2026-06-09
+                  - generic [ref=e897]: DESARROLLO PROVINCIA-2026-00034
+                - paragraph [ref=e898]: "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 19,030,731"
+              - generic [ref=e899]:
+                - generic [ref=e901]:
+                  - generic [ref=e902]: 2026-06-09
+                  - generic [ref=e903]: DESARROLLO PROVINCIA-2026-00033
+                - paragraph [ref=e904]: "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 64,543,920"
+              - generic [ref=e905]:
+                - generic [ref=e907]:
+                  - generic [ref=e908]: 2026-06-09
+                  - generic [ref=e909]: DESARROLLO PROVINCIA-2026-00032
+                - paragraph [ref=e910]: "PROCEDIMIENTO DE EXCEPCIÓN POR SELECCIÓN COMPETITIVA PARA LA RECONSTRUCCIÓN, REHABILITACIÓN Y REPARACIÓN DE OBRAS DE INFRAESTRUCTURA EN DIFERENTES PUNTOS DEL PAÍS, DE CONFORMIDAD CON LO DISPUESTO POR : RD$ 57,579,589"
+              - generic [ref=e911]:
+                - generic [ref=e913]:
+                  - generic [ref=e914]: 2026-06-08
+                  - generic [ref=e915]: DESARROLLO PROVINCIA-2026-00027
+                - paragraph [ref=e916]: "ADQUISICION DEL INMUBLE IDENTIFICADO COMO PARCELA 58-REF-POR-172, DEL DISTRITO CASTRAL NO.04, QUE TIENE UNA EXTESION SUPERFICIAL DE 288 METROS CUADRADOS, Y UN AREA DE CONSTRUCCION DE 178 METROS CUADRA: RD$ 9,000,000"
+              - generic [ref=e917]:
+                - generic [ref=e919]:
+                  - generic [ref=e920]: 2026-05-08
+                  - generic [ref=e921]: DESARROLLO PROVINCIA-2026-00019
+                - paragraph [ref=e922]: "ADQUISICIÓN DE TICKETS DE GASOLINA PARA LOS VEHICULOS ASIGNADOS A LA INSTITUCIÓN: RD$ 1,700,000"
+              - generic [ref=e923]:
+                - generic [ref=e925]:
+                  - generic [ref=e926]: 2026-05-08
+                  - generic [ref=e927]: DESARROLLO PROVINCIA-2026-00018
+                - paragraph [ref=e928]: "ADQUISICIÓN DE ALMUERZO PARA EL PERSONAL QUE LABORA EN ESTA INSTITUCIÓN CPADP PARA EL SEGUNDO TRIMESTRE DEL AÑO 2026.: RD$ 1,539,900"
+              - generic [ref=e929]:
+                - generic [ref=e931]:
+                  - generic [ref=e932]: 2026-04-21
+                  - generic [ref=e933]: DESARROLLO PROVINCIA-2026-00017
+                - paragraph [ref=e934]: "LICITACION PUBLICA NACIONAL: RD$ 87,320"
+              - generic [ref=e935]:
+                - generic [ref=e937]:
+                  - generic [ref=e938]: 2026-04-21
+                  - generic [ref=e939]: DESARROLLO PROVINCIA-2026-00016
+                - paragraph [ref=e940]: "LICITACION PUBLICA NACIONAL: RD$ 81,420"
+        - generic [ref=e941]:
+          - textbox "Agregar notas técnicas sobre el hallazgo..." [ref=e942]
+          - generic [ref=e943]:
+            - button "Descartar" [ref=e944] [cursor=pointer]
+            - button "Confirmar Alerta" [ref=e945] [cursor=pointer]

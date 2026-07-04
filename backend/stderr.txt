@@ -1,0 +1,537 @@
+2026-06-28 13:28:59 | veedoria.services.sync_service | INFO | Starting full sync: JSON institutions + JSON processes + JSON contracts + JSON items + JSON suppliers
+2026-06-28 13:28:59 | veedoria.services.sync_service | INFO | Database wiped — all tables cleaned before full re-import
+2026-06-28 13:28:59 | veedoria.services.sync_service | INFO | Phase 0/5: Fetching all institutions via JSON API...
+2026-06-28 13:28:59 | veedoria.services.sync_service | INFO | Fetching all institutions via JSON API...
+2026-06-28 13:29:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/unidades_compra?limit=1000&page=1 "HTTP/1.1 200 OK"
+2026-06-28 13:29:00 | veedoria.infrastructure.dgcp_client | INFO | Fetched page 1/1: 730 records
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Fetched 730 institutions from JSON API
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Institutions imported: 730
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Loaded 730 institutions from DB
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Phase 1/5: Fetching all processes via JSON API...
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Fetching processes via JSON API (streaming)...
+2026-06-28 13:29:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=1&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Processes progress: page 1/20, 868 processes
+2026-06-28 13:29:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=2&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:00 | veedoria.services.sync_service | INFO | Processes progress: page 2/20, 1868 processes
+2026-06-28 13:29:01 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=3&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:01 | veedoria.services.sync_service | INFO | Processes progress: page 3/20, 2868 processes
+2026-06-28 13:29:01 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=4&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:01 | veedoria.services.sync_service | INFO | Processes progress: page 4/20, 3868 processes
+2026-06-28 13:29:02 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=5&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:02 | veedoria.services.sync_service | INFO | Processes progress: page 5/20, 4868 processes
+2026-06-28 13:29:02 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=6&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:03 | veedoria.services.sync_service | INFO | Processes progress: page 6/20, 5868 processes
+2026-06-28 13:29:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=7&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:03 | veedoria.services.sync_service | INFO | Processes progress: page 7/20, 6868 processes
+2026-06-28 13:29:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=8&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:03 | veedoria.services.sync_service | INFO | Processes progress: page 8/20, 7868 processes
+2026-06-28 13:29:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=9&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:03 | veedoria.services.sync_service | INFO | Processes progress: page 9/20, 8868 processes
+2026-06-28 13:29:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=10&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:03 | veedoria.services.sync_service | INFO | Processes progress: page 10/20, 9868 processes
+2026-06-28 13:29:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=11&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:04 | veedoria.services.sync_service | INFO | Processes progress: page 11/20, 10868 processes
+2026-06-28 13:29:04 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=12&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:04 | veedoria.services.sync_service | INFO | Processes progress: page 12/20, 11868 processes
+2026-06-28 13:29:04 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=13&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:04 | veedoria.services.sync_service | INFO | Processes progress: page 13/20, 12868 processes
+2026-06-28 13:29:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=14&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:05 | veedoria.services.sync_service | INFO | Processes progress: page 14/20, 13868 processes
+2026-06-28 13:29:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=15&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:05 | veedoria.services.sync_service | INFO | Processes progress: page 15/20, 14868 processes
+2026-06-28 13:29:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=16&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:05 | veedoria.services.sync_service | INFO | Processes progress: page 16/20, 15868 processes
+2026-06-28 13:29:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=17&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:06 | veedoria.services.sync_service | INFO | Processes progress: page 17/20, 16868 processes
+2026-06-28 13:29:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=18&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:06 | veedoria.services.sync_service | INFO | Processes progress: page 18/20, 17868 processes
+2026-06-28 13:29:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=19&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:06 | veedoria.services.sync_service | INFO | Processes progress: page 19/20, 18868 processes
+2026-06-28 13:29:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/procesos?limit=1000&page=20&startdate=2026-03-30 "HTTP/1.1 200 OK"
+2026-06-28 13:29:06 | veedoria.services.sync_service | INFO | Processes progress: page 20/20, 19722 processes
+2026-06-28 13:29:07 | veedoria.services.sync_service | INFO | Processes imported: 19722
+2026-06-28 13:29:07 | veedoria.services.sync_service | INFO | Loaded 19722 processes from DB
+2026-06-28 13:29:07 | veedoria.services.sync_service | INFO | Phase 2/5: Fetching all contracts via JSON API...
+2026-06-28 13:29:07 | veedoria.services.sync_service | INFO | Fetching contracts via JSON API (streaming)...
+2026-06-28 13:29:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=1 "HTTP/1.1 200 OK"
+2026-06-28 13:29:09 | veedoria.services.sync_service | INFO | Contracts progress: page 1/654, 1000 contracts
+2026-06-28 13:29:11 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=2 "HTTP/1.1 200 OK"
+2026-06-28 13:29:11 | veedoria.services.sync_service | INFO | Contracts progress: page 2/654, 2000 contracts
+2026-06-28 13:29:12 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=3 "HTTP/1.1 200 OK"
+2026-06-28 13:29:13 | veedoria.services.sync_service | INFO | Contracts progress: page 3/654, 3000 contracts
+2026-06-28 13:29:15 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=4 "HTTP/1.1 200 OK"
+2026-06-28 13:29:15 | veedoria.services.sync_service | INFO | Contracts progress: page 4/654, 4000 contracts
+2026-06-28 13:29:17 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=5 "HTTP/1.1 200 OK"
+2026-06-28 13:29:18 | veedoria.services.sync_service | INFO | Contracts progress: page 5/654, 5000 contracts
+2026-06-28 13:29:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=6 "HTTP/1.1 200 OK"
+2026-06-28 13:29:20 | veedoria.services.sync_service | INFO | Contracts progress: page 6/654, 6000 contracts
+2026-06-28 13:29:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=7 "HTTP/1.1 200 OK"
+2026-06-28 13:29:22 | veedoria.services.sync_service | INFO | Contracts progress: page 7/654, 7000 contracts
+2026-06-28 13:29:24 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=8 "HTTP/1.1 200 OK"
+2026-06-28 13:29:24 | veedoria.services.sync_service | INFO | Contracts progress: page 8/654, 8000 contracts
+2026-06-28 13:29:28 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=9 "HTTP/1.1 200 OK"
+2026-06-28 13:29:28 | veedoria.services.sync_service | INFO | Contracts progress: page 9/654, 9000 contracts
+2026-06-28 13:29:31 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=10 "HTTP/1.1 200 OK"
+2026-06-28 13:29:32 | veedoria.services.sync_service | INFO | Contracts progress: page 10/654, 10000 contracts
+2026-06-28 13:29:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=11 "HTTP/1.1 200 OK"
+2026-06-28 13:29:36 | veedoria.services.sync_service | INFO | Contracts progress: page 11/654, 11000 contracts
+2026-06-28 13:29:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=12 "HTTP/1.1 200 OK"
+2026-06-28 13:29:40 | veedoria.services.sync_service | INFO | Contracts progress: page 12/654, 12000 contracts
+2026-06-28 13:29:43 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=13 "HTTP/1.1 200 OK"
+2026-06-28 13:29:44 | veedoria.services.sync_service | INFO | Contracts progress: page 13/654, 13000 contracts
+2026-06-28 13:29:46 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=14 "HTTP/1.1 200 OK"
+2026-06-28 13:29:46 | veedoria.services.sync_service | INFO | Contracts progress: page 14/654, 14000 contracts
+2026-06-28 13:29:48 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=15 "HTTP/1.1 200 OK"
+2026-06-28 13:29:48 | veedoria.services.sync_service | INFO | Contracts progress: page 15/654, 15000 contracts
+2026-06-28 13:29:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=16 "HTTP/1.1 200 OK"
+2026-06-28 13:29:50 | veedoria.services.sync_service | INFO | Contracts progress: page 16/654, 16000 contracts
+2026-06-28 13:29:54 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=17 "HTTP/1.1 200 OK"
+2026-06-28 13:29:54 | veedoria.services.sync_service | INFO | Contracts progress: page 17/654, 17000 contracts
+2026-06-28 13:29:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=18 "HTTP/1.1 200 OK"
+2026-06-28 13:29:56 | veedoria.services.sync_service | INFO | Contracts progress: page 18/654, 18000 contracts
+2026-06-28 13:30:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=19 "HTTP/1.1 200 OK"
+2026-06-28 13:30:00 | veedoria.services.sync_service | INFO | Contracts progress: page 19/654, 19000 contracts
+2026-06-28 13:30:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=20 "HTTP/1.1 200 OK"
+2026-06-28 13:30:04 | veedoria.services.sync_service | INFO | Contracts progress: page 20/654, 20000 contracts
+2026-06-28 13:30:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=21 "HTTP/1.1 200 OK"
+2026-06-28 13:30:05 | veedoria.services.sync_service | INFO | Contracts progress: page 21/654, 20380 contracts
+2026-06-28 13:30:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos?limit=1000&page=22 "HTTP/1.1 200 OK"
+2026-06-28 13:30:07 | veedoria.services.sync_service | INFO | Contracts progress: page 22/654, 20380 contracts
+2026-06-28 13:30:07 | veedoria.services.sync_service | INFO | Early-break at page 22: all 1000 contracts older than 2026-03-30
+2026-06-28 13:30:07 | veedoria.services.sync_service | INFO | Phase 2/5 complete: 20380 contracts
+2026-06-28 13:30:07 | veedoria.services.sync_service | INFO | Phase 3/5: Fetching items via JSON API...
+2026-06-28 13:30:07 | veedoria.services.sync_service | INFO | Fetching items via JSON API (streaming)...
+2026-06-28 13:30:08 | veedoria.services.sync_service | INFO | Loaded 20380 contracts from DB
+2026-06-28 13:30:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=1 "HTTP/1.1 200 OK"
+2026-06-28 13:30:14 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=2 "HTTP/1.1 200 OK"
+2026-06-28 13:30:17 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=3 "HTTP/1.1 200 OK"
+2026-06-28 13:30:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=4 "HTTP/1.1 200 OK"
+2026-06-28 13:30:23 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=5 "HTTP/1.1 200 OK"
+2026-06-28 13:30:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=6 "HTTP/1.1 200 OK"
+2026-06-28 13:30:26 | veedoria.services.sync_service | INFO | Items progress: page 6/2646, 5000 items
+2026-06-28 13:30:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=7 "HTTP/1.1 200 OK"
+2026-06-28 13:30:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=8 "HTTP/1.1 200 OK"
+2026-06-28 13:30:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=9 "HTTP/1.1 200 OK"
+2026-06-28 13:30:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=10 "HTTP/1.1 200 OK"
+2026-06-28 13:30:42 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=11 "HTTP/1.1 200 OK"
+2026-06-28 13:30:42 | veedoria.services.sync_service | INFO | Items progress: page 11/2646, 10000 items
+2026-06-28 13:30:45 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=12 "HTTP/1.1 200 OK"
+2026-06-28 13:30:49 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=13 "HTTP/1.1 200 OK"
+2026-06-28 13:30:52 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=14 "HTTP/1.1 200 OK"
+2026-06-28 13:30:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=15 "HTTP/1.1 200 OK"
+2026-06-28 13:30:59 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=16 "HTTP/1.1 200 OK"
+2026-06-28 13:30:59 | veedoria.services.sync_service | INFO | Items progress: page 16/2646, 15000 items
+2026-06-28 13:31:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=17 "HTTP/1.1 200 OK"
+2026-06-28 13:31:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=18 "HTTP/1.1 200 OK"
+2026-06-28 13:31:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=19 "HTTP/1.1 200 OK"
+2026-06-28 13:31:13 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=20 "HTTP/1.1 200 OK"
+2026-06-28 13:31:16 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=21 "HTTP/1.1 200 OK"
+2026-06-28 13:31:16 | veedoria.services.sync_service | INFO | Items progress: page 21/2646, 20000 items
+2026-06-28 13:31:19 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=22 "HTTP/1.1 200 OK"
+2026-06-28 13:31:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=23 "HTTP/1.1 200 OK"
+2026-06-28 13:31:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=24 "HTTP/1.1 200 OK"
+2026-06-28 13:31:29 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=25 "HTTP/1.1 200 OK"
+2026-06-28 13:31:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=26 "HTTP/1.1 200 OK"
+2026-06-28 13:31:33 | veedoria.services.sync_service | INFO | Items progress: page 26/2646, 25000 items
+2026-06-28 13:31:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=27 "HTTP/1.1 200 OK"
+2026-06-28 13:31:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=28 "HTTP/1.1 200 OK"
+2026-06-28 13:31:43 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=29 "HTTP/1.1 200 OK"
+2026-06-28 13:31:46 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=30 "HTTP/1.1 200 OK"
+2026-06-28 13:31:49 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=31 "HTTP/1.1 200 OK"
+2026-06-28 13:31:50 | veedoria.services.sync_service | INFO | Items progress: page 31/2646, 30000 items
+2026-06-28 13:31:55 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=32 "HTTP/1.1 200 OK"
+2026-06-28 13:32:02 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=33 "HTTP/1.1 200 OK"
+2026-06-28 13:32:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=34 "HTTP/1.1 200 OK"
+2026-06-28 13:32:12 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=35 "HTTP/1.1 200 OK"
+2026-06-28 13:32:15 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=36 "HTTP/1.1 200 OK"
+2026-06-28 13:32:16 | veedoria.services.sync_service | INFO | Items progress: page 36/2646, 35000 items
+2026-06-28 13:32:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=37 "HTTP/1.1 200 OK"
+2026-06-28 13:32:28 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=38 "HTTP/1.1 200 OK"
+2026-06-28 13:32:34 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=39 "HTTP/1.1 200 OK"
+2026-06-28 13:32:37 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=40 "HTTP/1.1 200 OK"
+2026-06-28 13:32:41 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=41 "HTTP/1.1 200 OK"
+2026-06-28 13:32:41 | veedoria.services.sync_service | INFO | Items progress: page 41/2646, 40000 items
+2026-06-28 13:32:46 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=42 "HTTP/1.1 200 OK"
+2026-06-28 13:32:51 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=43 "HTTP/1.1 200 OK"
+2026-06-28 13:32:55 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=44 "HTTP/1.1 200 OK"
+2026-06-28 13:32:59 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=45 "HTTP/1.1 200 OK"
+2026-06-28 13:33:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=46 "HTTP/1.1 200 OK"
+2026-06-28 13:33:07 | veedoria.services.sync_service | INFO | Items progress: page 46/2646, 45000 items
+2026-06-28 13:33:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=47 "HTTP/1.1 200 OK"
+2026-06-28 13:33:14 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=48 "HTTP/1.1 200 OK"
+2026-06-28 13:33:17 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=49 "HTTP/1.1 200 OK"
+2026-06-28 13:33:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=50 "HTTP/1.1 200 OK"
+2026-06-28 13:33:23 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=51 "HTTP/1.1 200 OK"
+2026-06-28 13:33:24 | veedoria.services.sync_service | INFO | Items progress: page 51/2646, 50000 items
+2026-06-28 13:33:29 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=52 "HTTP/1.1 200 OK"
+2026-06-28 13:33:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=53 "HTTP/1.1 200 OK"
+2026-06-28 13:33:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=54 "HTTP/1.1 200 OK"
+2026-06-28 13:33:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=55 "HTTP/1.1 200 OK"
+2026-06-28 13:33:42 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=56 "HTTP/1.1 200 OK"
+2026-06-28 13:33:43 | veedoria.services.sync_service | INFO | Items progress: page 56/2646, 55000 items
+2026-06-28 13:33:47 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=57 "HTTP/1.1 200 OK"
+2026-06-28 13:33:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=58 "HTTP/1.1 200 OK"
+2026-06-28 13:33:53 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=59 "HTTP/1.1 200 OK"
+2026-06-28 13:33:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=60 "HTTP/1.1 200 OK"
+2026-06-28 13:34:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=61 "HTTP/1.1 200 OK"
+2026-06-28 13:34:01 | veedoria.services.sync_service | INFO | Items progress: page 61/2646, 60000 items
+2026-06-28 13:34:04 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=62 "HTTP/1.1 200 OK"
+2026-06-28 13:34:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=63 "HTTP/1.1 200 OK"
+2026-06-28 13:34:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=64 "HTTP/1.1 200 OK"
+2026-06-28 13:34:15 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=65 "HTTP/1.1 200 OK"
+2026-06-28 13:34:18 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=66 "HTTP/1.1 200 OK"
+2026-06-28 13:34:19 | veedoria.services.sync_service | INFO | Items progress: page 66/2646, 65000 items
+2026-06-28 13:34:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=67 "HTTP/1.1 200 OK"
+2026-06-28 13:34:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=68 "HTTP/1.1 200 OK"
+2026-06-28 13:34:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=69 "HTTP/1.1 200 OK"
+2026-06-28 13:34:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=70 "HTTP/1.1 200 OK"
+2026-06-28 13:34:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=71 "HTTP/1.1 200 OK"
+2026-06-28 13:34:40 | veedoria.services.sync_service | INFO | Items progress: page 71/2646, 70000 items
+2026-06-28 13:34:45 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=72 "HTTP/1.1 200 OK"
+2026-06-28 13:34:48 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=73 "HTTP/1.1 200 OK"
+2026-06-28 13:34:54 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=74 "HTTP/1.1 200 OK"
+2026-06-28 13:34:58 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=75 "HTTP/1.1 200 OK"
+2026-06-28 13:35:04 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=76 "HTTP/1.1 200 OK"
+2026-06-28 13:35:04 | veedoria.services.sync_service | INFO | Items progress: page 76/2646, 75000 items
+2026-06-28 13:35:11 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=77 "HTTP/1.1 200 OK"
+2026-06-28 13:35:17 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=78 "HTTP/1.1 200 OK"
+2026-06-28 13:35:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=79 "HTTP/1.1 200 OK"
+2026-06-28 13:35:23 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=80 "HTTP/1.1 200 OK"
+2026-06-28 13:35:27 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=81 "HTTP/1.1 200 OK"
+2026-06-28 13:35:27 | veedoria.services.sync_service | INFO | Items progress: page 81/2646, 80000 items
+2026-06-28 13:35:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=82 "HTTP/1.1 200 OK"
+2026-06-28 13:35:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=83 "HTTP/1.1 200 OK"
+2026-06-28 13:35:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=84 "HTTP/1.1 200 OK"
+2026-06-28 13:35:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=85 "HTTP/1.1 200 OK"
+2026-06-28 13:35:43 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=86 "HTTP/1.1 200 OK"
+2026-06-28 13:35:43 | veedoria.services.sync_service | INFO | Items progress: page 86/2646, 85000 items
+2026-06-28 13:35:46 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=87 "HTTP/1.1 200 OK"
+2026-06-28 13:35:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=88 "HTTP/1.1 200 OK"
+2026-06-28 13:35:53 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=89 "HTTP/1.1 200 OK"
+2026-06-28 13:35:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=90 "HTTP/1.1 200 OK"
+2026-06-28 13:35:59 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=91 "HTTP/1.1 200 OK"
+2026-06-28 13:36:00 | veedoria.services.sync_service | INFO | Items progress: page 91/2646, 90000 items
+2026-06-28 13:36:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=92 "HTTP/1.1 200 OK"
+2026-06-28 13:36:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=93 "HTTP/1.1 200 OK"
+2026-06-28 13:36:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=94 "HTTP/1.1 200 OK"
+2026-06-28 13:36:13 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=95 "HTTP/1.1 200 OK"
+2026-06-28 13:36:16 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=96 "HTTP/1.1 200 OK"
+2026-06-28 13:36:17 | veedoria.services.sync_service | INFO | Items progress: page 96/2646, 95000 items
+2026-06-28 13:36:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=97 "HTTP/1.1 200 OK"
+2026-06-28 13:36:23 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=98 "HTTP/1.1 200 OK"
+2026-06-28 13:36:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=99 "HTTP/1.1 200 OK"
+2026-06-28 13:36:29 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/contratos/articulos?limit=1000&page=100 "HTTP/1.1 200 OK"
+2026-06-28 13:36:29 | veedoria.services.sync_service | INFO | Early-break at page 100: no items matched any contract
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Items JSON import complete: 98869 items
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Phase 3/5 complete: 98869 items
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Phase 4/5: Fetching suppliers via JSON API...
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Fetching suppliers via JSON API (streaming)...
+2026-06-28 13:36:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=1 "HTTP/1.1 200 OK"
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Suppliers progress: page 1/127, 1000 suppliers
+2026-06-28 13:36:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=2 "HTTP/1.1 200 OK"
+2026-06-28 13:36:30 | veedoria.services.sync_service | INFO | Suppliers progress: page 2/127, 2000 suppliers
+2026-06-28 13:36:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=3 "HTTP/1.1 200 OK"
+2026-06-28 13:36:31 | veedoria.services.sync_service | INFO | Suppliers progress: page 3/127, 3000 suppliers
+2026-06-28 13:36:31 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=4 "HTTP/1.1 200 OK"
+2026-06-28 13:36:31 | veedoria.services.sync_service | INFO | Suppliers progress: page 4/127, 4000 suppliers
+2026-06-28 13:36:31 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=5 "HTTP/1.1 200 OK"
+2026-06-28 13:36:32 | veedoria.services.sync_service | INFO | Suppliers progress: page 5/127, 5000 suppliers
+2026-06-28 13:36:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=6 "HTTP/1.1 200 OK"
+2026-06-28 13:36:32 | veedoria.services.sync_service | INFO | Suppliers progress: page 6/127, 6000 suppliers
+2026-06-28 13:36:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=7 "HTTP/1.1 200 OK"
+2026-06-28 13:36:32 | veedoria.services.sync_service | INFO | Suppliers progress: page 7/127, 7000 suppliers
+2026-06-28 13:36:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=8 "HTTP/1.1 200 OK"
+2026-06-28 13:36:33 | veedoria.services.sync_service | INFO | Suppliers progress: page 8/127, 8000 suppliers
+2026-06-28 13:36:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=9 "HTTP/1.1 200 OK"
+2026-06-28 13:36:33 | veedoria.services.sync_service | INFO | Suppliers progress: page 9/127, 9000 suppliers
+2026-06-28 13:36:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=10 "HTTP/1.1 200 OK"
+2026-06-28 13:36:34 | veedoria.services.sync_service | INFO | Suppliers progress: page 10/127, 10000 suppliers
+2026-06-28 13:36:34 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=11 "HTTP/1.1 200 OK"
+2026-06-28 13:36:34 | veedoria.services.sync_service | INFO | Suppliers progress: page 11/127, 11000 suppliers
+2026-06-28 13:36:35 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=12 "HTTP/1.1 200 OK"
+2026-06-28 13:36:35 | veedoria.services.sync_service | INFO | Suppliers progress: page 12/127, 12000 suppliers
+2026-06-28 13:36:35 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=13 "HTTP/1.1 200 OK"
+2026-06-28 13:36:35 | veedoria.services.sync_service | INFO | Suppliers progress: page 13/127, 13000 suppliers
+2026-06-28 13:36:35 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=14 "HTTP/1.1 200 OK"
+2026-06-28 13:36:36 | veedoria.services.sync_service | INFO | Suppliers progress: page 14/127, 14000 suppliers
+2026-06-28 13:36:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=15 "HTTP/1.1 200 OK"
+2026-06-28 13:36:37 | veedoria.services.sync_service | INFO | Suppliers progress: page 15/127, 15000 suppliers
+2026-06-28 13:36:37 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=16 "HTTP/1.1 200 OK"
+2026-06-28 13:36:37 | veedoria.services.sync_service | INFO | Suppliers progress: page 16/127, 16000 suppliers
+2026-06-28 13:36:37 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=17 "HTTP/1.1 200 OK"
+2026-06-28 13:36:37 | veedoria.services.sync_service | INFO | Suppliers progress: page 17/127, 17000 suppliers
+2026-06-28 13:36:38 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=18 "HTTP/1.1 200 OK"
+2026-06-28 13:36:38 | veedoria.services.sync_service | INFO | Suppliers progress: page 18/127, 18000 suppliers
+2026-06-28 13:36:38 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=19 "HTTP/1.1 200 OK"
+2026-06-28 13:36:38 | veedoria.services.sync_service | INFO | Suppliers progress: page 19/127, 19000 suppliers
+2026-06-28 13:36:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=20 "HTTP/1.1 200 OK"
+2026-06-28 13:36:39 | veedoria.services.sync_service | INFO | Suppliers progress: page 20/127, 20000 suppliers
+2026-06-28 13:36:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=21 "HTTP/1.1 200 OK"
+2026-06-28 13:36:40 | veedoria.services.sync_service | INFO | Suppliers progress: page 21/127, 21000 suppliers
+2026-06-28 13:36:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=22 "HTTP/1.1 200 OK"
+2026-06-28 13:36:40 | veedoria.services.sync_service | INFO | Suppliers progress: page 22/127, 22000 suppliers
+2026-06-28 13:36:41 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=23 "HTTP/1.1 200 OK"
+2026-06-28 13:36:41 | veedoria.services.sync_service | INFO | Suppliers progress: page 23/127, 23000 suppliers
+2026-06-28 13:36:41 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=24 "HTTP/1.1 200 OK"
+2026-06-28 13:36:41 | veedoria.services.sync_service | INFO | Suppliers progress: page 24/127, 24000 suppliers
+2026-06-28 13:36:42 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=25 "HTTP/1.1 200 OK"
+2026-06-28 13:36:42 | veedoria.services.sync_service | INFO | Suppliers progress: page 25/127, 25000 suppliers
+2026-06-28 13:36:43 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=26 "HTTP/1.1 200 OK"
+2026-06-28 13:36:43 | veedoria.services.sync_service | INFO | Suppliers progress: page 26/127, 26000 suppliers
+2026-06-28 13:36:43 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=27 "HTTP/1.1 200 OK"
+2026-06-28 13:36:44 | veedoria.services.sync_service | INFO | Suppliers progress: page 27/127, 27000 suppliers
+2026-06-28 13:36:44 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=28 "HTTP/1.1 200 OK"
+2026-06-28 13:36:44 | veedoria.services.sync_service | INFO | Suppliers progress: page 28/127, 28000 suppliers
+2026-06-28 13:36:45 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=29 "HTTP/1.1 200 OK"
+2026-06-28 13:36:45 | veedoria.services.sync_service | INFO | Suppliers progress: page 29/127, 29000 suppliers
+2026-06-28 13:36:45 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=30 "HTTP/1.1 200 OK"
+2026-06-28 13:36:46 | veedoria.services.sync_service | INFO | Suppliers progress: page 30/127, 30000 suppliers
+2026-06-28 13:36:46 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=31 "HTTP/1.1 200 OK"
+2026-06-28 13:36:46 | veedoria.services.sync_service | INFO | Suppliers progress: page 31/127, 31000 suppliers
+2026-06-28 13:36:47 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=32 "HTTP/1.1 200 OK"
+2026-06-28 13:36:47 | veedoria.services.sync_service | INFO | Suppliers progress: page 32/127, 32000 suppliers
+2026-06-28 13:36:47 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=33 "HTTP/1.1 200 OK"
+2026-06-28 13:36:47 | veedoria.services.sync_service | INFO | Suppliers progress: page 33/127, 33000 suppliers
+2026-06-28 13:36:48 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=34 "HTTP/1.1 200 OK"
+2026-06-28 13:36:48 | veedoria.services.sync_service | INFO | Suppliers progress: page 34/127, 34000 suppliers
+2026-06-28 13:36:48 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=35 "HTTP/1.1 200 OK"
+2026-06-28 13:36:49 | veedoria.services.sync_service | INFO | Suppliers progress: page 35/127, 35000 suppliers
+2026-06-28 13:36:49 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=36 "HTTP/1.1 200 OK"
+2026-06-28 13:36:49 | veedoria.services.sync_service | INFO | Suppliers progress: page 36/127, 36000 suppliers
+2026-06-28 13:36:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=37 "HTTP/1.1 200 OK"
+2026-06-28 13:36:50 | veedoria.services.sync_service | INFO | Suppliers progress: page 37/127, 37000 suppliers
+2026-06-28 13:36:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=38 "HTTP/1.1 200 OK"
+2026-06-28 13:36:50 | veedoria.services.sync_service | INFO | Suppliers progress: page 38/127, 38000 suppliers
+2026-06-28 13:36:51 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=39 "HTTP/1.1 200 OK"
+2026-06-28 13:36:51 | veedoria.services.sync_service | INFO | Suppliers progress: page 39/127, 39000 suppliers
+2026-06-28 13:36:52 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=40 "HTTP/1.1 200 OK"
+2026-06-28 13:36:52 | veedoria.services.sync_service | INFO | Suppliers progress: page 40/127, 40000 suppliers
+2026-06-28 13:36:53 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=41 "HTTP/1.1 200 OK"
+2026-06-28 13:36:53 | veedoria.services.sync_service | INFO | Suppliers progress: page 41/127, 41000 suppliers
+2026-06-28 13:36:53 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=42 "HTTP/1.1 200 OK"
+2026-06-28 13:36:54 | veedoria.services.sync_service | INFO | Suppliers progress: page 42/127, 42000 suppliers
+2026-06-28 13:36:54 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=43 "HTTP/1.1 200 OK"
+2026-06-28 13:36:55 | veedoria.services.sync_service | INFO | Suppliers progress: page 43/127, 43000 suppliers
+2026-06-28 13:36:55 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=44 "HTTP/1.1 200 OK"
+2026-06-28 13:36:55 | veedoria.services.sync_service | INFO | Suppliers progress: page 44/127, 44000 suppliers
+2026-06-28 13:36:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=45 "HTTP/1.1 200 OK"
+2026-06-28 13:36:56 | veedoria.services.sync_service | INFO | Suppliers progress: page 45/127, 45000 suppliers
+2026-06-28 13:36:57 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=46 "HTTP/1.1 200 OK"
+2026-06-28 13:36:57 | veedoria.services.sync_service | INFO | Suppliers progress: page 46/127, 46000 suppliers
+2026-06-28 13:36:57 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=47 "HTTP/1.1 200 OK"
+2026-06-28 13:36:58 | veedoria.services.sync_service | INFO | Suppliers progress: page 47/127, 47000 suppliers
+2026-06-28 13:36:58 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=48 "HTTP/1.1 200 OK"
+2026-06-28 13:36:58 | veedoria.services.sync_service | INFO | Suppliers progress: page 48/127, 48000 suppliers
+2026-06-28 13:36:59 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=49 "HTTP/1.1 200 OK"
+2026-06-28 13:36:59 | veedoria.services.sync_service | INFO | Suppliers progress: page 49/127, 49000 suppliers
+2026-06-28 13:36:59 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=50 "HTTP/1.1 200 OK"
+2026-06-28 13:37:00 | veedoria.services.sync_service | INFO | Suppliers progress: page 50/127, 50000 suppliers
+2026-06-28 13:37:01 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=51 "HTTP/1.1 200 OK"
+2026-06-28 13:37:01 | veedoria.services.sync_service | INFO | Suppliers progress: page 51/127, 51000 suppliers
+2026-06-28 13:37:01 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=52 "HTTP/1.1 200 OK"
+2026-06-28 13:37:01 | veedoria.services.sync_service | INFO | Suppliers progress: page 52/127, 52000 suppliers
+2026-06-28 13:37:02 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=53 "HTTP/1.1 200 OK"
+2026-06-28 13:37:02 | veedoria.services.sync_service | INFO | Suppliers progress: page 53/127, 53000 suppliers
+2026-06-28 13:37:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=54 "HTTP/1.1 200 OK"
+2026-06-28 13:37:03 | veedoria.services.sync_service | INFO | Suppliers progress: page 54/127, 54000 suppliers
+2026-06-28 13:37:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=55 "HTTP/1.1 200 OK"
+2026-06-28 13:37:04 | veedoria.services.sync_service | INFO | Suppliers progress: page 55/127, 55000 suppliers
+2026-06-28 13:37:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=56 "HTTP/1.1 200 OK"
+2026-06-28 13:37:05 | veedoria.services.sync_service | INFO | Suppliers progress: page 56/127, 56000 suppliers
+2026-06-28 13:37:05 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=57 "HTTP/1.1 200 OK"
+2026-06-28 13:37:05 | veedoria.services.sync_service | INFO | Suppliers progress: page 57/127, 57000 suppliers
+2026-06-28 13:37:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=58 "HTTP/1.1 200 OK"
+2026-06-28 13:37:06 | veedoria.services.sync_service | INFO | Suppliers progress: page 58/127, 58000 suppliers
+2026-06-28 13:37:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=59 "HTTP/1.1 200 OK"
+2026-06-28 13:37:07 | veedoria.services.sync_service | INFO | Suppliers progress: page 59/127, 59000 suppliers
+2026-06-28 13:37:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=60 "HTTP/1.1 200 OK"
+2026-06-28 13:37:08 | veedoria.services.sync_service | INFO | Suppliers progress: page 60/127, 60000 suppliers
+2026-06-28 13:37:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=61 "HTTP/1.1 200 OK"
+2026-06-28 13:37:09 | veedoria.services.sync_service | INFO | Suppliers progress: page 61/127, 61000 suppliers
+2026-06-28 13:37:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=62 "HTTP/1.1 200 OK"
+2026-06-28 13:37:10 | veedoria.services.sync_service | INFO | Suppliers progress: page 62/127, 62000 suppliers
+2026-06-28 13:37:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=63 "HTTP/1.1 200 OK"
+2026-06-28 13:37:10 | veedoria.services.sync_service | INFO | Suppliers progress: page 63/127, 63000 suppliers
+2026-06-28 13:37:11 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=64 "HTTP/1.1 200 OK"
+2026-06-28 13:37:11 | veedoria.services.sync_service | INFO | Suppliers progress: page 64/127, 64000 suppliers
+2026-06-28 13:37:12 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=65 "HTTP/1.1 200 OK"
+2026-06-28 13:37:13 | veedoria.services.sync_service | INFO | Suppliers progress: page 65/127, 65000 suppliers
+2026-06-28 13:37:13 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=66 "HTTP/1.1 200 OK"
+2026-06-28 13:37:13 | veedoria.services.sync_service | INFO | Suppliers progress: page 66/127, 66000 suppliers
+2026-06-28 13:37:14 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=67 "HTTP/1.1 200 OK"
+2026-06-28 13:37:14 | veedoria.services.sync_service | INFO | Suppliers progress: page 67/127, 67000 suppliers
+2026-06-28 13:37:15 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=68 "HTTP/1.1 200 OK"
+2026-06-28 13:37:15 | veedoria.services.sync_service | INFO | Suppliers progress: page 68/127, 68000 suppliers
+2026-06-28 13:37:16 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=69 "HTTP/1.1 200 OK"
+2026-06-28 13:37:16 | veedoria.services.sync_service | INFO | Suppliers progress: page 69/127, 69000 suppliers
+2026-06-28 13:37:16 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=70 "HTTP/1.1 200 OK"
+2026-06-28 13:37:17 | veedoria.services.sync_service | INFO | Suppliers progress: page 70/127, 70000 suppliers
+2026-06-28 13:37:18 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=71 "HTTP/1.1 200 OK"
+2026-06-28 13:37:18 | veedoria.services.sync_service | INFO | Suppliers progress: page 71/127, 71000 suppliers
+2026-06-28 13:37:19 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=72 "HTTP/1.1 200 OK"
+2026-06-28 13:37:19 | veedoria.services.sync_service | INFO | Suppliers progress: page 72/127, 72000 suppliers
+2026-06-28 13:37:20 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=73 "HTTP/1.1 200 OK"
+2026-06-28 13:37:20 | veedoria.services.sync_service | INFO | Suppliers progress: page 73/127, 73000 suppliers
+2026-06-28 13:37:21 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:37:21 | veedoria.infrastructure.dgcp_client | WARNING | DGCP retry 1/3 after 1.0s: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:37:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:37:22 | veedoria.infrastructure.dgcp_client | WARNING | DGCP retry 2/3 after 2.0s: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:37:25 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:37:25 | veedoria.services.sync_service | ERROR | Suppliers page 74 failed (skipping)
+Traceback (most recent call last):
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\infrastructure\dgcp_client.py", line 79, in _request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\jsjer\AppData\Local\Programs\Python\Python314\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\services\sync_service.py", line 201, in _import_suppliers_from_json
+    raw = await client._request("/proveedores", {"limit": 1000, "page": page})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\infrastructure\dgcp_client.py", line 90, in _request
+    raise DGCPClientError(f"DGCP HTTP {e.response.status_code}: {e}") from e
+src.infrastructure.dgcp_client.DGCPClientError: DGCP HTTP 500: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=74'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:37:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=75 "HTTP/1.1 200 OK"
+2026-06-28 13:37:26 | veedoria.services.sync_service | INFO | Suppliers progress: page 75/127, 74000 suppliers
+2026-06-28 13:37:27 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=76 "HTTP/1.1 200 OK"
+2026-06-28 13:37:27 | veedoria.services.sync_service | INFO | Suppliers progress: page 76/127, 75000 suppliers
+2026-06-28 13:37:28 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=77 "HTTP/1.1 200 OK"
+2026-06-28 13:37:28 | veedoria.services.sync_service | INFO | Suppliers progress: page 77/127, 76000 suppliers
+2026-06-28 13:37:29 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=78 "HTTP/1.1 200 OK"
+2026-06-28 13:37:29 | veedoria.services.sync_service | INFO | Suppliers progress: page 78/127, 77000 suppliers
+2026-06-28 13:37:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=79 "HTTP/1.1 200 OK"
+2026-06-28 13:37:30 | veedoria.services.sync_service | INFO | Suppliers progress: page 79/127, 78000 suppliers
+2026-06-28 13:37:31 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=80 "HTTP/1.1 200 OK"
+2026-06-28 13:37:31 | veedoria.services.sync_service | INFO | Suppliers progress: page 80/127, 79000 suppliers
+2026-06-28 13:37:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=81 "HTTP/1.1 200 OK"
+2026-06-28 13:37:33 | veedoria.services.sync_service | INFO | Suppliers progress: page 81/127, 80000 suppliers
+2026-06-28 13:37:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=82 "HTTP/1.1 200 OK"
+2026-06-28 13:37:33 | veedoria.services.sync_service | INFO | Suppliers progress: page 82/127, 81000 suppliers
+2026-06-28 13:37:34 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=83 "HTTP/1.1 200 OK"
+2026-06-28 13:37:34 | veedoria.services.sync_service | INFO | Suppliers progress: page 83/127, 82000 suppliers
+2026-06-28 13:37:35 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=84 "HTTP/1.1 200 OK"
+2026-06-28 13:37:35 | veedoria.services.sync_service | INFO | Suppliers progress: page 84/127, 83000 suppliers
+2026-06-28 13:37:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=85 "HTTP/1.1 200 OK"
+2026-06-28 13:37:37 | veedoria.services.sync_service | INFO | Suppliers progress: page 85/127, 84000 suppliers
+2026-06-28 13:37:37 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=86 "HTTP/1.1 200 OK"
+2026-06-28 13:37:38 | veedoria.services.sync_service | INFO | Suppliers progress: page 86/127, 85000 suppliers
+2026-06-28 13:37:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=87 "HTTP/1.1 200 OK"
+2026-06-28 13:37:39 | veedoria.services.sync_service | INFO | Suppliers progress: page 87/127, 86000 suppliers
+2026-06-28 13:37:40 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=88 "HTTP/1.1 200 OK"
+2026-06-28 13:37:40 | veedoria.services.sync_service | INFO | Suppliers progress: page 88/127, 87000 suppliers
+2026-06-28 13:37:41 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=89 "HTTP/1.1 200 OK"
+2026-06-28 13:37:41 | veedoria.services.sync_service | INFO | Suppliers progress: page 89/127, 88000 suppliers
+2026-06-28 13:37:44 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=90 "HTTP/1.1 200 OK"
+2026-06-28 13:37:44 | veedoria.services.sync_service | INFO | Suppliers progress: page 90/127, 89000 suppliers
+2026-06-28 13:37:45 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=91 "HTTP/1.1 200 OK"
+2026-06-28 13:37:46 | veedoria.services.sync_service | INFO | Suppliers progress: page 91/127, 90000 suppliers
+2026-06-28 13:37:47 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=92 "HTTP/1.1 200 OK"
+2026-06-28 13:37:47 | veedoria.services.sync_service | INFO | Suppliers progress: page 92/127, 91000 suppliers
+2026-06-28 13:37:48 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=93 "HTTP/1.1 200 OK"
+2026-06-28 13:37:48 | veedoria.services.sync_service | INFO | Suppliers progress: page 93/127, 92000 suppliers
+2026-06-28 13:37:49 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=94 "HTTP/1.1 200 OK"
+2026-06-28 13:37:49 | veedoria.services.sync_service | INFO | Suppliers progress: page 94/127, 93000 suppliers
+2026-06-28 13:37:50 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=95 "HTTP/1.1 200 OK"
+2026-06-28 13:37:50 | veedoria.services.sync_service | INFO | Suppliers progress: page 95/127, 94000 suppliers
+2026-06-28 13:37:51 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=96 "HTTP/1.1 200 OK"
+2026-06-28 13:37:52 | veedoria.services.sync_service | INFO | Suppliers progress: page 96/127, 95000 suppliers
+2026-06-28 13:37:53 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=97 "HTTP/1.1 200 OK"
+2026-06-28 13:37:53 | veedoria.services.sync_service | INFO | Suppliers progress: page 97/127, 96000 suppliers
+2026-06-28 13:37:54 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=98 "HTTP/1.1 200 OK"
+2026-06-28 13:37:54 | veedoria.services.sync_service | INFO | Suppliers progress: page 98/127, 97000 suppliers
+2026-06-28 13:37:56 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=99 "HTTP/1.1 200 OK"
+2026-06-28 13:37:56 | veedoria.services.sync_service | INFO | Suppliers progress: page 99/127, 98000 suppliers
+2026-06-28 13:37:57 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=100 "HTTP/1.1 200 OK"
+2026-06-28 13:37:57 | veedoria.services.sync_service | INFO | Suppliers progress: page 100/127, 99000 suppliers
+2026-06-28 13:37:58 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:37:58 | veedoria.infrastructure.dgcp_client | WARNING | DGCP retry 1/3 after 1.0s: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:38:00 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:38:00 | veedoria.infrastructure.dgcp_client | WARNING | DGCP retry 2/3 after 2.0s: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:38:03 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101 "HTTP/1.1 500 Internal Server Error"
+2026-06-28 13:38:03 | veedoria.services.sync_service | ERROR | Suppliers page 101 failed (skipping)
+Traceback (most recent call last):
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\infrastructure\dgcp_client.py", line 79, in _request
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\jsjer\AppData\Local\Programs\Python\Python314\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\services\sync_service.py", line 201, in _import_suppliers_from_json
+    raw = await client._request("/proveedores", {"limit": 1000, "page": page})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jsjer\OneDrive\Bureaublad\New folder\Project I\veedoria-monorepo\backend\src\infrastructure\dgcp_client.py", line 90, in _request
+    raise DGCPClientError(f"DGCP HTTP {e.response.status_code}: {e}") from e
+src.infrastructure.dgcp_client.DGCPClientError: DGCP HTTP 500: Server error '500 Internal Server Error' for url 'https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=101'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+2026-06-28 13:38:04 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=102 "HTTP/1.1 200 OK"
+2026-06-28 13:38:05 | veedoria.services.sync_service | INFO | Suppliers progress: page 102/127, 100000 suppliers
+2026-06-28 13:38:06 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=103 "HTTP/1.1 200 OK"
+2026-06-28 13:38:06 | veedoria.services.sync_service | INFO | Suppliers progress: page 103/127, 101000 suppliers
+2026-06-28 13:38:07 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=104 "HTTP/1.1 200 OK"
+2026-06-28 13:38:07 | veedoria.services.sync_service | INFO | Suppliers progress: page 104/127, 102000 suppliers
+2026-06-28 13:38:08 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=105 "HTTP/1.1 200 OK"
+2026-06-28 13:38:08 | veedoria.services.sync_service | INFO | Suppliers progress: page 105/127, 103000 suppliers
+2026-06-28 13:38:09 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=106 "HTTP/1.1 200 OK"
+2026-06-28 13:38:09 | veedoria.services.sync_service | INFO | Suppliers progress: page 106/127, 104000 suppliers
+2026-06-28 13:38:10 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=107 "HTTP/1.1 200 OK"
+2026-06-28 13:38:11 | veedoria.services.sync_service | INFO | Suppliers progress: page 107/127, 105000 suppliers
+2026-06-28 13:38:12 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=108 "HTTP/1.1 200 OK"
+2026-06-28 13:38:12 | veedoria.services.sync_service | INFO | Suppliers progress: page 108/127, 106000 suppliers
+2026-06-28 13:38:14 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=109 "HTTP/1.1 200 OK"
+2026-06-28 13:38:14 | veedoria.services.sync_service | INFO | Suppliers progress: page 109/127, 107000 suppliers
+2026-06-28 13:38:15 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=110 "HTTP/1.1 200 OK"
+2026-06-28 13:38:15 | veedoria.services.sync_service | INFO | Suppliers progress: page 110/127, 108000 suppliers
+2026-06-28 13:38:16 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=111 "HTTP/1.1 200 OK"
+2026-06-28 13:38:17 | veedoria.services.sync_service | INFO | Suppliers progress: page 111/127, 109000 suppliers
+2026-06-28 13:38:18 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=112 "HTTP/1.1 200 OK"
+2026-06-28 13:38:18 | veedoria.services.sync_service | INFO | Suppliers progress: page 112/127, 110000 suppliers
+2026-06-28 13:38:19 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=113 "HTTP/1.1 200 OK"
+2026-06-28 13:38:19 | veedoria.services.sync_service | INFO | Suppliers progress: page 113/127, 111000 suppliers
+2026-06-28 13:38:21 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=114 "HTTP/1.1 200 OK"
+2026-06-28 13:38:21 | veedoria.services.sync_service | INFO | Suppliers progress: page 114/127, 112000 suppliers
+2026-06-28 13:38:22 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=115 "HTTP/1.1 200 OK"
+2026-06-28 13:38:22 | veedoria.services.sync_service | INFO | Suppliers progress: page 115/127, 113000 suppliers
+2026-06-28 13:38:23 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=116 "HTTP/1.1 200 OK"
+2026-06-28 13:38:23 | veedoria.services.sync_service | INFO | Suppliers progress: page 116/127, 114000 suppliers
+2026-06-28 13:38:25 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=117 "HTTP/1.1 200 OK"
+2026-06-28 13:38:25 | veedoria.services.sync_service | INFO | Suppliers progress: page 117/127, 115000 suppliers
+2026-06-28 13:38:26 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=118 "HTTP/1.1 200 OK"
+2026-06-28 13:38:27 | veedoria.services.sync_service | INFO | Suppliers progress: page 118/127, 116000 suppliers
+2026-06-28 13:38:28 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=119 "HTTP/1.1 200 OK"
+2026-06-28 13:38:28 | veedoria.services.sync_service | INFO | Suppliers progress: page 119/127, 117000 suppliers
+2026-06-28 13:38:29 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=120 "HTTP/1.1 200 OK"
+2026-06-28 13:38:29 | veedoria.services.sync_service | INFO | Suppliers progress: page 120/127, 118000 suppliers
+2026-06-28 13:38:30 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=121 "HTTP/1.1 200 OK"
+2026-06-28 13:38:30 | veedoria.services.sync_service | INFO | Suppliers progress: page 121/127, 119000 suppliers
+2026-06-28 13:38:32 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=122 "HTTP/1.1 200 OK"
+2026-06-28 13:38:32 | veedoria.services.sync_service | INFO | Suppliers progress: page 122/127, 119999 suppliers
+2026-06-28 13:38:33 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=123 "HTTP/1.1 200 OK"
+2026-06-28 13:38:34 | veedoria.services.sync_service | INFO | Suppliers progress: page 123/127, 120999 suppliers
+2026-06-28 13:38:35 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=124 "HTTP/1.1 200 OK"
+2026-06-28 13:38:35 | veedoria.services.sync_service | INFO | Suppliers progress: page 124/127, 121467 suppliers
+2026-06-28 13:38:36 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=125 "HTTP/1.1 200 OK"
+2026-06-28 13:38:36 | veedoria.services.sync_service | INFO | Suppliers progress: page 125/127, 122465 suppliers
+2026-06-28 13:38:38 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=126 "HTTP/1.1 200 OK"
+2026-06-28 13:38:38 | veedoria.services.sync_service | INFO | Suppliers progress: page 126/127, 123464 suppliers
+2026-06-28 13:38:39 | httpx | INFO | HTTP Request: GET https://datosabiertos.dgcp.gob.do/api-dgcp/v1/proveedores?limit=1000&page=127 "HTTP/1.1 200 OK"
+2026-06-28 13:38:39 | veedoria.services.sync_service | INFO | Suppliers progress: page 127/127, 124361 suppliers
+2026-06-28 13:38:40 | veedoria.services.sync_service | INFO | Suppliers JSON import complete: 124361 suppliers
+2026-06-28 13:38:40 | veedoria.services.sync_service | INFO | Phase 4/5 complete: 124361 suppliers
+2026-06-28 13:38:40 | veedoria.services.sync_service | INFO | Full sync finished: 730 institutions, 19722 processes, 20380 contracts, 98869 items, 124361 suppliers
+2026-06-28 13:38:40 | veedoria.services.sync_service | INFO | Sync 1 completed: 264062 records
+2026-06-28 13:38:40 | veedoria.cli.sync_dgcp | INFO | Sync 1: status=completed, records=264062, duration=581.3s

@@ -65,7 +65,9 @@ export interface TimelineEntry {
 
 export interface CollusionLink {
   source: string
+  source_rnc?: string
   target: string
+  target_rnc?: string
   reason: string
   weight: number
 }

@@ -726,7 +726,9 @@ class AnomalyService:
                 seen_pairs.add(pair)
                 collusion_links.append({
                     "source": name_a,
+                    "source_rnc": rnc_a,
                     "target": name_b,
+                    "target_rnc": rnc_b,
                     "reason": reason,
                     "weight": coll.score or coll.severity,
                 })

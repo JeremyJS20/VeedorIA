@@ -18,15 +18,18 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
 
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "fixed pointer-events-none z-[60] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
+      .style("display", "none")
+
     const width = svgRef.current.clientWidth
     const height = fullscreen ? svgRef.current.clientHeight : 160
     const margin = { top: 16, right: 16, bottom: 24, left: 64 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
 
-    svg.attr("viewBox", `0 0 ${width} ${height}`)
-
-    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`)
+    const zoomG = svg.append("g")
+    const g = zoomG.append("g").attr("transform", `translate(${margin.left},${margin.top})`)
 
     const maxPrice = d3.max(data, (d) => d.unit_price) ?? 1
     const paddedMax = maxPrice * 1.15
@@ -81,6 +84,48 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
       .attr("stroke", (d) => (d.is_anomaly ? "var(--color-error)" : "none"))
       .attr("stroke-width", (d) => (d.is_anomaly ? 2 : 0))
       .attr("data-anomaly", (d) => (d.is_anomaly ? "true" : null))
+      .attr("cursor", "pointer")
+      .on("mouseover", function (event, d) {
+        const p = d as MarketPrice
+        d3.select(this)
+          .transition().duration(150)
+          .attr("r", p.is_anomaly ? 11 : 7)
+          .attr("fill-opacity", 1)
+          .attr("stroke-width", 3)
+
+        g.selectAll("circle").filter(function () { return this !== event.currentTarget })
+          .transition().duration(150)
+          .attr("fill-opacity", 0.08)
+          .attr("stroke-opacity", 0.08)
+
+        tooltip
+          .style("display", "block")
+          .html(`
+            <div class="font-semibold text-on-surface">${p.supplier_name || "Proveedor"}</div>
+            <div class="text-outline mt-0.5">RD$ ${d3.format(",.2f")(p.unit_price)}</div>
+            ${p.is_anomaly ? '<div class="text-error font-bold mt-0.5">⚠ ANOMALÍA</div>' : ""}
+            <div class="text-outline/60 mt-0.5">vs mediana: ${((p.unit_price / median - 1) * 100).toFixed(0)}%</div>
+          `)
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 12}px`)
+          .style("top", `${event.pageY - 10}px`)
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition().duration(150)
+          .attr("r", (d: unknown) => ((d as MarketPrice).is_anomaly ? 7 : 4))
+          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.25))
+          .attr("stroke-width", (d: unknown) => ((d as MarketPrice).is_anomaly ? 2 : 0))
+
+        g.selectAll("circle")
+          .transition().duration(150)
+          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.25))
+          .attr("stroke-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0))
+
+        tooltip.style("display", "none")
+      })
       .each(function (d: unknown) {
         const p = d as MarketPrice
         if (p.is_anomaly) {
@@ -92,12 +137,29 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
             .attr("repeatCount", "indefinite")
         }
       })
-      .append("title")
-      .text((d: unknown) => {
-        const p = d as MarketPrice
-        return `${p.supplier_name || "Proveedor"}: RD$ ${d3.format(",.2f")(p.unit_price)}${p.is_anomaly ? " | ANOMALÍA" : ""}`
-      })
-  }, [data, median])
+
+    g.selectAll("text.anomaly-label")
+      .data(data.filter((d) => d.is_anomaly))
+      .join("text")
+      .attr("class", "text-[8px] fill-error font-bold anomaly-label pointer-events-none")
+      .attr("x", (d) => (xScale(data.indexOf(d)) || 0) + 10)
+      .attr("y", (d) => yScale(d.unit_price) + 3)
+      .text((d) => d.supplier_name ? (d.supplier_name.length > 20 ? d.supplier_name.slice(0, 18) + "…" : d.supplier_name) : "")
+
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on("zoom", (event) => zoomG.attr("transform", event.transform))
+
+    svg.call(zoom)
+    svg.on("dblclick.zoom", null)
+    svg.on("dblclick", () => {
+      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
+    })
+
+    return () => {
+      tooltip.remove()
+    }
+  }, [data, median, fullscreen])
 
   if (data.length === 0) return null
 

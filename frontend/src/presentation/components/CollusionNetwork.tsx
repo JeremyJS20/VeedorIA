@@ -4,6 +4,8 @@ import type { CollusionLink } from "../../domain/anomaly"
 
 interface NodeDatum {
   id: string
+  degree?: number
+  rnc?: string
   x?: number
   y?: number
   fx?: number | null
@@ -20,12 +22,16 @@ const REASON_COLORS: Record<string, string> = {
   shared_phone: "var(--color-error)",
   shared_domain: "var(--color-warning)",
   similar_name: "var(--color-primary)",
+  shared_address: "var(--color-secondary)",
+  shared_rnc_prefix: "var(--color-outline-variant)",
 }
 
 const REASON_LABELS: Record<string, string> = {
   shared_phone: "Teléfono compartido",
   shared_domain: "Dominio email compartido",
   similar_name: "Nombre similar",
+  shared_address: "Dirección compartida",
+  shared_rnc_prefix: "Prefijo RNC compartido",
 }
 
 export default function CollusionNetwork({ links, fullscreen, className = "" }: CollusionNetworkProps) {
@@ -34,8 +40,14 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
   useEffect(() => {
     if (!svgRef.current || links.length === 0) return
 
+    const d3Links = links.map((l) => ({ ...l }))
+
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
+
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "fixed pointer-events-none z-[60] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-80 leading-relaxed")
+      .style("display", "none")
 
     const width = svgRef.current.clientWidth
     const height = fullscreen ? svgRef.current.clientHeight : 300
@@ -43,25 +55,39 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
     const innerWidth = width - margin * 2
     const innerHeight = height - margin * 2
 
-    svg.attr("viewBox", `0 0 ${width} ${height}`)
+    const zoomG = svg.append("g")
+    const g = zoomG.append("g").attr("transform", `translate(${margin},${margin})`)
 
-    const g = svg
-      .append("g")
-      .attr("transform", `translate(${margin},${margin})`)
-
-    const nodeNames = new Set<string>()
+    const degreeMap = new Map<string, number>()
+    const rncMap = new Map<string, string>()
     for (const l of links) {
-      nodeNames.add(l.source)
-      nodeNames.add(l.target)
+      degreeMap.set(l.source, (degreeMap.get(l.source) || 0) + 1)
+      degreeMap.set(l.target, (degreeMap.get(l.target) || 0) + 1)
+      if (l.source_rnc) rncMap.set(l.source, l.source_rnc)
+      if (l.target_rnc) rncMap.set(l.target, l.target_rnc)
     }
-    const nodes: NodeDatum[] = Array.from(nodeNames).map((name) => ({ id: name }))
+
+    const nodeNames = Array.from(new Set(links.flatMap((l) => [l.source, l.target])))
+    const nodes: NodeDatum[] = nodeNames.map((name) => ({
+      id: name,
+      degree: degreeMap.get(name) || 0,
+      rnc: rncMap.get(name),
+    }))
+
+    const nodeConnectedTo = new Map<string, Set<string>>()
+    for (const l of links) {
+      if (!nodeConnectedTo.has(l.source)) nodeConnectedTo.set(l.source, new Set())
+      if (!nodeConnectedTo.has(l.target)) nodeConnectedTo.set(l.target, new Set())
+      nodeConnectedTo.get(l.source)!.add(l.target)
+      nodeConnectedTo.get(l.target)!.add(l.source)
+    }
 
     const simulation = d3
       .forceSimulation<NodeDatum>(nodes)
       .force(
         "link",
         d3
-          .forceLink<NodeDatum, CollusionLink>(links)
+          .forceLink<NodeDatum, CollusionLink>(d3Links)
           .id((d) => d.id)
           .distance(120),
       )
@@ -69,30 +95,91 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       .force("center", d3.forceCenter(innerWidth / 2, innerHeight / 2))
       .force("collision", d3.forceCollide(30))
 
-    const link = g
-      .append("g")
+    const linkGroup = g.append("g")
+    const nodeGroup = g.append("g")
+    const labelGroup = g.append("g")
+
+    const maxWeight = d3.max(links, (l) => l.weight) || 1
+
+    const link = linkGroup
       .selectAll("line")
-      .data(links)
+      .data(d3Links)
       .join("line")
       .attr("stroke", (d: CollusionLink) => REASON_COLORS[d.reason] || "var(--color-outline-variant)")
       .attr("stroke-width", (d: CollusionLink) => Math.max(1, d.weight * 3))
-      .attr("stroke-opacity", 0.5)
+      .attr("stroke-opacity", (d: CollusionLink) => 0.3 + (d.weight / maxWeight) * 0.5)
+      .attr("cursor", "pointer")
 
-    const node = g
-      .append("g")
+    link
+      .on("mouseover", function (_event, d) {
+        d3.select(this).attr("stroke-opacity", 1).attr("stroke-width", Math.max(2, d.weight * 4))
+        tooltip
+          .style("display", "block")
+          .html(`
+            <div class="font-semibold text-on-surface">${d.source} ⟷ ${d.target}</div>
+            <div class="text-outline mt-0.5">${REASON_LABELS[d.reason] || d.reason.replace(/_/g, " ")}</div>
+            <div class="text-outline/60 mt-0.5">Peso: ${(d.weight * 100).toFixed(0)}%</div>
+          `)
+      })
+      .on("mousemove", (event) => {
+        tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY - 10}px`)
+      })
+      .on("mouseout", function (_, d) {
+        d3.select(this).attr("stroke-opacity", 0.3 + (d.weight / maxWeight) * 0.5).attr("stroke-width", Math.max(1, d.weight * 3))
+        tooltip.style("display", "none")
+      })
+
+    const node = nodeGroup
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", 10)
+      .attr("r", (d: NodeDatum) => 5 + (d.degree || 0) * 3)
       .attr("fill", "var(--color-primary)")
       .attr("fill-opacity", 0.6)
       .attr("stroke", "var(--color-primary)")
-      .attr("stroke-width", 2) as d3.Selection<SVGCircleElement, NodeDatum, SVGGElement, unknown>
+      .attr("stroke-width", 2)
+      .attr("cursor", "grab")
+      .attr("data-pinned", false) as d3.Selection<SVGCircleElement, NodeDatum, SVGGElement, unknown>
+
+    function nodeRadius(d: NodeDatum) {
+      return 5 + (d.degree || 0) * 3
+    }
+
+    function getConnected(nodeId: string): Set<string> {
+      return nodeConnectedTo.get(nodeId) || new Set()
+    }
+
+    function highlightNode(activeId: string) {
+      const connected = getConnected(activeId)
+      connected.add(activeId)
+
+      link.attr("stroke-opacity", (d: unknown) => {
+        const l = d as CollusionLink
+        return l.source === activeId || (l.source as any)?.id === activeId ||
+               l.target === activeId || (l.target as any)?.id === activeId ? 0.8 : 0.05
+      })
+
+      node.attr("fill-opacity", (d: any) => connected.has(d.id) ? 0.9 : 0.08)
+        .attr("stroke-opacity", (d: any) => connected.has(d.id) ? 1 : 0.08)
+
+      labelGroup.selectAll("text")
+        .attr("fill-opacity", (d: any) => connected.has(d.id) ? 1 : 0.08)
+    }
+
+    function restoreAll() {
+      link.attr("stroke-opacity", (d: unknown) => {
+        const l = d as CollusionLink
+        return 0.3 + (l.weight / maxWeight) * 0.5
+      })
+      node.attr("fill-opacity", 0.6).attr("stroke-opacity", 1)
+      labelGroup.selectAll("text").attr("fill-opacity", 1)
+    }
 
     node.call(
       d3
         .drag<SVGCircleElement, NodeDatum>()
         .on("start", (event, d) => {
+          event.sourceEvent.stopPropagation()
           if (!event.active) simulation.alphaTarget(0.3).restart()
           d.fx = d.x
           d.fy = d.y
@@ -103,23 +190,70 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
         })
         .on("end", (event, d) => {
           if (!event.active) simulation.alphaTarget(0)
-          d.fx = null
-          d.fy = null
+          const el = event.sourceEvent.currentTarget as SVGCircleElement
+          if (d3.select(el).attr("data-pinned") !== "true") {
+            d.fx = null
+            d.fy = null
+          }
         }),
     )
+
+    node
+      .on("mouseover", function (_event, d) {
+        highlightNode(d.id)
+        d3.select(this).attr("r", nodeRadius(d) + 3)
+
+        const neighborIds = getConnected(d.id)
+        const neighborNames = Array.from(neighborIds).slice(0, 5)
+        const extra = neighborIds.size > 5 ? `…y ${neighborIds.size - 5} más` : ""
+
+        tooltip
+          .style("display", "block")
+          .html(`
+            <div class="font-semibold text-on-surface">${d.id}${d.rnc ? ` <span class="text-outline/60 font-normal">(${d.rnc})</span>` : ""}</div>
+            <div class="text-outline mt-0.5">${d.degree || 0} conexión(es)</div>
+            <div class="text-outline mt-1 font-medium">Conexiones:</div>
+            ${neighborNames.map(n => `<div class="text-outline/70 ml-2">⟷ ${n}</div>`).join("")}
+            ${extra ? `<div class="text-outline/50 ml-2">${extra}</div>` : ""}
+          `)
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 12}px`)
+          .style("top", `${event.pageY - 10}px`)
+      })
+      .on("mouseout", function () {
+        restoreAll()
+        d3.select(this).attr("r", nodeRadius(d3.select(this).datum() as NodeDatum))
+        tooltip.style("display", "none")
+      })
+      .on("click", function (_event, d) {
+        const pinned = d3.select(this).attr("data-pinned") === "true"
+        if (pinned) {
+          d3.select(this).attr("data-pinned", "false").attr("r", nodeRadius(d))
+          d.fx = null
+          d.fy = null
+          simulation.alpha(0.3).restart()
+        } else {
+          d3.select(this).attr("data-pinned", "true").attr("r", nodeRadius(d) + 2)
+            .attr("stroke", "var(--color-warning)")
+            .attr("stroke-width", 3)
+          d.fx = d.x
+          d.fy = d.y
+        }
+      })
 
     node
       .append("title")
       .text((d: NodeDatum) => d.id)
 
-    const label = g
-      .append("g")
+    const label = labelGroup
       .selectAll("text")
       .data(nodes)
       .join("text")
       .attr("text-anchor", "middle")
-      .attr("dy", 22)
-      .attr("class", "text-[9px] fill-on-surface font-semibold")
+      .attr("dy", (d: NodeDatum) => nodeRadius(d) + 12)
+      .attr("class", "text-[9px] fill-on-surface font-semibold pointer-events-none")
       .text((d: NodeDatum) => d.id.length > 20 ? d.id.slice(0, 18) + "…" : d.id)
 
     simulation.on("tick", () => {
@@ -133,10 +267,21 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       label.attr("x", (d: NodeDatum) => d.x!).attr("y", (d: NodeDatum) => d.y!)
     })
 
+    const zoom = d3.zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.3, 8])
+      .on("zoom", (event) => zoomG.attr("transform", event.transform))
+
+    svg.call(zoom)
+    svg.on("dblclick.zoom", null)
+    svg.on("dblclick", () => {
+      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
+    })
+
     return () => {
       simulation.stop()
+      tooltip.remove()
     }
-  }, [links])
+  }, [links, fullscreen])
 
   if (links.length === 0) {
     return (

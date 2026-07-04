@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: veedoria-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: veedoria-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+
+  - type: worker
+    name: veedoria-worker
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    command: python -m arq src.cli.arq_worker.WorkerSettings
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: veedoria-redis
+          property: connectionString
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: veedoria-api
+          envVarKey: JWT_SECRET
+      - key: ENVIRONMENT
+        value: production
+
+  - type: redis
+    name: veedoria-redis
+    plan: free
