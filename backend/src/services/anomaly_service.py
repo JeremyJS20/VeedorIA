@@ -694,6 +694,16 @@ class AnomalyService:
         collusion_links: list[dict] = []
 
         if anomaly.anomaly_type == "COLLUSION":
+            current_names: set[str] = set()
+            if anomaly.description:
+                m_self = re.match(
+                    r"Posible colusión entre '(.+?)' \(RNC: (.+?)\) y '(.+?)' \(RNC: (.+?)\)\.",
+                    anomaly.description,
+                )
+                if m_self:
+                    current_names.add(m_self.group(1))
+                    current_names.add(m_self.group(3))
+
             coll_result = await self.db.execute(
                 select(Anomaly).where(Anomaly.anomaly_type == "COLLUSION")
             )
@@ -708,6 +718,8 @@ class AnomalyService:
                 if not m:
                     continue
                 name_a, rnc_a, name_b, rnc_b, reason = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
+                if current_names and name_a not in current_names and name_b not in current_names:
+                    continue
                 pair = tuple(sorted([rnc_a, rnc_b]))
                 if pair in seen_pairs:
                     continue
