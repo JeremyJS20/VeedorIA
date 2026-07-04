@@ -30,6 +30,8 @@ class Anomaly(SQLModel, table=True):
     anomaly_type: str = Field(max_length=50)
     severity: float = Field(default=0.0, ge=0.0, le=1.0)
     score: float | None = Field(default=None)
+    confidence: str = Field(default="MEDIA", max_length=10)
+    signals_count: int = Field(default=0)
     description: str = Field(max_length=2000)
     status: str = Field(default=AnomalyStatus.PENDING.value, max_length=20)
     reviewer_id: str | None = Field(default=None, foreign_key="user.id")

@@ -5,10 +5,11 @@ import type { TimelineEntry } from "../../domain/anomaly"
 interface FragmentationBarChartProps {
   entries: TimelineEntry[]
   threshold: number
+  fullscreen?: boolean
   className?: string
 }
 
-export default function FragmentationBarChart({ entries, threshold, className = "" }: FragmentationBarChartProps) {
+export default function FragmentationBarChart({ entries, threshold, fullscreen, className = "" }: FragmentationBarChartProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function FragmentationBarChart({ entries, threshold, className = 
     svg.selectAll("*").remove()
 
     const width = svgRef.current.clientWidth
-    const height = 200
+    const height = fullscreen ? svgRef.current.clientHeight : 200
     const margin = { top: 16, right: 16, bottom: 48, left: 64 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
@@ -118,8 +119,8 @@ export default function FragmentationBarChart({ entries, threshold, className = 
   }
 
   return (
-    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${className}`}>
-      <svg ref={svgRef} className="w-full" style={{ height: 200 }} />
+    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${fullscreen ? "h-full" : ""} ${className}`}>
+      <svg ref={svgRef} className={`w-full ${fullscreen ? "h-full" : ""}`} style={fullscreen ? undefined : { height: 200 }} />
     </div>
   )
 }

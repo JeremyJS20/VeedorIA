@@ -12,6 +12,7 @@ interface NodeDatum {
 
 interface CollusionNetworkProps {
   links: CollusionLink[]
+  fullscreen?: boolean
   className?: string
 }
 
@@ -27,7 +28,7 @@ const REASON_LABELS: Record<string, string> = {
   similar_name: "Nombre similar",
 }
 
-export default function CollusionNetwork({ links, className = "" }: CollusionNetworkProps) {
+export default function CollusionNetwork({ links, fullscreen, className = "" }: CollusionNetworkProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function CollusionNetwork({ links, className = "" }: CollusionNet
     svg.selectAll("*").remove()
 
     const width = svgRef.current.clientWidth
-    const height = 300
+    const height = fullscreen ? svgRef.current.clientHeight : 300
     const margin = 40
     const innerWidth = width - margin * 2
     const innerHeight = height - margin * 2
@@ -148,8 +149,8 @@ export default function CollusionNetwork({ links, className = "" }: CollusionNet
   const usedReasons = new Set(links.map((l) => l.reason))
 
   return (
-    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${className}`}>
-      <svg ref={svgRef} className="w-full" style={{ height: 300 }} />
+    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${fullscreen ? "h-full" : ""} ${className}`}>
+      <svg ref={svgRef} className={`w-full ${fullscreen ? "h-full" : ""}`} style={fullscreen ? undefined : { height: 300 }} />
       <div className="flex flex-wrap gap-4 mt-3 justify-center">
         {Array.from(usedReasons).map((reason) => (
           <div key={reason} className="flex items-center gap-1.5">

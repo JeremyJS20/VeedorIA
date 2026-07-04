@@ -17,6 +17,12 @@ const typeConfig = {
   COLLUSION: { label: "anomalies.type_collusion", color: "primary", bg: "bg-primary/10", text: "text-primary" },
 }
 
+const confidenceConfig: Record<string, { bg: string; text: string; label: string }> = {
+  ALTA: { bg: "bg-[#10B981]/15", text: "text-[#10B981]", label: "ALTA" },
+  MEDIA: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", label: "MEDIA" },
+  BAJA: { bg: "bg-[#94A3B8]/15", text: "text-[#94A3B8]", label: "BAJA" },
+}
+
 const severityBorder = {
   critical: "border-l-error",
   high: "border-l-warning",
@@ -53,6 +59,18 @@ export default function AnomalyCard({ anomaly, isSelected, onClick, className = 
           <span className={`${type.bg} ${type.text} text-[10px] font-bold px-2 py-0.5 rounded-full uppercase`}>
             {t(type.label)}
           </span>
+          {anomaly.anomaly_type === "COLLUSION" && anomaly.confidence && (
+            <>
+              <span className={`${confidenceConfig[anomaly.confidence].bg} ${confidenceConfig[anomaly.confidence].text} text-[10px] font-bold px-2 py-0.5 rounded-[8px] uppercase`}>
+                {confidenceConfig[anomaly.confidence].label}
+              </span>
+              {anomaly.signals_count != null && (
+                <span className="text-[10px] text-outline font-ui">
+                  {anomaly.signals_count} señal(es)
+                </span>
+              )}
+            </>
+          )}
           <span className="font-data text-xs text-outline">{anomaly.process_code || anomaly.contract_id?.toString().slice(0, 8).toUpperCase() || anomaly.id.slice(0, 8).toUpperCase()}</span>
         </div>
         <h3 className="font-display font-bold text-primary line-clamp-2 text-sm">

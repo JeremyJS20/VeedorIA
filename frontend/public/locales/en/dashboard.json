@@ -62,7 +62,8 @@
     "supplier": "Supplier",
     "date": "Date",
     "loading": "Loading...",
-    "no_description": "No description"
+    "no_description": "No description",
+    "signals": "{{count}} signal(s) detected"
   },
   "drawer": {
     "detail_title": "Audit Detail",

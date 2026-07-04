@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { X } from "lucide-react"
+import { Maximize2, X } from "lucide-react"
 import { toast } from "@heroui/react"
 import type { Anomaly } from "../../domain/anomaly"
 import { useAnomalyContext, useReviewAnomaly } from "../hooks/useAnomalyQueries"
 import Button from "./ui/Button"
+import FullscreenOverlay from "./ui/FullscreenOverlay"
 import SeverityGauge from "./SeverityGauge"
 import PriceScatter from "./PriceScatter"
 import FragmentationBarChart from "./FragmentationBarChart"
@@ -27,9 +28,12 @@ function median(values: number[]) {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
+type FullscreenChart = "price" | "fragmentation" | "collusion" | null
+
 export default function AnomalyDrawer({ anomaly, onClose, className = "" }: AnomalyDrawerProps) {
   const { t } = useTranslation("dashboard")
   const [notes, setNotes] = useState("")
+  const [fullscreenChart, setFullscreenChart] = useState<FullscreenChart>(null)
   const reviewMutation = useReviewAnomaly()
   const { data: ctx, isLoading: ctxLoading } = useAnomalyContext(anomaly.id)
   const reviewerId = localStorage.getItem("user_id") || "00000000-0000-0000-0000-000000000000"
@@ -96,7 +100,7 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
             {t("drawer.severity_index")}
           </h4>
-          <SeverityGauge value={anomaly.severity * 100} confidence={ctx?.confidence} />
+          <SeverityGauge value={anomaly.severity * 100} confidence={ctx?.confidence} signalsCount={ctx?.signals_count} />
         </div>
 
         {ctxLoading && (
@@ -115,7 +119,12 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
                 <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
                   {t("drawer.price_analysis")}
                 </h4>
-                <span className="font-data text-[10px] text-outline">{t("drawer.market_region")}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-data text-[10px] text-outline">{t("drawer.market_region")}</span>
+                  <button onClick={() => setFullscreenChart("price")} className="text-outline hover:text-on-surface transition-colors">
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               {marketPrices.length > 0 ? (
                 <PriceScatter data={marketPrices} median={contextMedian} />
@@ -134,9 +143,14 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
         {!ctxLoading && isFragmentation && (
           <SectionErrorBoundary title="fragmentation">
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-                Contratos recientes
-              </h4>
+              <div className="flex justify-between items-end">
+                <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                  Contratos recientes
+                </h4>
+                <button onClick={() => setFullscreenChart("fragmentation")} className="text-outline hover:text-on-surface transition-colors">
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+              </div>
               {ctx?.recent_contracts && ctx.recent_contracts.length > 0 ? (
                 <>
                   <FragmentationBarChart
@@ -155,9 +169,14 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
         {!ctxLoading && isCollusion && (
           <SectionErrorBoundary title="collusion network">
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-                Red de proveedores
-              </h4>
+              <div className="flex justify-between items-end">
+                <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                  Red de proveedores
+                </h4>
+                <button onClick={() => setFullscreenChart("collusion")} className="text-outline hover:text-on-surface transition-colors">
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+              </div>
               {ctx?.collusion_links && ctx.collusion_links.length > 0 ? (
                 <>
                   <CollusionNetwork links={ctx.collusion_links} />
@@ -209,6 +228,20 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           </Button>
         </div>
       </div>
+      <FullscreenOverlay
+        isOpen={fullscreenChart !== null}
+        onClose={() => setFullscreenChart(null)}
+      >
+        {fullscreenChart === "price" && marketPrices.length > 0 && (
+          <PriceScatter data={marketPrices} median={contextMedian} fullscreen />
+        )}
+        {fullscreenChart === "fragmentation" && ctx?.recent_contracts && ctx.recent_contracts.length > 0 && (
+          <FragmentationBarChart entries={ctx.recent_contracts} threshold={FRAGMENTATION_THRESHOLD} fullscreen />
+        )}
+        {fullscreenChart === "collusion" && ctx?.collusion_links && ctx.collusion_links.length > 0 && (
+          <CollusionNetwork links={ctx.collusion_links} fullscreen />
+        )}
+      </FullscreenOverlay>
     </aside>
   )
 }

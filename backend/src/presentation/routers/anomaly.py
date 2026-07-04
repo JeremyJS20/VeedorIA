@@ -1,9 +1,19 @@
 import logging
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.domain.schemas.anomaly import AnomalyContext, AnomalyListResponse, AnomalyResponse, AnomalyReviewPayload, AnomalyStats
+from src.domain.schemas.anomaly import (
+    AnomalyContext,
+    AnomalyListResponse,
+    AnomalyResponse,
+    AnomalyReviewPayload,
+    AnomalyStats,
+)
 from src.domain.types import ApiResponse
+from src.infrastructure.dependencies import get_db
+from src.models.sync_log import SyncLog
 from src.presentation.dependencies import get_anomaly_service
 from src.presentation.runners import run_detection
 from src.services.anomaly_service import AnomalyService
@@ -13,12 +23,20 @@ router = APIRouter(prefix="/anomalies", tags=["anomalies"])
 
 
 @router.post("/detect", status_code=202)
-async def detect_anomalies() -> ApiResponse:
+async def detect_anomalies(session: AsyncSession = Depends(get_db)) -> ApiResponse:
+    stmt = select(SyncLog).where(
+        SyncLog.status == "running",
+        SyncLog.process_type == "detection",
+    )
+    result = await session.execute(stmt)
+    if result.scalars().first():
+        return ApiResponse(success=False, message="La detección de anomalías ya está en progreso")
+
     try:
-        pid = await run_detection()
+        tag = await run_detection()
     except RuntimeError as e:
         return ApiResponse(success=False, message=str(e))
-    return ApiResponse(success=True, data={"pid": pid}, message="Detección de anomalías iniciada en segundo plano.")
+    return ApiResponse(success=True, data={"task": tag}, message="Detección de anomalías iniciada en segundo plano.")
 
 
 @router.get("", response_model=ApiResponse[AnomalyListResponse])

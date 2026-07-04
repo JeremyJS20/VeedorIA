@@ -62,7 +62,8 @@
     "supplier": "Proveedor",
     "date": "Fecha",
     "loading": "Cargando...",
-    "no_description": "Sin descripción"
+    "no_description": "Sin descripción",
+    "signals": "{{count}} señal(es) detectada(s)"
   },
   "drawer": {
     "detail_title": "Detalle de Auditoría",

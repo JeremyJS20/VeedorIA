@@ -3,10 +3,10 @@
   "mcp": {
     "sqlite": {
       "type": "local",
-      "command": ["npx", "-y", "easy-sqlite-mcp"],
+      "command": ["npx", "-y", "@anthropic/mcp-server-sqlite"],
       "enabled": true,
       "environment": {
-        "SQLITE_PATH": "C:/Users/jsjer/AppData/Local/VeedorIA/veedoria.db"
+        "SQLITE_DB_PATH": "C:/Users/jsjer/AppData/Local/VeedorIA/veedoria.db"
       }
     },
     "postgres": {
@@ -17,10 +17,25 @@
     "firecrawl": {
       "type": "local",
       "command": ["npx", "-y", "firecrawl-mcp"],
+      "enabled": false
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "enabled": true,
       "environment": {
-        "FIRECRAWL_API_KEY": "fc-7166909e5e6c47e48be805f082fc2c49"
+        "MEMORY_FILE_PATH": "C:/Users/jsjer/AppData/Local/VeedorIA/memory.json"
       }
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@executeautomation/playwright-mcp-server"],
+      "enabled": true
+    },
+    "sequential": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
     }
   }
 }

@@ -66,9 +66,15 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    class _FlushingHandler(logging.StreamHandler):
+        def emit(self, record):
+            super().emit(record)
+            self.flush()
+
+    _handler = _FlushingHandler()
+    _handler.setFormatter(logging.Formatter(
+        "%(asctime)s | %(name)s | %(levelname)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    ))
+    logging.basicConfig(level=logging.INFO, handlers=[_handler])
     asyncio.run(main())

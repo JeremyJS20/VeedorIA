@@ -4,10 +4,12 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse
+from sqlalchemy import text as sa_text
 
 from src.config import settings
 from src.domain.types import ApiErrorResponse
 from src.infrastructure.database import engine, init_db
+from src.infrastructure.queue import close_arq_pool, get_arq_pool
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.sync import router as sync_router
 from src.presentation.runners import run_detection, run_sync
@@ -39,8 +41,8 @@ class NotFoundError(AppError):
 async def _daily_anomaly_detection() -> None:
     logger.info("Scheduled daily anomaly detection starting...")
     try:
-        pid = await run_detection()
-        logger.info("Scheduled anomaly detection launched (pid=%d)", pid)
+        tag = await run_detection()
+        logger.info("Scheduled anomaly detection launched (task=%s)", tag)
     except RuntimeError as e:
         logger.warning("Scheduled anomaly detection skipped: %s", e)
 
@@ -48,8 +50,8 @@ async def _daily_anomaly_detection() -> None:
 async def _daily_sync() -> None:
     logger.info("Scheduled daily sync starting...")
     try:
-        pid = await run_sync()
-        logger.info("Scheduled daily sync launched (pid=%d)", pid)
+        tag = await run_sync()
+        logger.info("Scheduled daily sync launched (task=%s)", tag)
     except RuntimeError as e:
         logger.warning("Scheduled sync skipped: %s", e)
 
@@ -72,6 +74,13 @@ async def lifespan(app: FastAPI):
     _ensure_veedoria_handler()
     logger.info("Initializing database...")
     await init_db()
+    async with engine.connect() as conn:
+        result = await conn.execute(
+            sa_text("UPDATE sync_log SET status='failed', error_message='server_restart' WHERE status='running'")
+        )
+        await conn.commit()
+        if result.rowcount:
+            logger.info("Marked %d stuck SyncLog entries as failed", result.rowcount)
     scheduler.add_job(
         _daily_sync,
         "cron",
@@ -91,10 +100,12 @@ async def lifespan(app: FastAPI):
         logger.info("APScheduler running in dev mode (daily at %02d:%02d)", settings.sync_cron_hour, settings.sync_cron_minute)
     scheduler.start()
     logger.info("APScheduler started with daily sync at %02d:%02d", settings.sync_cron_hour, settings.sync_cron_minute)
+    await get_arq_pool()
     yield
     scheduler.shutdown()
     logger.info("Shutting down database connections...")
     await engine.dispose()
+    await close_arq_pool()
 
 
 app = FastAPI(

@@ -592,25 +592,30 @@ async def sync_incremental_optimized(
         try:
             items = await client.fetch_contract_items(proc_code, code)
             for i_raw in items:
+                mapped = map_item_from_json(i_raw)
                 stmt3 = select(Item).where(
                     Item.contract_id == ct.id,
-                    Item.description == i_raw.get("descripcion", i_raw.get("articulo", "")),
+                    Item.description == mapped["description"],
                 )
                 result3 = await session.execute(stmt3)
                 existing = result3.scalar_one_or_none()
                 if existing:
-                    existing.quantity = float(i_raw.get("cantidad") or 1)
-                    existing.unit_price = i_raw.get("precio_unitario") or existing.unit_price
-                    existing.total_amount = i_raw.get("monto_total", i_raw.get("monto")) or existing.total_amount
+                    existing.quantity = mapped["quantity"]
+                    existing.unit_price = mapped["unit_price"] if mapped["unit_price"] is not None else existing.unit_price
+                    existing.total_amount = mapped["total_amount"] if mapped["total_amount"] is not None else existing.total_amount
                 else:
                     item = Item(
                         contract_id=ct.id,
-                        description=i_raw.get("descripcion", i_raw.get("articulo", "")),
-                        quantity=float(i_raw.get("cantidad") or 1),
-                        unit=i_raw.get("unidad_medida"),
-                        unit_price=i_raw.get("precio_unitario"),
-                        total_amount=i_raw.get("monto_total", i_raw.get("monto")),
-                        unspsc_code=str(i_raw.get("codigo_unspc") or i_raw.get("subclase") or "")[:8] or None,
+                        description=mapped["description"],
+                        quantity=mapped["quantity"],
+                        unit=mapped["unit"],
+                        unit_price=mapped["unit_price"],
+                        total_amount=mapped["total_amount"],
+                        unspsc_code=mapped["unspsc_code"],
+                        process_code=mapped["process_code"] or None,
+                        unspsc_family=mapped["unspsc_family"] or None,
+                        unspsc_class=mapped["unspsc_class"] or None,
+                        budget_account=mapped["budget_account"] or None,
                     )
                     session.add(item)
                 item_count += 1

@@ -9,11 +9,13 @@ import networkx as nx
 import numpy as np
 from rapidfuzz import fuzz
 from sklearn.ensemble import IsolationForest
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import NearestNeighbors
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import desc
 
-from src.models.anomaly import Anomaly, AnomalyStatus
+from src.models.anomaly import Anomaly
 from src.models.audit_log import AuditLog
 from src.models.contract import Contract
 from src.models.institution import Institution
@@ -27,14 +29,18 @@ ml_executor = ProcessPoolExecutor(max_workers=2)
 
 FRAGMENTATION_WINDOW_DAYS = 30
 FRAGMENTATION_THRESHOLD_DOP = 8_000_000
-COLLUSION_NAME_SIMILARITY = 0.85
-COLLUSION_MAX_FUZZY_PAIRS = 500_000
 IF_MIN_ITEMS = 30
 IF_CONTAMINATION = 0.05
 IF_N_ESTIMATORS = 100
 IF_RANDOM_STATE = 42
 ZSCORE_THRESHOLD = 2.5
+MIN_DEVIATION_PCT = 100.0
 BANNED_EMAIL_DOMAINS = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "aol.com"}
+
+TFIDF_MAX_NAMES = 500
+MAX_EDGES_PER_GROUP = 100
+LOUVAIN_MAX_NODES = 5000
+COLLUSION_BATCH_SIZE = 100
 
 
 def _compute_if_scores(prices: list[float]) -> list[float]:
@@ -48,6 +54,39 @@ def _compute_if_scores(prices: list[float]) -> list[float]:
     )
     model.fit(X)
     return model.decision_function(X).tolist()
+
+
+def _compute_tfidf_edges(
+    inst_suppliers: dict[int, set[str]],
+    supplier_name_to_id: dict[str, int],
+    tfidf_max_names: int = TFIDF_MAX_NAMES,
+) -> list[tuple[int, int, float]]:
+    edges: list[tuple[int, int, float]] = []
+    for _inst_id, names in inst_suppliers.items():
+        name_list = list(names)
+        if len(name_list) < 2:
+            continue
+        if len(name_list) > tfidf_max_names:
+            continue
+        vectorizer = TfidfVectorizer(analyzer="char", ngram_range=(2, 4))
+        tfidf = vectorizer.fit_transform(name_list)
+        nn = NearestNeighbors(metric="cosine", radius=0.15)
+        nn.fit(tfidf)
+        distances, indices = nn.radius_neighbors(tfidf, return_distance=True)
+        for i in range(len(name_list)):
+            for dist, j in zip(distances[i], indices[i]):
+                if j <= i:
+                    continue
+                similarity = 1 - dist
+                if similarity < 0.85:
+                    continue
+                ni, nj = name_list[i], name_list[j]
+                si_id = supplier_name_to_id.get(ni)
+                sj_id = supplier_name_to_id.get(nj)
+                if not si_id or not sj_id:
+                    continue
+                edges.append((si_id, sj_id, float(similarity)))
+    return edges
 
 
 def _compute_z_scores(prices: list[float]) -> list[float]:
@@ -115,7 +154,7 @@ class AnomalyService:
 
             median_price = float(np.median(prices))
 
-            for item, score in zip(group, scores):
+            for item, score in zip(group, scores, strict=False):
                 is_anomaly = score < 0 if len(prices) >= IF_MIN_ITEMS else abs(score) > ZSCORE_THRESHOLD / max(abs(score), 1)
                 if not is_anomaly:
                     continue
@@ -123,7 +162,9 @@ class AnomalyService:
                     continue
 
                 deviation_pct = ((item.unit_price - median_price) / median_price * 100) if median_price > 0 else 0
-                direction = "supera" if deviation_pct > 0 else "está por debajo"
+                if deviation_pct < MIN_DEVIATION_PCT:
+                    continue
+                direction = "supera"
                 description = (
                     f"Precio unitario de DOP ${item.unit_price:,.2f} por '{item.description}' "
                     f"{direction} en un {abs(deviation_pct):.0f}% la mediana del mercado "
@@ -180,7 +221,7 @@ class AnomalyService:
 
         created = 0
 
-        for inst_id, group in inst_groups.items():
+        for _inst_id, group in inst_groups.items():
             for i in range(len(group)):
                 for j in range(i + 1, len(group)):
                     ci, cj = group[i], group[j]
@@ -249,6 +290,17 @@ class AnomalyService:
         logger.info("Fragmentation detection: %d anomalies created", created)
         return created
 
+    @staticmethod
+    def _add_collusion_edge(G: nx.Graph, u: int, v: int, weight: float, signal: str) -> None:
+        if G.has_edge(u, v):
+            data = G.get_edge_data(u, v)
+            data["signals"].add(signal)
+            data["weight"] = max(data["weight"], weight)
+        else:
+            G.add_edge(u, v, weight=weight, reason=signal, signals={signal})
+
+    SIGNAL_PRIORITY = ["shared_phone", "shared_address", "shared_domain", "similar_name", "shared_rnc_prefix"]
+
     async def detect_collusion(self) -> int:
         result = await self.db.execute(select(Supplier))
         suppliers = result.scalars().all()
@@ -276,58 +328,89 @@ class AnomalyService:
                 if domain not in BANNED_EMAIL_DOMAINS:
                     email_domain_map[domain].append(s.id)
 
-        for phone, ids in phone_map.items():
+        for _phone, ids in phone_map.items():
             if len(ids) >= 2:
-                for i in range(len(ids)):
-                    for j in range(i + 1, len(ids)):
-                        if not G.has_edge(ids[i], ids[j]):
-                            G.add_edge(ids[i], ids[j], weight=0.8, reason="shared_phone")
+                subset = ids[:MAX_EDGES_PER_GROUP]
+                for i in range(len(subset)):
+                    for j in range(i + 1, len(subset)):
+                        self._add_collusion_edge(G, subset[i], subset[j], 0.8, "shared_phone")
 
-        for domain, ids in email_domain_map.items():
+        for _domain, ids in email_domain_map.items():
             if len(ids) >= 2:
-                for i in range(len(ids)):
-                    for j in range(i + 1, len(ids)):
-                        existing = G.get_edge_data(ids[i], ids[j])
-                        w = 0.6
-                        if existing:
-                            w = max(existing.get("weight", 0), 0.6)
-                        G.add_edge(ids[i], ids[j], weight=w, reason="shared_domain")
+                subset = ids[:MAX_EDGES_PER_GROUP]
+                for i in range(len(subset)):
+                    for j in range(i + 1, len(subset)):
+                        self._add_collusion_edge(G, subset[i], subset[j], 0.6, "shared_domain")
 
-        suppliers_in_graph = {n for n in G.nodes() if G.degree(n) > 0}
-        fuzzy_candidates = [s for s in suppliers if s.id in suppliers_in_graph]
-        if len(fuzzy_candidates) == 0:
-            fuzzy_candidates = list(suppliers)
-        loop = asyncio.get_event_loop()
-        fuzzy_pairs_checked = 0
-        for i in range(len(fuzzy_candidates)):
-            if fuzzy_pairs_checked >= COLLUSION_MAX_FUZZY_PAIRS:
-                logger.info("Collusion fuzzy: reached max pairs (%d), stopping early", COLLUSION_MAX_FUZZY_PAIRS)
-                break
-            for j in range(i + 1, len(fuzzy_candidates)):
-                if fuzzy_pairs_checked >= COLLUSION_MAX_FUZZY_PAIRS:
-                    break
-                fuzzy_pairs_checked += 1
-                si, sj = fuzzy_candidates[i], fuzzy_candidates[j]
-                name_i = (si.registered_name or si.trade_name or "")
-                name_j = (sj.registered_name or sj.trade_name or "")
-                if not name_i or not name_j:
-                    continue
-                ratio = await loop.run_in_executor(None, lambda a=name_i, b=name_j: fuzz.ratio(a, b) / 100.0)
-                if ratio >= COLLUSION_NAME_SIMILARITY:
-                    existing = G.get_edge_data(si.id, sj.id)
-                    w = ratio
-                    if existing:
-                        w = max(existing.get("weight", 0), ratio)
-                    G.add_edge(si.id, sj.id, weight=w, reason="similar_name")
+        all_procs: dict[int, int | None] = {}
+        for p in (await self.db.execute(select(Process))).scalars().all():
+            all_procs[p.id] = p.institution_id
+
+        inst_suppliers: dict[int, set[str]] = defaultdict(set)
+        c_result = await self.db.execute(
+            text("SELECT DISTINCT process_id, UPPER(supplier_name) FROM contract WHERE supplier_name IS NOT NULL AND supplier_name != '' AND process_id IS NOT NULL")
+        )
+        for row in c_result.all():
+            inst_id = all_procs.get(row[0])
+            if inst_id:
+                inst_suppliers[inst_id].add(row[1])
+
+        supplier_name_to_id: dict[str, int] = {}
+        for s in suppliers:
+            key = (s.registered_name or s.trade_name or "").strip().upper()
+            if key:
+                supplier_name_to_id[key] = s.id
+
+        # Log warnings for institutions that exceed TF-IDF capping
+        for _inst_id, names in inst_suppliers.items():
+            if len(names) > TFIDF_MAX_NAMES:
+                logger.warning("Collusion: skipping TF-IDF for institution %s (%d names)", _inst_id, len(names))
+
+        # Name similarity via TF-IDF char n-grams (offloaded to executor)
+        loop = asyncio.get_running_loop()
+        tfidf_edges = await loop.run_in_executor(
+            ml_executor, _compute_tfidf_edges, inst_suppliers, supplier_name_to_id, TFIDF_MAX_NAMES
+        )
+        for si_id, sj_id, w in tfidf_edges:
+            self._add_collusion_edge(G, si_id, sj_id, w, "similar_name")
+
+        # RNC prefix matching (first 6 digits)
+        rnc_prefix_map: dict[str, list[int]] = defaultdict(list)
+        for s in suppliers:
+            if s.rnc and len(s.rnc) >= 6:
+                rnc_prefix_map[s.rnc[:6]].append(s.id)
+        for _prefix, ids in rnc_prefix_map.items():
+            if len(ids) >= 2:
+                subset = ids[:MAX_EDGES_PER_GROUP]
+                for i in range(len(subset)):
+                    for j in range(i + 1, len(subset)):
+                        self._add_collusion_edge(G, subset[i], subset[j], 0.5, "shared_rnc_prefix")
+
+        # Address matching (exact after normalization)
+        address_map: dict[str, list[int]] = defaultdict(list)
+        for s in suppliers:
+            if s.address:
+                clean = re.sub(r"[^a-zA-Z0-9áéíóúñ]", "", s.address).lower().strip()
+                if len(clean) >= 15:
+                    address_map[clean].append(s.id)
+        for _addr, ids in address_map.items():
+            if len(ids) >= 2:
+                subset = ids[:MAX_EDGES_PER_GROUP]
+                for i in range(len(subset)):
+                    for j in range(i + 1, len(subset)):
+                        self._add_collusion_edge(G, subset[i], subset[j], 0.7, "shared_address")
 
         if G.number_of_edges() == 0:
             logger.info("Collusion: no suspicious links found")
             return 0
 
-        try:
-            communities = nx.community.louvain_communities(G, seed=42)
-        except ImportError:
+        if G.number_of_nodes() > LOUVAIN_MAX_NODES:
             communities = [list(c) for c in nx.connected_components(G)]
+        else:
+            try:
+                communities = nx.community.louvain_communities(G, seed=42)
+            except ImportError:
+                communities = [list(c) for c in nx.connected_components(G)]
 
         created = 0
         seen_pairs: set[tuple[int, int]] = set()
@@ -337,55 +420,83 @@ class AnomalyService:
                 continue
             subgraph = G.subgraph(community)
             density = nx.density(subgraph)
-            if density < 0.3:
+            if density < 0.15:
                 continue
 
-            member_ids = list(community)
-            for i in range(len(member_ids)):
-                for j in range(i + 1, len(member_ids)):
-                    pair = (member_ids[i], member_ids[j])
-                    if pair in seen_pairs:
-                        continue
-                    seen_pairs.add(pair)
+            supplier_map = {s.id: s for s in suppliers}
 
-                    s_a = next((s for s in suppliers if s.id == member_ids[i]), None)
-                    s_b = next((s for s in suppliers if s.id == member_ids[j]), None)
-                    if not s_a or not s_b:
-                        continue
+            for u, v in subgraph.edges():
+                pair = (u, v) if u < v else (v, u)
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
 
-                    edge_data = G.get_edge_data(member_ids[i], member_ids[j])
-                    reason = edge_data.get("reason", "unknown") if edge_data else "unknown"
+                s_a = supplier_map.get(u)
+                s_b = supplier_map.get(v)
+                if not s_a or not s_b:
+                    continue
 
-                    exists = await self.db.execute(
-                        select(Anomaly).where(
-                            Anomaly.description.contains(s_a.rnc),
-                            Anomaly.description.contains(s_b.rnc),
-                            Anomaly.anomaly_type == "COLLUSION",
-                        )
-                    )
-                    if exists.scalar_one_or_none():
-                        continue
+                edge_data = subgraph.get_edge_data(u, v)
+                signals: set[str] = edge_data.get("signals", set()) if edge_data else set()
+                num_signals = len(signals)
 
-                    desc = (
-                        f"Posible colusión entre '{s_a.registered_name or s_a.trade_name}' (RNC: {s_a.rnc}) "
-                        f"y '{s_b.registered_name or s_b.trade_name}' (RNC: {s_b.rnc}). "
-                        f"Vínculo detectado: {reason.replace('_', ' ')}."
-                    )
+                if num_signals == 0:
+                    continue
+                if num_signals == 1 and "shared_rnc_prefix" in signals:
+                    continue
 
-                    anomaly = Anomaly(
-                        anomaly_type="COLLUSION",
-                        severity=min(density, 1.0),
-                        score=float(density),
-                        description=desc[:2000],
-                    )
-                    self.db.add(anomaly)
-                    created += 1
+                if num_signals >= 3:
+                    confidence = "ALTA"
+                elif num_signals == 2:
+                    confidence = "MEDIA"
+                else:
+                    confidence = "BAJA"
+
+                display_reason = "unknown"
+                for s in self.SIGNAL_PRIORITY:
+                    if s in signals:
+                        display_reason = s
+                        break
+
+                exists = await self.db.execute(
+                    select(Anomaly).where(
+                        Anomaly.description.contains(s_a.rnc),
+                        Anomaly.description.contains(s_b.rnc),
+                        Anomaly.anomaly_type == "COLLUSION",
+                    ).limit(1)
+                )
+                if exists.first():
+                    continue
+
+                desc = (
+                    f"Posible colusión entre '{s_a.registered_name or s_a.trade_name}' (RNC: {s_a.rnc}) "
+                    f"y '{s_b.registered_name or s_b.trade_name}' (RNC: {s_b.rnc}). "
+                    f"Vínculo detectado: {display_reason.replace('_', ' ')}. "
+                    f"Señales: {num_signals}."
+                )
+
+                anomaly = Anomaly(
+                    anomaly_type="COLLUSION",
+                    severity=min(density, 1.0),
+                    score=float(density),
+                    confidence=confidence,
+                    signals_count=num_signals,
+                    description=desc[:2000],
+                )
+                self.db.add(anomaly)
+                created += 1
+
+                if created % COLLUSION_BATCH_SIZE == 0:
+                    await self.db.commit()
+                    logger.info("Collusion: %d anomalies committed (batch)", created)
 
         await self.db.commit()
         logger.info("Collusion detection: %d anomalies created", created)
         return created
 
     async def run_full_detection(self) -> dict:
+        await self.db.execute(text("DELETE FROM anomaly"))
+        await self.db.commit()
         price_count = await self.detect_price_anomalies()
         frag_count = await self.detect_fragmentation()
         coll_count = await self.detect_collusion()
@@ -529,7 +640,7 @@ class AnomalyService:
                     )
                 )
                 same_category = items_result.scalars().all()
-                prices = sorted(set(it.unit_price for it in same_category if it.unit_price))
+                sorted({it.unit_price for it in same_category if it.unit_price})
                 market_prices = [
                     {
                         "contract_id": it.contract_id,
@@ -591,7 +702,7 @@ class AnomalyService:
             for coll in all_coll:
                 desc = coll.description or ""
                 m = re.match(
-                    r"Posible colusión entre '(.+?)' \(RNC: (.+?)\) y '(.+?)' \(RNC: (.+?)\)\. Vínculo detectado: (.+?)\.$",
+                    r"Posible colusión entre '(.+?)' \(RNC: (.+?)\) y '(.+?)' \(RNC: (.+?)\)\. Vínculo detectado: ([^.]+)\.",
                     desc,
                 )
                 if not m:

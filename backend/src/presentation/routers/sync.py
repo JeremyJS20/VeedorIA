@@ -53,7 +53,7 @@ async def trigger_dgcp_sync(
 
     sync_type = _compute_sync_type(full, skip_institutions, skip_processes, skip_contracts, skip_items, skip_suppliers)
     try:
-        pid = await launch_sync(
+        tag = await launch_sync(
             full=full,
             days_back=days_back,
             skip_institutions=skip_institutions,
@@ -65,7 +65,22 @@ async def trigger_dgcp_sync(
         )
     except RuntimeError as e:
         return ApiResponse(success=False, message=str(e))
-    return ApiResponse(success=True, data={"pid": pid, "sync_type": sync_type}, message="Sync started")
+    return ApiResponse(success=True, data={"task": tag, "sync_type": sync_type}, message="Sync started")
+
+
+def _serialize_log(log: SyncLog) -> dict:
+    return {
+        "id": log.id,
+        "process_type": log.process_type,
+        "status": log.status,
+        "records": log.records_synced,
+        "started_at": log.started_at.isoformat() if log.started_at else None,
+        "completed_at": log.completed_at.isoformat() if log.completed_at else None,
+        "error": log.error_message,
+        "triggered_by": log.triggered_by,
+        "sync_type": log.sync_type,
+        "details": log.details,
+    }
 
 
 @router.get("/status")
@@ -76,34 +91,23 @@ async def sync_status(
     result = await session.execute(stmt)
     logs = result.scalars().all()
 
-    last_completed = None
+    last_sync = None
+    sync_logs: list[dict] = []
+    detection_logs: list[dict] = []
+
     for log in logs:
-        if log.status == "completed":
-            last_completed = log
-            break
+        if log.process_type == "sync":
+            sync_logs.append(_serialize_log(log))
+            if not last_sync and log.status == "completed":
+                last_sync = sync_logs[-1]
+        else:
+            detection_logs.append(_serialize_log(log))
 
     return ApiResponse(
         success=True,
         data={
-            "last_sync": {
-                "id": last_completed.id if last_completed else None,
-                "status": last_completed.status if last_completed else None,
-                "records": last_completed.records_synced if last_completed else 0,
-                "sync_type": last_completed.sync_type if last_completed else None,
-                "completed_at": last_completed.completed_at.isoformat() if last_completed and last_completed.completed_at else None,
-            } if last_completed else None,
-            "recent_logs": [
-                {
-                    "id": log.id,
-                    "status": log.status,
-                    "records": log.records_synced,
-                    "started_at": log.started_at.isoformat(),
-                    "completed_at": log.completed_at.isoformat() if log.completed_at else None,
-                    "error": log.error_message,
-                    "triggered_by": log.triggered_by,
-                    "sync_type": log.sync_type,
-                }
-                for log in logs
-            ],
+            "last_sync": last_sync,
+            "recent_syncs": sync_logs,
+            "recent_detections": detection_logs,
         },
     )

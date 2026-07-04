@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next"
 interface SeverityGaugeProps {
   value: number
   confidence?: number
+  signalsCount?: number
   className?: string
 }
 
-export default function SeverityGauge({ value, confidence, className = "" }: SeverityGaugeProps) {
+export default function SeverityGauge({ value, confidence, signalsCount, className = "" }: SeverityGaugeProps) {
   const { t } = useTranslation("dashboard")
   const normalized = Math.min(Math.max(value, 0), 100)
   const dashOffset = 100 - normalized
@@ -17,7 +18,7 @@ export default function SeverityGauge({ value, confidence, className = "" }: Sev
   const riskLabel =
     normalized >= 70 ? "drawer.risk_critical" : normalized >= 50 ? "drawer.risk_high" : normalized >= 30 ? "drawer.risk_medium" : "drawer.risk_low"
 
-  const factors = Math.max(1, Math.floor(normalized / 25))
+  const factors = signalsCount ?? Math.max(1, Math.floor(normalized / 25))
   const conf = confidence ?? 94
 
   return (

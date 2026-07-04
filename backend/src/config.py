@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     sync_batch_size: int = 500
     sync_rate_limit: float = 5.0
 
+    # Redis / arq
+    redis_url: str = "redis://localhost:6379/0"
+
     # Sync schedule (APScheduler, production only)
     sync_cron_hour: int = 6
     sync_cron_minute: int = 0

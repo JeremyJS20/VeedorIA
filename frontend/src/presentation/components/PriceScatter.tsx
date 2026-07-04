@@ -5,10 +5,11 @@ import type { MarketPrice } from "../../domain/anomaly"
 interface PriceScatterProps {
   data: MarketPrice[]
   median: number
+  fullscreen?: boolean
   className?: string
 }
 
-export default function PriceScatter({ data, median, className = "" }: PriceScatterProps) {
+export default function PriceScatter({ data, median, fullscreen, className = "" }: PriceScatterProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function PriceScatter({ data, median, className = "" }: PriceScat
     svg.selectAll("*").remove()
 
     const width = svgRef.current.clientWidth
-    const height = 160
+    const height = fullscreen ? svgRef.current.clientHeight : 160
     const margin = { top: 16, right: 16, bottom: 24, left: 64 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
@@ -101,8 +102,8 @@ export default function PriceScatter({ data, median, className = "" }: PriceScat
   if (data.length === 0) return null
 
   return (
-    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${className}`}>
-      <svg ref={svgRef} className="w-full" style={{ height: 160 }} />
+    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${fullscreen ? "h-full" : ""} ${className}`}>
+      <svg ref={svgRef} className={`w-full ${fullscreen ? "h-full" : ""}`} style={fullscreen ? undefined : { height: 160 }} />
     </div>
   )
 }

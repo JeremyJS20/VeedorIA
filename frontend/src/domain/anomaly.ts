@@ -3,6 +3,8 @@ export interface Anomaly {
   anomaly_type: "PRICE_ANOMALY" | "FRAGMENTATION" | "COLLUSION"
   severity: number
   score: number | null
+  confidence?: string
+  signals_count?: number
   description: string
   status: "PENDING" | "CONFIRMED" | "DISMISSED"
   reviewer_id: string | null
@@ -73,6 +75,7 @@ export interface AnomalyContext {
   severity: number
   score: number | null
   confidence: number
+  signals_count?: number
   amount: number | null
   process_code: string | null
   supplier_name: string | null
