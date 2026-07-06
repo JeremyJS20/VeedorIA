@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS detection_config (
+    key VARCHAR(50) PRIMARY KEY,
+    value DOUBLE PRECISION NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW()
+);

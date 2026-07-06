@@ -1,10 +1,15 @@
 import asyncio
+import hashlib
 import logging
+import math
+import os
 import re
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
+import joblib
 import networkx as nx
 import numpy as np
 from rapidfuzz import fuzz
@@ -15,8 +20,9 @@ from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import desc
 
-from src.models.anomaly import Anomaly
+from src.models.anomaly import Anomaly, AnomalyStatus
 from src.models.audit_log import AuditLog
+from src.models.detection_config import DetectionConfig
 from src.models.contract import Contract
 from src.models.institution import Institution
 from src.models.item import Item
@@ -30,29 +36,42 @@ ml_executor = ProcessPoolExecutor(max_workers=2)
 FRAGMENTATION_WINDOW_DAYS = 30
 FRAGMENTATION_THRESHOLD_DOP = 8_000_000
 IF_MIN_ITEMS = 30
-IF_CONTAMINATION = 0.05
+IF_CONTAMINATION = 0.02
 IF_N_ESTIMATORS = 100
 IF_RANDOM_STATE = 42
 ZSCORE_THRESHOLD = 2.5
-MIN_DEVIATION_PCT = 100.0
+MIN_DEVIATION_PCT = 200.0
 BANNED_EMAIL_DOMAINS = {"gmail.com", "hotmail.com", "yahoo.com", "outlook.com", "aol.com"}
 
 TFIDF_MAX_NAMES = 500
 MAX_EDGES_PER_GROUP = 100
 LOUVAIN_MAX_NODES = 5000
 COLLUSION_BATCH_SIZE = 100
+MODEL_CACHE_DIR = Path(os.environ.get("VEEDORIA_MODEL_CACHE", str(Path.home() / ".cache" / "veedoria" / "models")))
 
 
-def _compute_if_scores(prices: list[float]) -> list[float]:
+def _model_cache_key(prices: list[float], contamination: float) -> str:
+    raw = f"{contamination}|{sorted(prices)}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def _compute_if_scores(prices: list[float], contamination: float = IF_CONTAMINATION) -> list[float]:
     if len(prices) < 4:
         return [0.0] * len(prices)
     X = np.array(prices).reshape(-1, 1)
+    cache_key = _model_cache_key(prices, contamination)
+    cache_path = MODEL_CACHE_DIR / f"if_{cache_key}.joblib"
+    if cache_path.exists():
+        model = joblib.load(cache_path)
+        return model.decision_function(X).tolist()
     model = IsolationForest(
-        contamination=IF_CONTAMINATION,
+        contamination=contamination,
         n_estimators=IF_N_ESTIMATORS,
         random_state=IF_RANDOM_STATE,
     )
     model.fit(X)
+    MODEL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, cache_path)
     return model.decision_function(X).tolist()
 
 
@@ -74,7 +93,7 @@ def _compute_tfidf_edges(
         nn.fit(tfidf)
         distances, indices = nn.radius_neighbors(tfidf, return_distance=True)
         for i in range(len(name_list)):
-            for dist, j in zip(distances[i], indices[i]):
+            for dist, j in zip(distances[i], indices[i], strict=False):
                 if j <= i:
                     continue
                 similarity = 1 - dist
@@ -101,6 +120,18 @@ def _compute_z_scores(prices: list[float]) -> list[float]:
 class AnomalyService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        self._config: dict[str, float] | None = None
+
+    async def _ensure_config(self) -> None:
+        if self._config is not None:
+            return
+        result = await self.db.execute(select(DetectionConfig))
+        self._config = {row.key: row.value for row in result.scalars().all()}
+
+    def _get_param(self, key: str, default: float) -> float:
+        if self._config is None:
+            return default
+        return self._config.get(key, default)
 
     async def detect_price_anomalies(self) -> int:
         stmt = select(Item).where(
@@ -147,7 +178,8 @@ class AnomalyService:
                 continue
 
             if len(prices) >= IF_MIN_ITEMS:
-                scores = await loop.run_in_executor(ml_executor, _compute_if_scores, prices)
+                contamination = self._get_param("price_if_contamination", IF_CONTAMINATION)
+                scores = await loop.run_in_executor(ml_executor, _compute_if_scores, prices, contamination)
             else:
                 raw = _compute_z_scores(prices)
                 scores = [-s / max(abs(s), 1) for s in raw]
@@ -155,14 +187,14 @@ class AnomalyService:
             median_price = float(np.median(prices))
 
             for item, score in zip(group, scores, strict=False):
-                is_anomaly = score < 0 if len(prices) >= IF_MIN_ITEMS else abs(score) > ZSCORE_THRESHOLD / max(abs(score), 1)
+                is_anomaly = score < 0 if len(prices) >= IF_MIN_ITEMS else abs(score) > self._get_param("price_zscore_threshold", ZSCORE_THRESHOLD) / max(abs(score), 1)
                 if not is_anomaly:
                     continue
                 if item.contract_id in seen_contracts:
                     continue
 
                 deviation_pct = ((item.unit_price - median_price) / median_price * 100) if median_price > 0 else 0
-                if deviation_pct < MIN_DEVIATION_PCT:
+                if deviation_pct < self._get_param("price_min_deviation_pct", MIN_DEVIATION_PCT):
                     continue
                 direction = "supera"
                 description = (
@@ -175,6 +207,8 @@ class AnomalyService:
                 p = processes.get(c.process_id) if c and c.process_id else None
                 inst = institutions.get(p.institution_id) if p and p.institution_id else None
 
+                price_severity = min(deviation_pct / 500, 1.0)
+
                 anomaly = Anomaly(
                     contract_id=item.contract_id,
                     amount=c.amount_adjudicated if c else None,
@@ -182,7 +216,7 @@ class AnomalyService:
                     process_code=p.dgcp_code if p else None,
                     institution_name=inst.name if inst else None,
                     anomaly_type="PRICE_ANOMALY",
-                    severity=min(abs(score), 1.0),
+                    severity=price_severity,
                     score=float(score),
                     description=description[:2000],
                 )
@@ -228,7 +262,7 @@ class AnomalyService:
                     if ci.amount_adjudicated is None or cj.amount_adjudicated is None:
                         continue
                     combined = ci.amount_adjudicated + cj.amount_adjudicated
-                    if combined < FRAGMENTATION_THRESHOLD_DOP:
+                    if combined < self._get_param("fragmentation_threshold_dop", FRAGMENTATION_THRESHOLD_DOP):
                         continue
 
                     items_i = await self.db.execute(
@@ -261,7 +295,7 @@ class AnomalyService:
                     if exists.scalar_one_or_none():
                         continue
 
-                    severity = min((combined - FRAGMENTATION_THRESHOLD_DOP) / FRAGMENTATION_THRESHOLD_DOP, 1.0)
+                    severity = min(math.log2(combined / FRAGMENTATION_THRESHOLD_DOP) / 3, 1.0)
                     desc = (
                         f"Posible fraccionamiento: contratos {ci.contract_id} y {cj.contract_id} "
                         f"suman DOP ${combined:,.2f} superando el umbral de licitación "
@@ -442,7 +476,7 @@ class AnomalyService:
 
                 if num_signals == 0:
                     continue
-                if num_signals == 1 and "shared_rnc_prefix" in signals:
+                if num_signals == 1 and ("shared_rnc_prefix" in signals or "similar_name" in signals):
                     continue
 
                 if num_signals >= 3:
@@ -450,13 +484,42 @@ class AnomalyService:
                 elif num_signals == 2:
                     confidence = "MEDIA"
                 else:
-                    confidence = "BAJA"
+                    confidence = "INFO"
 
                 display_reason = "unknown"
                 for s in self.SIGNAL_PRIORITY:
                     if s in signals:
                         display_reason = s
                         break
+
+                signal_values: dict[str, object] = {}
+                if "shared_phone" in signals:
+                    phone = s_a.phone or s_b.phone
+                    if phone:
+                        signal_values["shared_phone"] = phone
+                if "shared_address" in signals:
+                    addr = s_a.address or s_b.address
+                    if addr:
+                        signal_values["shared_address"] = addr
+                if "shared_domain" in signals:
+                    domain = None
+                    for e in (s_a.email, s_b.email):
+                        if e and "@" in e:
+                            d = e.split("@")[1].lower()
+                            if d not in BANNED_EMAIL_DOMAINS:
+                                domain = d
+                                break
+                    if domain:
+                        signal_values["shared_domain"] = domain
+                if "shared_rnc_prefix" in signals and s_a.rnc and s_b.rnc:
+                    prefix = s_a.rnc[:6]
+                    if prefix == s_b.rnc[:6]:
+                        signal_values["shared_rnc_prefix"] = prefix
+                if "similar_name" in signals:
+                    signal_values["similar_name"] = [
+                        s_a.registered_name or s_a.trade_name,
+                        s_b.registered_name or s_b.trade_name,
+                    ]
 
                 exists = await self.db.execute(
                     select(Anomaly).where(
@@ -475,12 +538,17 @@ class AnomalyService:
                     f"Señales: {num_signals}."
                 )
 
+                signal_score = num_signals / 5.0
+                size_score = min(len(community) / 8.0, 1.0)
+                severity = min(signal_score * 0.6 + size_score * 0.4, 1.0)
+
                 anomaly = Anomaly(
                     anomaly_type="COLLUSION",
-                    severity=min(density, 1.0),
+                    severity=severity,
                     score=float(density),
                     confidence=confidence,
                     signals_count=num_signals,
+                    detection_metadata=signal_values or None,
                     description=desc[:2000],
                 )
                 self.db.add(anomaly)
@@ -495,11 +563,49 @@ class AnomalyService:
         return created
 
     async def run_full_detection(self) -> dict:
+        await self._ensure_config()
+        existing = await self.db.execute(
+            select(Anomaly).where(Anomaly.status != AnomalyStatus.PENDING.value)
+        )
+        reviews: dict[tuple, dict] = {}
+        for a in existing.scalars().all():
+            if a.anomaly_type == "PRICE_ANOMALY" and a.contract_id:
+                key = ("PRICE_ANOMALY", a.contract_id)
+            elif a.anomaly_type == "FRAGMENTATION" and a.process_id:
+                key = ("FRAGMENTATION", a.process_id)
+            elif a.anomaly_type == "COLLUSION" and a.description:
+                m = re.match(r".*RNC:\s*(\S+).*RNC:\s*(\S+)", a.description)
+                if m:
+                    key = ("COLLUSION", *sorted([m.group(1), m.group(2)]))
+                else:
+                    continue
+            else:
+                continue
+            reviews[key] = {"status": a.status, "reviewer_id": a.reviewer_id}
+
         await self.db.execute(text("DELETE FROM anomaly"))
         await self.db.commit()
         price_count = await self.detect_price_anomalies()
         frag_count = await self.detect_fragmentation()
         coll_count = await self.detect_collusion()
+
+        for key, review in reviews.items():
+            if key[0] == "PRICE_ANOMALY":
+                await self.db.execute(
+                    text("UPDATE anomaly SET status=:s, reviewer_id=:r WHERE anomaly_type='PRICE_ANOMALY' AND contract_id=:cid AND status='PENDING'"),
+                    {"s": review["status"], "r": review["reviewer_id"], "cid": key[1]},
+                )
+            elif key[0] == "FRAGMENTATION":
+                await self.db.execute(
+                    text("UPDATE anomaly SET status=:s, reviewer_id=:r WHERE anomaly_type='FRAGMENTATION' AND process_id=:pid AND status='PENDING'"),
+                    {"s": review["status"], "r": review["reviewer_id"], "pid": key[1]},
+                )
+            elif key[0] == "COLLUSION":
+                await self.db.execute(
+                    text("UPDATE anomaly SET status=:s, reviewer_id=:r WHERE anomaly_type='COLLUSION' AND description LIKE :rnc1 AND description LIKE :rnc2 AND status='PENDING'"),
+                    {"s": review["status"], "r": review["reviewer_id"], "rnc1": f"%{key[1]}%", "rnc2": f"%{key[2]}%"},
+                )
+        await self.db.commit()
         return {
             "price_anomalies": price_count,
             "fragmentation": frag_count,
@@ -731,6 +837,7 @@ class AnomalyService:
                     "target_rnc": rnc_b,
                     "reason": reason,
                     "weight": coll.score or coll.severity,
+                    "signal_details": coll.detection_metadata or {},
                 })
 
         confidence = min(abs(anomaly.score) * 100 if anomaly.score else anomaly.severity * 100, 99)
@@ -755,6 +862,7 @@ class AnomalyService:
         reviewer_id: str,
         status: str,
         notes: str | None = None,
+        dismissal_reason: str | None = None,
     ) -> Anomaly | None:
         anomaly = await self.get_anomaly(anomaly_id)
         if not anomaly:
@@ -763,6 +871,8 @@ class AnomalyService:
         old_status = anomaly.status
         anomaly.status = status
         anomaly.reviewer_id = reviewer_id
+        if dismissal_reason:
+            anomaly.dismissal_reason = dismissal_reason
         anomaly.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
         log_entry = AuditLog(
@@ -771,7 +881,7 @@ class AnomalyService:
             entity_type="anomaly",
             entity_id=anomaly_id,
             old_value={"status": old_status},
-            new_value={"status": status, "notes": notes or ""},
+            new_value={"status": status, "notes": notes or "", "dismissal_reason": dismissal_reason or ""},
         )
         self.db.add(log_entry)
         self.db.add(anomaly)

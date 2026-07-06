@@ -11,7 +11,7 @@ class TestSyncStatusEndpoint:
         json_data = response.json()
         assert json_data["success"] is True
         assert json_data["data"]["last_sync"] is None
-        assert json_data["data"]["recent_logs"] == []
+        assert json_data["data"]["recent_syncs"] == []
 
     async def test_with_sync_logs(self, client: AsyncClient, db_session: AsyncSession):
         log1 = SyncLog(status="completed", records_synced=100, triggered_by="cli")
@@ -24,8 +24,8 @@ class TestSyncStatusEndpoint:
         json_data = response.json()
         assert json_data["success"] is True
         data = json_data["data"]
-        assert data["recent_logs"] is not None
-        assert len(data["recent_logs"]) >= 2
+        assert data["recent_syncs"] is not None
+        assert len(data["recent_syncs"]) >= 2
         assert data["last_sync"]["status"] == "completed"
         assert data["last_sync"]["records"] == 100
 

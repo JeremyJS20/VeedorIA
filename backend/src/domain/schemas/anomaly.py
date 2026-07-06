@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -11,9 +10,13 @@ class AnomalyResponse(BaseModel):
     anomaly_type: str
     severity: float
     score: float | None = None
+    confidence: str | None = None
+    signals_count: int = 0
+    detection_metadata: dict | None = None
     description: str
     status: str
     reviewer_id: str | None = None
+    dismissal_reason: str | None = None
     created_at: datetime
     updated_at: datetime
     amount: float | None = None
@@ -33,6 +36,7 @@ class AnomalyReviewPayload(BaseModel):
     status: str = Field(..., pattern=r"^(CONFIRMED|DISMISSED)$")
     reviewer_id: str = Field(..., min_length=1)
     notes: str | None = Field(None, min_length=10)
+    dismissal_reason: str | None = Field(None, pattern=r"^(FALSE_POSITIVE|DUPLICATE|DATA_ERROR|ALREADY_KNOWN)$")
 
 
 class AnomalyStats(BaseModel):
@@ -61,9 +65,12 @@ class TimelineEntry(BaseModel):
 
 class CollusionLink(BaseModel):
     source: str
+    source_rnc: str | None = None
     target: str
+    target_rnc: str | None = None
     reason: str
     weight: float
+    signal_details: dict = Field(default_factory=dict)
 
 
 class AnomalyContext(BaseModel):
@@ -71,6 +78,7 @@ class AnomalyContext(BaseModel):
     severity: float
     score: float | None = None
     confidence: float = 0.0
+    signals_count: int = 0
     amount: float | None = None
     process_code: str | None = None
     supplier_name: str | None = None

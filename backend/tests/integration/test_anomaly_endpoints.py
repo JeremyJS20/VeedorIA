@@ -155,13 +155,15 @@ async def test_review_anomaly_dismiss(client: AsyncClient, db_session: AsyncSess
         json={
             "status": "DISMISSED",
             "reviewer_id": u.id,
-            "notes": "Se descarta porque los contratos pertenecen a unidades diferentes dentro de la misma institución.",
+            "dismissal_reason": "FALSE_POSITIVE",
+            "notes": "Se descarta porque los contratos pertenecen a unidades diferentes.",
         },
     )
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
     assert data["data"]["status"] == "DISMISSED"
+    assert data["data"]["dismissal_reason"] == "FALSE_POSITIVE"
 
 
 @pytest.mark.asyncio

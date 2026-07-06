@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Maximize2, X } from "lucide-react"
 import { toast } from "@heroui/react"
-import type { Anomaly } from "../../domain/anomaly"
+import type { Anomaly, DismissalReason } from "../../domain/anomaly"
 import { useAnomalyContext, useReviewAnomaly } from "../hooks/useAnomalyQueries"
 import Button from "./ui/Button"
 import FullscreenOverlay from "./ui/FullscreenOverlay"
@@ -21,6 +21,14 @@ interface AnomalyDrawerProps {
 
 const FRAGMENTATION_THRESHOLD = 8_000_000
 
+const SIGNAL_CONFIG: Record<string, { label: string; icon: string }> = {
+  shared_phone: { label: "Teléfono", icon: "📞" },
+  shared_address: { label: "Dirección", icon: "📍" },
+  shared_domain: { label: "Dominio de email", icon: "📧" },
+  shared_rnc_prefix: { label: "Prefijo RNC", icon: "🔗" },
+  similar_name: { label: "Nombre similar", icon: "📛" },
+}
+
 function median(values: number[]) {
   if (values.length === 0) return 0
   const sorted = [...values].sort((a, b) => a - b)
@@ -33,13 +41,25 @@ type FullscreenChart = "price" | "fragmentation" | "collusion" | null
 export default function AnomalyDrawer({ anomaly, onClose, className = "" }: AnomalyDrawerProps) {
   const { t } = useTranslation("dashboard")
   const [notes, setNotes] = useState("")
+  const [dismissalReason, setDismissalReason] = useState<DismissalReason | "">("")
   const [fullscreenChart, setFullscreenChart] = useState<FullscreenChart>(null)
   const reviewMutation = useReviewAnomaly()
   const { data: ctx, isLoading: ctxLoading } = useAnomalyContext(anomaly.id)
   const reviewerId = localStorage.getItem("user_id") || "00000000-0000-0000-0000-000000000000"
 
+  const DISMISSAL_REASONS: { value: DismissalReason; labelKey: string }[] = [
+    { value: "FALSE_POSITIVE", labelKey: "drawer.dismiss_reason_FALSE_POSITIVE" },
+    { value: "DUPLICATE", labelKey: "drawer.dismiss_reason_DUPLICATE" },
+    { value: "DATA_ERROR", labelKey: "drawer.dismiss_reason_DATA_ERROR" },
+    { value: "ALREADY_KNOWN", labelKey: "drawer.dismiss_reason_ALREADY_KNOWN" },
+  ]
+
   const handleReview = async (status: "CONFIRMED" | "DISMISSED") => {
-    if (notes.trim().length < 10) {
+    if (status === "DISMISSED" && !dismissalReason) {
+      toast.danger(t("drawer.dismiss_reason_required"))
+      return
+    }
+    if (status === "CONFIRMED" && notes.trim().length < 10) {
       toast.danger(t("drawer.notes_required"))
       return
     }
@@ -50,7 +70,8 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
         payload: {
           status,
           reviewer_id: reviewerId,
-          notes: notes.trim(),
+          notes: notes.trim() || undefined,
+          dismissal_reason: dismissalReason || undefined,
         },
       })
       onClose()
@@ -102,6 +123,32 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           </h4>
           <SeverityGauge value={anomaly.severity * 100} confidence={ctx?.confidence} signalsCount={ctx?.signals_count} />
         </div>
+
+        {anomaly.description && (
+          <div className="bg-background rounded-xl p-4 border border-outline-variant/20">
+            <p className="text-[10px] font-bold text-outline uppercase tracking-widest mb-1.5">
+              {t("drawer.alert_detail")}
+            </p>
+            <p className="text-sm text-on-surface leading-relaxed">
+              {anomaly.description}
+            </p>
+            {isCollusion && anomaly.detection_metadata && Object.keys(anomaly.detection_metadata).length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-outline-variant/20">
+                {Object.entries(anomaly.detection_metadata).map(([key, value]) => {
+                  const cfg = SIGNAL_CONFIG[key]
+                  if (!cfg) return null
+                  const display = Array.isArray(value) ? value.join(" / ") : String(value)
+                  return (
+                    <span key={key} className="inline-flex items-center gap-1 text-[10px] bg-background/80 px-2 py-0.5 rounded-full border border-outline-variant/20 font-medium text-outline">
+                      <span>{cfg.icon}</span>
+                      <span>{cfg.label}: <span className="font-mono text-on-surface">{display}</span></span>
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {ctxLoading && (
           <div className="space-y-4 animate-pulse">
@@ -181,14 +228,35 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
                 <>
                   <CollusionNetwork links={ctx.collusion_links} />
                   <div className="space-y-2">
-                    {ctx.collusion_links.map((link, i) => (
-                      <div key={i} className="flex items-center justify-between text-[11px] bg-background rounded-xl p-3 border border-outline-variant/20">
-                        <span className="font-semibold text-on-surface">{link.source}</span>
-                        <span className="text-outline mx-2">⟷</span>
-                        <span className="font-semibold text-on-surface">{link.target}</span>
-                        <span className="text-outline ml-auto text-[10px]">{link.reason.replace(/_/g, " ")}</span>
-                      </div>
-                    ))}
+                    {ctx.collusion_links.map((link, i) => {
+                      const details = link.signal_details as Record<string, unknown> | undefined
+                      const detailEntries = details ? Object.entries(details) : []
+                      return (
+                        <div key={i} className="text-[11px] bg-background rounded-xl p-3 border border-outline-variant/20">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-on-surface">{link.source}</span>
+                            <span className="text-outline mx-2">⟷</span>
+                            <span className="font-semibold text-on-surface">{link.target}</span>
+                            <span className="text-outline ml-auto text-[10px]">{link.reason.replace(/_/g, " ")}</span>
+                          </div>
+                          {detailEntries.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-outline-variant/20">
+                              {detailEntries.map(([key, value]) => {
+                                const cfg = SIGNAL_CONFIG[key]
+                                if (!cfg) return null
+                                const display = Array.isArray(value) ? value.join(" / ") : String(value)
+                                return (
+                                  <span key={key} className="inline-flex items-center gap-1 text-[10px] bg-surface/80 px-2 py-0.5 rounded-full border border-outline-variant/20 font-medium text-outline">
+                                    <span>{cfg.icon}</span>
+                                    <span>{cfg.label}: <span className="font-mono text-on-surface">{display}</span></span>
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </>
               ) : (
@@ -206,6 +274,21 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           className="w-full h-24 p-3 text-sm bg-background rounded-xl border border-outline-variant/20 outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
           placeholder={t("drawer.notes_placeholder")}
         />
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-outline uppercase tracking-widest">
+            {t("drawer.dismiss_reason_label")}
+          </label>
+          <select
+            value={dismissalReason}
+            onChange={(e) => setDismissalReason(e.target.value as DismissalReason | "")}
+            className="w-full p-2.5 text-sm bg-background rounded-xl border border-outline-variant/20 outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+          >
+            <option value="">{t("drawer.dismiss_reason_placeholder")}</option>
+            {DISMISSAL_REASONS.map((r) => (
+              <option key={r.value} value={r.value}>{t(r.labelKey)}</option>
+            ))}
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <Button
             variant="secondary"

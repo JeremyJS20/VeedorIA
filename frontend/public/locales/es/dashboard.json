@@ -80,10 +80,18 @@
     "median": "Mediana:",
     "timeline": "Línea de Tiempo de Adjudicaciones",
     "alert_fragmentation": "Alerta de Fraccionamiento: {{count}} órdenes al mismo proveedor en < 15 días.",
+    "alert_detail": "Detalle de la alerta",
     "notes_placeholder": "Agregar notas técnicas sobre el hallazgo...",
     "dismiss": "Descartar",
     "confirm": "Confirmar Alerta",
     "notes_required": "Debe agregar una nota de al menos 10 caracteres",
-    "review_success": "Revisión registrada exitosamente"
+    "review_success": "Revisión registrada exitosamente",
+    "dismiss_reason_label": "Motivo del descarte",
+    "dismiss_reason_placeholder": "Seleccione un motivo...",
+    "dismiss_reason_FALSE_POSITIVE": "Falso positivo — precio correcto",
+    "dismiss_reason_DUPLICATE": "Duplicado de otra alerta",
+    "dismiss_reason_DATA_ERROR": "Error en datos de origen",
+    "dismiss_reason_ALREADY_KNOWN": "Ya conocido / investigado",
+    "dismiss_reason_required": "Debe seleccionar un motivo para descartar"
   }
 }

@@ -107,6 +107,7 @@ async def review_anomaly(
         reviewer_id=payload.reviewer_id,
         status=payload.status,
         notes=payload.notes,
+        dismissal_reason=payload.dismissal_reason,
     )
     if not anomaly:
         return ApiResponse(success=False, message="Anomalía no encontrada")

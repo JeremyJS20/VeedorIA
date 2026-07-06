@@ -8,6 +8,7 @@ export interface Anomaly {
   description: string
   status: "PENDING" | "CONFIRMED" | "DISMISSED"
   reviewer_id: string | null
+  dismissal_reason: DismissalReason | null
   contract_id: number | null
   process_id: number | null
   detection_metadata: Record<string, unknown> | null
@@ -26,10 +27,13 @@ export interface AnomalyStats {
   total: number
 }
 
+export type DismissalReason = "FALSE_POSITIVE" | "DUPLICATE" | "DATA_ERROR" | "ALREADY_KNOWN"
+
 export interface AnomalyReviewPayload {
   status: "CONFIRMED" | "DISMISSED"
   reviewer_id: string
   notes?: string
+  dismissal_reason?: DismissalReason
 }
 
 export interface ApiResponse<T> {
@@ -70,6 +74,7 @@ export interface CollusionLink {
   target_rnc?: string
   reason: string
   weight: number
+  signal_details: Record<string, unknown>
 }
 
 export interface AnomalyContext {

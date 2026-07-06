@@ -15,4 +15,4 @@ COPY src/ src/
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.presentation.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "src.presentation.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -110,15 +110,36 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       .attr("stroke-opacity", (d: CollusionLink) => 0.3 + (d.weight / maxWeight) * 0.5)
       .attr("cursor", "pointer")
 
+    function signalDetailsHtml(d: CollusionLink): string {
+      const details = (d as any).signal_details as Record<string, unknown> | undefined
+      if (!details || Object.keys(details).length === 0) return ""
+      const labels: Record<string, string> = {
+        shared_phone: "📞 Teléfono",
+        shared_address: "📍 Dirección",
+        shared_domain: "📧 Dominio",
+        shared_rnc_prefix: "🔗 Prefijo RNC",
+        similar_name: "📛 Nombre similar",
+      }
+      return Object.entries(details)
+        .map(([k, v]) => {
+          const label = labels[k]
+          if (!label) return ""
+          const display = Array.isArray(v) ? v.join(" / ") : String(v)
+          return `<div class="text-outline mt-0.5">${label}: <span class="font-mono text-on-surface">${display}</span></div>`
+        })
+        .join("")
+    }
+
     link
       .on("mouseover", function (_event, d) {
         d3.select(this).attr("stroke-opacity", 1).attr("stroke-width", Math.max(2, d.weight * 4))
         tooltip
           .style("display", "block")
           .html(`
-            <div class="font-semibold text-on-surface">${d.source} ⟷ ${d.target}</div>
+            <div class="font-semibold text-on-surface">${(d.source as any).id || d.source} ⟷ ${(d.target as any).id || d.target}</div>
             <div class="text-outline mt-0.5">${REASON_LABELS[d.reason] || d.reason.replace(/_/g, " ")}</div>
             <div class="text-outline/60 mt-0.5">Peso: ${(d.weight * 100).toFixed(0)}%</div>
+            ${signalDetailsHtml(d)}
           `)
       })
       .on("mousemove", (event) => {

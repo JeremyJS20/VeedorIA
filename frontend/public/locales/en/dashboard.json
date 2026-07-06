@@ -80,10 +80,18 @@
     "median": "Median:",
     "timeline": "Award Timeline",
     "alert_fragmentation": "Fragmentation Alert: {{count}} orders to same supplier in < 15 days.",
+    "alert_detail": "Alert detail",
     "notes_placeholder": "Add technical notes about the finding...",
     "dismiss": "Dismiss",
     "confirm": "Confirm Alert",
     "notes_required": "You must add a note of at least 10 characters",
-    "review_success": "Review recorded successfully"
+    "review_success": "Review recorded successfully",
+    "dismiss_reason_label": "Dismissal reason",
+    "dismiss_reason_placeholder": "Select a reason...",
+    "dismiss_reason_FALSE_POSITIVE": "False positive — price is correct",
+    "dismiss_reason_DUPLICATE": "Duplicate of another alert",
+    "dismiss_reason_DATA_ERROR": "Source data error",
+    "dismiss_reason_ALREADY_KNOWN": "Already known / investigated",
+    "dismiss_reason_required": "You must select a reason to dismiss"
   }
 }

@@ -1,7 +1,8 @@
 import uuid
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.anomaly import Anomaly
@@ -166,3 +167,105 @@ async def test_get_anomalies_severity_filter(db_session: AsyncSession):
     assert len(items) == 1
     assert total == 1
     assert items[0].severity == 0.8
+
+
+@pytest.mark.asyncio
+async def test_reviews_preserved_across_detection_run(db_session: AsyncSession):
+    from src.models.contract import Contract
+    from src.models.process import Process
+    from src.models.user import User
+
+    u1 = User(email="auditor1@test.com", password_hash="dummy", full_name="Auditor 1", role="AUDITOR")
+    u2 = User(email="auditor2@test.com", password_hash="dummy", full_name="Auditor 2", role="AUDITOR")
+    db_session.add_all([u1, u2])
+    await db_session.flush()
+
+    p1 = Process(id=200, dgcp_code="PROC-200", title="Test Process 200")
+    db_session.add(p1)
+    await db_session.flush()
+    c1 = Contract(id=100, process_id=200, contract_id="CON-100", supplier_name="Test Supplier")
+    c2 = Contract(id=200, process_id=200, contract_id="CON-200", supplier_name="Test Supplier 2")
+    db_session.add_all([c1, c2])
+    await db_session.flush()
+
+    svc = AnomalyService(db=db_session)
+    a1 = Anomaly(
+        anomaly_type="PRICE_ANOMALY",
+        contract_id=100,
+        severity=0.9,
+        score=-1.5,
+        status="CONFIRMED",
+        reviewer_id=u1.id,
+        description="CONFIRMED price anomaly",
+    )
+    a2 = Anomaly(
+        anomaly_type="FRAGMENTATION",
+        process_id=200,
+        severity=0.5,
+        score=0.5,
+        status="DISMISSED",
+        reviewer_id=u2.id,
+        description="DISMISSED fragmentation anomaly",
+    )
+    a3 = Anomaly(
+        anomaly_type="COLLUSION",
+        severity=0.7,
+        score=0.3,
+        status="CONFIRMED",
+        reviewer_id=u1.id,
+        description="Posible colusión entre 'Proveedor A' (RNC: 101-00001) y 'Proveedor B' (RNC: 101-00002). Vínculo detectado: shared_phone. Señales: 2.",
+    )
+    a4 = Anomaly(
+        anomaly_type="PRICE_ANOMALY",
+        contract_id=200,
+        severity=0.3,
+        score=0.1,
+        status="PENDING",
+        description="PENDING price anomaly (should not survive)",
+    )
+    db_session.add_all([a1, a2, a3, a4])
+    await db_session.commit()
+
+    async def mock_price() -> int:
+        a = Anomaly(contract_id=100, anomaly_type="PRICE_ANOMALY", severity=0.8, score=-2.0,
+                     description="Re-detected price anomaly")
+        db_session.add(a)
+        await db_session.commit()
+        return 1
+
+    async def mock_frag() -> int:
+        a = Anomaly(process_id=200, anomaly_type="FRAGMENTATION", severity=0.4, score=0.4,
+                     description="Re-detected fragmentation anomaly")
+        db_session.add(a)
+        await db_session.commit()
+        return 1
+
+    async def mock_coll() -> int:
+        a = Anomaly(anomaly_type="COLLUSION", severity=0.6, score=0.2,
+                     description="Posible colusión entre 'Proveedor C' (RNC: 101-00001) y 'Proveedor D' (RNC: 101-00002). Vínculo detectado: shared_phone. Señales: 2.")
+        db_session.add(a)
+        await db_session.commit()
+        return 1
+
+    with (
+        patch.object(svc, "detect_price_anomalies", mock_price),
+        patch.object(svc, "detect_fragmentation", mock_frag),
+        patch.object(svc, "detect_collusion", mock_coll),
+    ):
+        result = await svc.run_full_detection()
+
+    assert result == {"price_anomalies": 1, "fragmentation": 1, "collusion": 1}
+
+    remaining = (await db_session.execute(select(Anomaly))).scalars().all()
+    assert len(remaining) == 3
+
+    for a in remaining:
+        if a.anomaly_type == "PRICE_ANOMALY" and a.contract_id == 100:
+            assert a.status == "CONFIRMED", f"Expected CONFIRMED, got {a.status}"
+            assert a.reviewer_id == u1.id
+        elif a.anomaly_type == "FRAGMENTATION" and a.process_id == 200:
+            assert a.status == "DISMISSED", f"Expected DISMISSED, got {a.status}"
+            assert a.reviewer_id == u2.id
+        elif a.anomaly_type == "COLLUSION":
+            assert a.status == "CONFIRMED", f"Expected CONFIRMED, got {a.status}"
+            assert a.reviewer_id == u1.id

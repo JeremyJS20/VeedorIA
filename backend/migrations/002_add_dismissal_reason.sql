@@ -1,0 +1,1 @@
+ALTER TABLE anomaly ADD COLUMN IF NOT EXISTS dismissal_reason VARCHAR(20);

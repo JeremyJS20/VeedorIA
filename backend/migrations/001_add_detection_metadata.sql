@@ -1,0 +1,2 @@
+ALTER TABLE anomaly ADD COLUMN IF NOT EXISTS detection_metadata JSONB;
+ALTER TABLE anomaly ALTER COLUMN confidence TYPE VARCHAR(12);

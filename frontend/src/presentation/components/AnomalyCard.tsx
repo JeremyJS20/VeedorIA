@@ -21,6 +21,7 @@ const confidenceConfig: Record<string, { bg: string; text: string; label: string
   ALTA: { bg: "bg-[#10B981]/15", text: "text-[#10B981]", label: "ALTA" },
   MEDIA: { bg: "bg-[#F59E0B]/15", text: "text-[#F59E0B]", label: "MEDIA" },
   BAJA: { bg: "bg-[#94A3B8]/15", text: "text-[#94A3B8]", label: "BAJA" },
+  INFO: { bg: "bg-[#94A3B8]/10", text: "text-[#94A3B8]/60", label: "INFO" },
 }
 
 const severityBorder = {
