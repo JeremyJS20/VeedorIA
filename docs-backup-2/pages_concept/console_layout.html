@@ -1,0 +1,321 @@
+<!DOCTYPE html><html class="light" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>VeedorIA | Institutional Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#08409e",
+                        "inverse-primary": "#b2c5ff",
+                        "primary-fixed": "#dae2ff",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#dae2fd",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface": "#faf8ff",
+                        "on-surface-variant": "#434652",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#e0e3e5",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "primary-container": "#003d9b",
+                        "outline": "#747783",
+                        "surface-dim": "#d2d9f4",
+                        "surface-tint": "#2f59b7",
+                        "inverse-surface": "#283044",
+                        "background": "#faf8ff",
+                        "outline-variant": "#c4c6d4",
+                        "on-primary-fixed": "#001848",
+                        "tertiary-container": "#414446",
+                        "tertiary": "#2b2e30",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-error": "#ffffff",
+                        "secondary": "#505f76",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface": "#131b2e",
+                        "secondary-container": "#d0e1fb",
+                        "primary": "#00296d",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-tertiary-container": "#aeb1b3",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-variant": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-bright": "#faf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-low": "#f2f3ff",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#91afff",
+                        "on-background": "#131b2e",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#54647a"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    fontFamily: {
+                        "headline": ["Public Sans", "sans-serif"],
+                        "display": ["Public Sans", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-indicator {
+            position: absolute;
+            left: 0;
+            width: 4px;
+            height: 24px;
+            border-radius: 0 4px 4px 0;
+            background-color: #00296d;
+        }
+        .glass-sidebar {
+            background-color: #f2f3ff;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4c6d4; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #747783; }
+        
+        .transition-sidebar-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .transition-sidebar-item:hover {
+            transform: translateX(2px);
+        }
+        
+        .role-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-[240px] h-screen fixed left-0 top-0 glass-sidebar border-r border-outline-variant/30 flex flex-col z-50" id="main-sidebar">
+<!-- Brand Header -->
+<div class="h-16 flex items-center px-6 gap-3 mb-4">
+<div class="w-10 h-10 flex items-center justify-center">
+<img alt="VeedorIA Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLsOMwc-rE_rj1Hq5grc9k9lO-TJPV1Qkol2URznWxQnKpKbs6jubS7taQn5SqUU6i7la_dYEYtiW7mMt-AChTY6dlrbKFL28vCxFTxCvGuJHLhMMYYNAhMqgUP-WoE6hJ8a3jNtczJ1R6a2tmCZK-GB-2BJHb24hFBCXtW1no_4AuZy_PLpvkLmbXpiE4aSUrNaTDEBm3Na-zHrv88nBJfv0jbJQ8TVGDZb5IKr_a3JHk-Xl4AF9aQbrww">
+</div>
+<span class="font-headline font-bold text-xl text-primary tracking-tight">VeedorIA</span>
+</div>
+<!-- Navigation Scroll Area -->
+<div class="flex-1 overflow-y-auto px-3 space-y-8 pb-8">
+<!-- B2G Auditor Menu (Default) -->
+<div class="role-menu space-y-1" id="menu-b2g">
+<p class="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">Consola Auditor</p>
+<a class="group relative flex items-center h-10 px-3 rounded-lg transition-sidebar-item bg-primary/10 text-primary font-semibold" href="#">
+<div class="active-nav-indicator"></div>
+<span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>
+<span class="text-[13px]">Overview</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">account_tree</span>
+<span class="text-[13px]">Procesos</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">notifications_active</span>
+<span class="text-[13px] flex-1">Bandeja de Alertas</span>
+<span class="bg-error text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<div class="group flex items-center h-10 px-3 rounded-lg opacity-40 cursor-not-allowed">
+<span class="material-symbols-outlined mr-3 text-[20px]">hub</span>
+<span class="text-[13px] flex-1">Red de Colusión</span>
+<span class="material-symbols-outlined text-[16px]">lock</span>
+</div>
+<div class="group flex items-center h-10 px-3 rounded-lg opacity-40 cursor-not-allowed">
+<span class="material-symbols-outlined mr-3 text-[20px]">psychology_alt</span>
+<span class="text-[13px] flex-1">Configuración IA</span>
+<span class="material-symbols-outlined text-[16px]">lock</span>
+</div>
+</div>
+<!-- Admin Extensions -->
+<div class="role-menu space-y-1 hidden" id="menu-admin">
+<p class="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">Administración</p>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">group_add</span>
+<span class="text-[13px]">Gestión de Usuarios</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">terminal</span>
+<span class="text-[13px]">Logs del Sistema</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">help_center</span>
+<span class="text-[13px]">Soporte</span>
+</a>
+</div>
+<!-- B2B Supplier Menu -->
+<div class="role-menu space-y-1 hidden" id="menu-b2b">
+<p class="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">Panel Proveedor</p>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">history_edu</span>
+<span class="text-[13px]">Mis Licitaciones</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>
+<span class="text-[13px]">Analítica de Precios</span>
+<span class="ml-auto material-symbols-outlined text-[16px] opacity-40">lock</span>
+</a>
+<a class="group flex items-center h-10 px-3 rounded-lg transition-sidebar-item text-secondary hover:bg-surface-container-high hover:text-on-surface" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">ads_click</span>
+<span class="text-[13px]">Oportunidades</span>
+</a>
+</div>
+</div>
+<!-- Footer Section -->
+<div class="p-4 border-t border-outline-variant/20 bg-surface-container-low/50">
+<button class="w-full flex items-center gap-3 p-2 rounded-xl transition-all hover:bg-white active:scale-[0.98] group" id="profile-dropdown-trigger">
+<div class="relative">
+<img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" data-alt="Close up professional portrait of a tech executive or government auditor, clear skin, neutral background, lighting matches a professional corporate environment, soft focus on the edges." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkhgCqaboQpvValoqy1qILRf3R2VDIp1DgS1rSvrTiQ3i35MfFOnmq2q_rfNw_HienQU44jC2RaD9emwMxvVPplerT0jMJJAitquXDQchDlhO6eB7vhvUkJ8pNi1l4kXzNDqCycl38jZeWBv2mlXXdCz5AlDRPR5F8p00ngZMQeh4BFTWUUqfQQsD9kuAo5QpQU-Hf0VXLYkTQ4JNwfzEEZXNyP1nKyTcTxSv1ZI80TvfwsbcUtrbKRGMV-K8XfOe-w7PVMgPe9dI">
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1 text-left">
+<p class="text-[13px] font-semibold text-on-surface leading-tight truncate">Carlos Mendizábal</p>
+<span class="role-badge bg-primary-container text-on-primary-container" id="active-role-label">Auditor B2G</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">more_vert</span>
+</button>
+<!-- Floating Profile Menu (Hidden by default) -->
+<div class="hidden absolute bottom-20 left-4 right-4 bg-white shadow-xl rounded-xl border border-outline-variant/30 overflow-hidden py-2 animate-in fade-in slide-in-from-bottom-4 duration-200" id="profile-menu">
+<a class="flex items-center px-4 py-2 text-[13px] text-secondary hover:bg-surface-container-low hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">language</span>
+                        Idioma: Español
+                    </a>
+<a class="flex items-center px-4 py-2 text-[13px] text-secondary hover:bg-surface-container-low hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">settings</span>
+                        Ajustes de cuenta
+                    </a>
+<button class="w-full flex items-center px-4 py-2 text-[13px] text-secondary hover:bg-surface-container-low hover:text-primary transition-colors">
+<span class="material-symbols-outlined mr-3 text-[20px]">dark_mode</span>
+                        Modo Oscuro
+                    </button>
+<div class="border-t border-outline-variant/10 my-1"></div>
+<button class="w-full flex items-center px-4 py-2 text-[13px] text-error hover:bg-error-container/50 transition-colors">
+<span class="material-symbols-outlined mr-3 text-[20px]">logout</span>
+                        Cerrar Sesión
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Viewport -->
+<main class="ml-[240px] flex-1 flex flex-col h-screen overflow-hidden bg-background">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-8 bg-white/70 backdrop-blur-md z-40">
+<!-- Breadcrumbs -->
+<nav class="flex items-center space-x-2 text-[13px] text-outline">
+<span class="hover:text-primary cursor-pointer transition-colors">Consola Auditor</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Resumen de Auditoría</span>
+</nav>
+<!-- Right Side Actions -->
+<div class="flex items-center gap-6">
+<!-- Role Simulator -->
+<div class="relative group">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-lg border border-outline-variant/20 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="text-[12px] font-bold text-secondary uppercase tracking-tight">Simular Rol:</span>
+<span class="text-[13px] font-semibold text-primary" id="current-sim-role">Auditor</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+<!-- Role Dropdown -->
+<div class="hidden group-hover:block absolute right-0 top-full pt-2 w-56 animate-in fade-in duration-150">
+<div class="bg-white border border-outline-variant/30 shadow-2xl rounded-xl py-2 overflow-hidden">
+<button class="w-full text-left px-4 py-2.5 text-[13px] hover:bg-primary-container/10 hover:text-primary transition-colors" onclick="setRole('Admin')">Admin Full Access</button>
+<button class="w-full text-left px-4 py-2.5 text-[13px] hover:bg-primary-container/10 hover:text-primary transition-colors" onclick="setRole('Auditor')">B2G Auditor Premium</button>
+<button class="w-full text-left px-4 py-2.5 text-[13px] hover:bg-primary-container/10 hover:text-primary transition-colors" onclick="setRole('Auditor-Basic')">B2G Auditor Basic</button>
+<div class="h-px bg-outline-variant/10 my-1"></div>
+<button class="w-full text-left px-4 py-2.5 text-[13px] hover:bg-primary-container/10 hover:text-primary transition-colors" onclick="setRole('Supplier')">B2B Corporate Supplier</button>
+<button class="w-full text-left px-4 py-2.5 text-[13px] hover:bg-primary-container/10 hover:text-primary transition-colors" onclick="setRole('Supplier-Pyme')">B2B Pyme Provider</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-secondary">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-secondary">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Workspace -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8"></div>
+</main>
+</div>
+<!-- UI Logic Script -->
+<script>
+        const profileTrigger = document.getElementById('profile-dropdown-trigger');
+        const profileMenu = document.getElementById('profile-menu');
+        
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+            profileMenu.classList.add('hidden');
+        });
+
+        function setRole(role) {
+            const label = document.getElementById('active-role-label');
+            const simLabel = document.getElementById('current-sim-role');
+            const menuB2G = document.getElementById('menu-b2g');
+            const menuAdmin = document.getElementById('menu-admin');
+            const menuB2B = document.getElementById('menu-b2b');
+
+            // Hide all
+            menuB2G.classList.add('hidden');
+            menuAdmin.classList.add('hidden');
+            menuB2B.classList.add('hidden');
+
+            if (role === 'Admin') {
+                label.innerText = 'Administrator';
+                label.className = 'role-badge bg-inverse-surface text-inverse-on-surface';
+                simLabel.innerText = 'Admin';
+                menuB2G.classList.remove('hidden');
+                menuAdmin.classList.remove('hidden');
+                menuB2B.classList.remove('hidden');
+            } else if (role.startsWith('Auditor')) {
+                label.innerText = 'Auditor B2G';
+                label.className = 'role-badge bg-primary-container text-on-primary-container';
+                simLabel.innerText = 'Auditor';
+                menuB2G.classList.remove('hidden');
+            } else if (role.startsWith('Supplier')) {
+                label.innerText = 'Supplier B2B';
+                label.className = 'role-badge bg-secondary-container text-on-secondary-container';
+                simLabel.innerText = 'Proveedor';
+                menuB2B.classList.remove('hidden');
+            }
+        }
+    </script>
+
+
+</body></html>
