@@ -1,0 +1,112 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "instructions": [
+    ".opencode/rules/precheck.md",
+    ".opencode/rules/protected-files.md",
+    ".opencode/rules/token-optimization.md",
+    ".opencode/rules/tool-protocol.md",
+    ".opencode/rules/azure-devops-workflow.md",
+    ".opencode/rules/git-conventions.md",
+    ".opencode/rules/workflow-router.md",
+    ".opencode/rules/spec-integration.md",
+    ".opencode/rules/artifact-storage.md",
+    ".opencode/rules/change-propagation.md",
+    ".opencode/rules/spec-structure-gate.md"
+  ],
+  "skills": {
+    "paths": [
+      ".opencode/skills"
+    ]
+  },
+  "mcp": {
+    "sequential-thinking": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "context7": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "playwright": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "eslint": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "@eslint/mcp@latest"
+      ]
+    },
+    "lighthouse": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "lighthouse-mcp"
+      ]
+    },
+    "server-memory": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "environment": {
+        "MEMORY_FILE_PATH": "C:/Users/jsjer/OneDrive/Bureaublad/projects/Project I/veedoria-monorepo/.sdd-memory/memory.jsonl"
+      }
+    }
+  },
+  "agent": {
+    "sdd-build": {
+      "description": "SDD build agent with lifecycle gates, role enforcement, and post-commit integrations",
+      "mode": "primary",
+      "prompt": "{file:.opencode/agents/sdd-build.md}",
+      "permission": {
+        "bash": {
+          "git push": "ask",
+          "*": "allow"
+        }
+      }
+    },
+    "sdd-plan": {
+      "description": "SDD plan agent — read-only analysis, lifecycle position, gate checking, next-step planning. Hands off to sdd-build on approval.",
+      "mode": "primary",
+      "prompt": "{file:.opencode/agents/sdd-plan.md}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "bash": {
+          "git status": "allow",
+          "git log *": "allow",
+          "git diff *": "allow",
+          "git branch *": "allow",
+          "*": "deny"
+        },
+        "edit": "deny"
+      }
+    }
+  }
+}
