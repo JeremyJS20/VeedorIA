@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "sync-specs",
+      "trigger": "manual",
+      "matcher": "",
+      "action": {
+        "type": "agent",
+        "prompt": "Sync spec changes to git. Steps: 1) Run 'git status specs/' to show changed spec files (requirements.md, test-plan.md, etc.). 2) Ask the user to confirm a commit message. 3) Run 'git add specs/'. 4) Run 'git commit -m \"<confirmed message>\"' with the user-provided message. 5) Run 'git push origin <current-branch>'. Do NOT proceed without user confirmation."
+      }
+    }
+  ],
+  "roles": ["analyst", "qa"],
+  "notes": "Designed for roles that may not be comfortable with git CLI. Triggered by user request, not automatically."
+}

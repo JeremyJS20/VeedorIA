@@ -1,0 +1,2 @@
+# codebase-memory: team-shared artifact, avoid merge conflicts
+.codebase-memory/graph.db.zst merge=ours
