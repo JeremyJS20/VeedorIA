@@ -2,26 +2,35 @@
 # Product — VeedorIA
 
 ## Company and Context
-- **Company**: VeedorIA Team (UNAPEC — República Dominicana)
-- **Domain**: GovTech / Monitoreo y Auditoría Inteligente de Contrataciones Públicas (Estándar OCDS — DGCP)
-- **Stakeholders**: Jeremy Michel Solano Frías (Tech Lead / Analyst & Developer), Auditores Gubernamentales y Veedores Ciudadanos, Equipos de Cumplimiento (B2B/B2G)
+- **Company**: NexoDigital Solutions, S.R.L. (Universidad APEC — UNAPEC, Decanato de Ciencias y Tecnología, Asignatura ISO705/ISO805 Proyecto de Software, Asesor: Ing. Santo Rafael Navarro)
+- **Domain**: GovTech / RegTech / CivicTech — Monitoreo y Auditoría Inteligente de Contrataciones Públicas en la República Dominicana bajo el estándar internacional **OCDS** (*Open Contracting Data Standard*) y la API de Datos Abiertos de la **DGCP**
+- **Stakeholders**:
+  - **Equipo Directivo y Técnico (NexoDigital Solutions, S.R.L.)**:
+    - Jerermy Michel Solano Frías (`A00115469`) — Presidente / CEO & Project Manager (Tech Lead · Analyst & Developer)
+    - Francisco Daniel Lora (`A00114255`) — Gerente de TI / CTO
+    - José Samuel Peña Acevedo (`A00107391`) — Gerente Administrativo
+    - Luis Taveras (`A00116688`) / Eithan De Los Santos (`A00114016`) — Gerente Financiero & Equipo Fundador
+  - **Clientes B2G (Gobierno)**: Dirección General de Contrataciones Públicas (DGCP), Contraloría General de la República, Cámara de Cuentas, PEPCA, ministerios y ayuntamientos.
+  - **Clientes B2B (Proveedores del Estado / RPE)**: Pymes y corporaciones licitantes que requieren inteligencia de mercado y benchmarking UNSPSC.
+  - **Sociedad Civil y Medios (CivicTech / B2C)**: Participación Ciudadana, FINJUS, periodistas de investigación y ciudadanía general.
+- **Regulatory Framework**: Ley No. 340-06 y **Ley No. 47-25 de Contrataciones Públicas**, **Ley No. 172-13** de Protección de Datos Personales, normas **NORTIC A2** y **NORTIC A4:2024** de interoperabilidad gubernamental, e indicadores **SISMAP / DIGEIG**.
 
 ## Project
 - **Name**: veedoria-monorepo
-- **Description**: Plataforma de monitoreo e inteligencia de contrataciones públicas para la República Dominicana basada en el estándar OCDS y datos abiertos de la DGCP, con detección automatizada de anomalías mediante Machine Learning y análisis de grafos.
-- **Problem it solves**: Detectar de forma temprana e imparcial sobreprecios, fraccionamiento de contratos y redes de colusión entre proveedores e instituciones públicas en los procesos de compras del Estado dominicano.
-- **Target users**: Auditores y analistas de veeduría, ciudadanos, periodistas de investigación, proveedores del Estado (B2B) e instituciones gubernamentales (B2G).
+- **Description**: Plataforma SaaS multi-audiencia (CivicTech, B2G y B2B) de monitoreo preventivo e inteligencia de contrataciones públicas para la República Dominicana que ingesta datos abiertos OCDS de la DGCP y detecta anomalías de sobreprecio, fraccionamiento y colusión mediante Machine Learning (*Isolation Forest*), análisis estadístico (*Z-Score*) y teoría de grafos (*NetworkX* + similitud difusa).
+- **Problem it solves**: Elimina la brecha entre la disponibilidad pasiva de millones de datos crudos en el portal de la DGCP y la capacidad real de fiscalización preventiva, detectando irregularidades en `< 24 horas` con una meta de falsos positivos `< 5%` y `F1-Score >= 85%`.
+- **Target users**: Analistas de la DGCP y auditores estatales (Consola B2G), proveedores del Estado inscritos en el RPE (Consola B2B), periodistas de investigación, ONGs y ciudadanos (Portal Público CivicTech), y administradores de NexoDigital (Consola Admin).
 - **Type**: existing
 
 ## Functional Modules
 | Module | Description | Status |
 |--------|-------------|--------|
-| Ingesta y Sincronización DGCP | Cliente HTTP asíncrono (`DGCPClient`) y servicio de sincronización incremental/completa (`sync_service`) desde la API de Datos Abiertos de la DGCP y archivos JSON/XLSX, orquestado con `arq` + Redis y `APScheduler` | 🟢 active |
-| Motor de Detección de Anomalías (ML & Grafos) | Detección automatizada de sobreprecios (Isolation Forest + Z-Score por familia UNSPSC), fraccionamiento de contratos y redes de colusión (grafos `NetworkX` y similitud difusa `rapidfuzz`), con bucle de retroalimentación (`DetectionConfig` / `tune_detection`) | 🟢 active |
-| Consola y Bandeja de Auditoría | Interfaz para auditores (`AuditorPage`, `AnomalyCard`, `AnomalyDrawer`, `AnomalyFilters`) con revisión de hallazgos (`CONFIRMED` / `DISMISSED`), grafos interactivos D3 (`CollusionNetwork`), gráficos de fraccionamiento (`FragmentationBarChart`) y línea de tiempo institucional (`InstitutionTimeline`) | 🟢 active |
-| Portal Cívico y Landing Page | Portal público bilingüe (ES/EN con `i18next`), verificador público de precios (`PriceCheckerSection`), secciones informativas de portales B2C/B2B/B2G y diseño institucional con soporte claro/oscuro | 🟢 active |
-| Autenticación y Control de Acceso (RBAC) | Modelos base de usuario (`User`, `UserRole`, `AuditLog`) y soporte JWT/bcrypt en configuración; endpoints y pantallas de login/registro y gestión de sesiones | 🟡 in dev |
-| Portales Especializados B2C / B2B / B2G e Inteligencia de Mercado | Vistas dedicadas de inteligencia de mercado, alertas personalizadas y configuración organizacional | ⚪ planned |
+| Ingesta y Sincronización DGCP (`ingesta-sincronizacion-dgcp`) | Cliente HTTP asíncrono resiliente (`DGCPClient`) y servicio ETL (`sync_service`) desde la API de Datos Abiertos de la DGCP y catálogos JSON/XLSX, orquestado con `arq` + Redis, `APScheduler` y bitácora `SyncLog` | 🟢 active |
+| Motor de Detección de Anomalías (`deteccion-anomalias`) | Detección híbrida de sobreprecios (*Isolation Forest* + *Z-Score* > 70% sobre mediana UNSPSC), fraccionamiento (ventana `<= 30 días` por institución y familia UNSPSC de 4 dígitos) y redes de colusión (`NetworkX` + similitud difusa `rapidfuzz` + concentración IHH), con bucle de retroalimentación cerrado (`DetectionConfig` / `tune_detection`) | 🟢 active |
+| Consola y Bandeja de Auditoría (`consola-auditoria`) | Interfaz para auditores (`AuditorPage`, `AnomalyCard`, `AnomalyDrawer`, `AnomalyFilters`) con revisión de hallazgos (`CONFIRMED` / `DISMISSED`), grafos interactivos D3 (`CollusionNetwork`), barras de fraccionamiento (`FragmentationBarChart`), dispersión de precios y línea de tiempo institucional (`InstitutionTimeline`) | 🟢 active |
+| Portal Cívico y Landing Page (`portal-civico-landing`) | Portal público bilingüe (ES/EN con `i18next`), verificador público de precios (`PriceCheckerSection`), secciones informativas de portales B2C/B2B/B2G y diseño institucional con soporte claro/oscuro | 🟢 active |
+| Autenticación, Onboarding y RBAC Multi-Tenant | Modelos base (`User`, `UserRole`, `AuditLog`) y diseños conceptuales (`docs-backup-2/pages_concept/`) para Login (`/login`), Registro multi-paso (`/register`), Pasarela de Invitaciones (`/join`) y Recuperación de Contraseña (`/forgot-password`) | 🟡 in dev |
+| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral (`docs-backup-2/internal/complete_screen_map.md`) incluyendo Dashboard Multi-Rol (`/dashboard`), Inteligencia de Mercado B2B (`/dashboard/market-intelligence`), Ajustes de Organización (`/settings/organization`), Sankey de Gasto, Simulador de Precios y Consola Admin (`/admin`) | ⚪ planned |
 
 ## Tech Stack
 
@@ -44,7 +53,7 @@
 - **IaC**: Blueprint declarativo en `render.yaml`
 
 ### CI/CD
-- **Pipeline**: `[VERIFY]` No se detectó pipeline activo en `.github/workflows/` ni `azure-pipelines.yml` (validación local mediante hooks SDD en `.githooks/` y `sdd-scripts/`)
+- **Pipeline**: `[VERIFY]` Validación local mediante hooks SDD en `.githooks/` y `sdd-scripts/` (pendiente workflow en `.github/workflows/`)
 - **Stages**: Local Lint (`ruff` / `eslint`) → Unit & Integration Tests (`pytest`) → Build (`tsc -b && vite build` / Docker build)
 
 ### Testing
@@ -87,10 +96,12 @@ veedoria-monorepo/
 │   │   └── vite.config.ts
 │   └── database/                  # Base de datos SQLite local para desarrollo
 ├── docs/
-│   └── architecture/              # Documentación global de arquitectura SDD
+│   └── architecture/              # Documentación global de arquitectura SDD (5 documentos)
+├── docs-backup-2/                 # Acervo de diseño conceptual (36 pantallas y 10 specs de UI en pages_concept/)
 ├── sdd-scripts/                   # Validadores de configuración, idioma y estructura de specs
 ├── specs/
-│   └── _templates/                # Plantillas oficiales del estándar SDD
+│   ├── _templates/                # Plantillas oficiales del estándar SDD
+│   └── veedoria-core/             # Epic As-Built y subcarpetas de los 4 features implementados
 ├── .sdd-config.json
 └── product.md
 ```
@@ -102,6 +113,7 @@ veedoria-monorepo/
 | `sqlmodel` | `>=0.0.22,<0.1.0` | ORM declarativo basado en Pydantic v2 y SQLAlchemy 2.0 |
 | `scikit-learn` | `^1.4.1` | Algoritmo Isolation Forest y preprocesamiento para anomalías de precios |
 | `networkx` | `^3.2.1` | Construcción y análisis de grafos bipartitos de colusión proveedor-institución |
+| `rapidfuzz` | `^3.6.1` | Similitud difusa (distancia Levenshtein optimizada) para nombres y direcciones de proveedores |
 | `arq` | `^0.28.0` | Cola de trabajos asíncronos sobre Redis para sincronización DGCP y detección en background |
 | `httpx` | `^0.27.0` | Cliente HTTP asíncrono con reintentos y rate-limiting hacia la API de datos abiertos DGCP |
 | `react` | `^19.2.6` | Librería principal de interfaz de usuario del frontend |
@@ -129,14 +141,14 @@ veedoria-monorepo/
 ## Detected Conventions
 - **Code style**: Backend con **Ruff** (`line-length = 88`, `target-version = "py311"`, reglas `E, W, F, I, B, C4, UP, ASYNC, S, T20`) · Frontend con **ESLint 10 Flat Config** (`typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`) y TypeScript estricto.
 - **Naming**: `snake_case` para módulos, funciones y columnas en Python/SQL; `PascalCase` para clases SQLModel/Pydantic y componentes React (`.tsx`); `camelCase` para funciones, variables y hooks (`useAnomalyQueries.ts`) en TypeScript.
-- **Git branching**: Ramas por funcionalidad y corrección sobre `dev` siguiendo el estándar SDD (`feature/{prefix}{ID}-{name}`, `fix/{prefix}{ID}-{name}`).
+- **Git branching**: Ramas por funcionalidad y corrección sobre `dev` siguiendo el estándar SDD (`feature/{prefix}{ID}-{name}`, `fix/{prefix}{ID}-{name}`). Push manual a cargo del usuario.
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
 
 ## Sprint / Roadmap
-- **Current sprint**: Fase de consolidación de detección de anomalías y adopción de SDD Standard v4.11.0
-- **Objective**: Documentar la arquitectura base del monorepo y habilitar el flujo SDD para los próximos módulos (Autenticación/RBAC, Portales B2C/B2B/B2G e Inteligencia de Mercado).
-- **Date**: `[TBD]`
+- **Current sprint**: Consolidación de especificaciones *As-Built* (`veedoria-core`) bajo SDD Standard v4.11.0.
+- **Objective**: Completar la línea base documental de los 4 módulos implementados y preparar los módulos incrementales del mapa de 36 pantallas (Autenticación JWT/RBAC, Consola B2G, Consola B2B de Inteligencia de Mercado y Consola Admin).
+- **Date**: Mayo – Octubre 2026
 
 ## Notes
 - El proyecto opera bajo **Clean Architecture** tanto en `app/backend/src` (`domain`, `infrastructure`, `models`, `services`, `presentation`) como en `app/frontend/src` (`domain`, `infrastructure`, `presentation`, `validation`).
-- La detección de anomalías incorpora un ciclo de retroalimentación cerrado (`DetectionConfig` y ajuste de pesos/umbrales según revisiones confirmadas o descartadas por auditores).
+- La carpeta padre `Project I/` contiene la documentación ejecutiva, planteamiento del problema, planificación/diseño y WBS de **NexoDigital Solutions, S.R.L.**, mientras que `docs-backup-2/` conserva los diseños detallados de las pantallas proyectadas.
