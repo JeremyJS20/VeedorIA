@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+﻿import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { useTheme } from "@heroui/react"
@@ -83,13 +83,9 @@ export default function DashboardLayout() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [roleOpen, setRoleOpen] = useState(false)
   const [activeRole, setActiveRole] = useState<Role>("auditor")
-  const [isotipo, setIsotipo] = useState(isotipoLight)
+  const isotipo = isDark ? isotipoDark : isotipoLight
   const profileRef = useRef<HTMLDivElement>(null)
   const roleRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setIsotipo(isDark ? isotipoDark : isotipoLight)
-  }, [isDark])
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

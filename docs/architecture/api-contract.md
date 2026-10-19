@@ -1,4 +1,4 @@
-<!-- scanner:2026-10-18 -->
+﻿<!-- scanner:2026-10-18 -->
 # API Contract
 
 > 📋 Generado por `project-scanner` el 2026-10-18 a partir de los routers FastAPI en `app/backend/src/presentation/`.

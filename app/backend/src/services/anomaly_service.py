@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import hashlib
 import logging
 import math
@@ -16,7 +16,7 @@ from rapidfuzz import fuzz
 from sklearn.ensemble import IsolationForest
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
-from sqlalchemy import func, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import desc
 
@@ -617,6 +617,7 @@ class AnomalyService:
         anomaly_type: str | None = None,
         status: str | None = None,
         min_severity: float | None = None,
+        search: str | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[Anomaly], int]:
@@ -627,6 +628,44 @@ class AnomalyService:
             base = base.where(Anomaly.status == status)
         if min_severity is not None:
             base = base.where(Anomaly.severity >= min_severity)
+        if search and search.strip():
+            q = f"%{search.strip()}%"
+            matching_processes = (
+                select(Process.id)
+                .outerjoin(Institution, Process.institution_id == Institution.id)
+                .where(
+                    or_(
+                        Process.dgcp_code.ilike(q),
+                        Process.title.ilike(q),
+                        Institution.name.ilike(q),
+                    )
+                )
+            )
+            matching_contracts = (
+                select(Contract.id)
+                .outerjoin(Process, Contract.process_id == Process.id)
+                .outerjoin(Institution, Process.institution_id == Institution.id)
+                .where(
+                    or_(
+                        Contract.contract_id.ilike(q),
+                        Contract.supplier_name.ilike(q),
+                        Contract.object_description.ilike(q),
+                        Process.dgcp_code.ilike(q),
+                        Process.title.ilike(q),
+                        Institution.name.ilike(q),
+                    )
+                )
+            )
+            base = base.where(
+                or_(
+                    Anomaly.description.ilike(q),
+                    Anomaly.process_code.ilike(q),
+                    Anomaly.supplier_name.ilike(q),
+                    Anomaly.institution_name.ilike(q),
+                    Anomaly.process_id.in_(matching_processes),
+                    Anomaly.contract_id.in_(matching_contracts),
+                )
+            )
 
         count_stmt = select(func.count()).select_from(base.subquery())
         total_result = await self.db.execute(count_stmt)

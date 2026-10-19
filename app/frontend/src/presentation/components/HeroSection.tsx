@@ -1,12 +1,14 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { Bell, Shield } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import SectionContainer from './SectionContainer'
 import Button from './ui/Button'
 import GlassCard from './ui/GlassCard'
 
 export default function HeroSection() {
   const { t } = useTranslation('landing')
+  const navigate = useNavigate()
 
   return (
     <header className="relative min-h-screen pt-xl flex items-center px-margin-desktop overflow-hidden">
@@ -34,10 +36,10 @@ export default function HeroSection() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }} className="flex flex-wrap gap-md">
-            <Button variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => navigate("/public")}>
               {t('hero.cta_search')}
             </Button>
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" onClick={() => navigate("/app/bandeja")}>
               {t('hero.cta_demo')}
             </Button>
           </motion.div>

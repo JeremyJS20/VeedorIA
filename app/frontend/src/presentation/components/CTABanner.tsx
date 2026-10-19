@@ -1,4 +1,5 @@
-import { useTranslation } from 'react-i18next'
+﻿import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import SectionContainer from './SectionContainer'
 import Button from './ui/Button'
@@ -6,6 +7,7 @@ import { useTheme } from '@heroui/react'
 
 export default function CTABanner() {
   const { t } = useTranslation('landing')
+  const navigate = useNavigate()
   const { resolvedTheme } = useTheme()
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -36,10 +38,10 @@ export default function CTABanner() {
             {t('cta_final.subtitle')}
           </p>
           <div className="flex flex-wrap justify-center gap-md">
-            <Button variant="primary" size="lg">
+            <Button variant="primary" size="lg" onClick={() => navigate("/public")}>
               {t('cta_final.cta_primary')}
             </Button>
-            <Button variant="ghost" size="lg">
+            <Button variant="ghost" size="lg" onClick={() => navigate("/ranking")}>
               {t('cta_final.cta_secondary')}
             </Button>
           </div>

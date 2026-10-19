@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -11,6 +11,7 @@ from src.domain.types import ApiErrorResponse
 from src.infrastructure.database import engine, init_db
 from src.infrastructure.queue import close_arq_pool, get_arq_pool
 from src.presentation.routers.anomaly import router as anomaly_router
+from src.presentation.routers.public_router import router as public_router
 from src.presentation.routers.sync import router as sync_router
 from src.presentation.runners import run_detection, run_sync
 
@@ -117,6 +118,7 @@ app = FastAPI(
 
 app.include_router(sync_router, prefix="/api")
 app.include_router(anomaly_router, prefix="/api")
+app.include_router(public_router, prefix="/api")
 
 
 @app.get("/", include_in_schema=False)

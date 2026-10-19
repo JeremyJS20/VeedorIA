@@ -1,4 +1,4 @@
-import { useState } from "react"
+﻿import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Play } from "lucide-react"
 import { useAnomalies, useAnomalyStats, useRunDetection } from "../hooks/useAnomalyQueries"
@@ -12,10 +12,16 @@ import type { Anomaly } from "../../domain/anomaly"
 export default function AuditorPage() {
   const { t } = useTranslation("dashboard")
   const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [status, setStatus] = useState("")
   const [anomalyType, setAnomalyType] = useState("")
   const [severity, setSeverity] = useState("")
   const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const minSeverity = severity ? parseFloat(severity) : undefined
 
@@ -24,6 +30,7 @@ export default function AuditorPage() {
     anomaly_type: anomalyType || undefined,
     status: status || undefined,
     min_severity: minSeverity,
+    search: debouncedSearch || undefined,
     limit: 50,
   })
   const detectMutation = useRunDetection()

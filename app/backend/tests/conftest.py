@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event as sa_event
@@ -8,6 +8,7 @@ from sqlmodel import SQLModel
 
 from src.infrastructure.dependencies import get_db
 from src.presentation.routers.anomaly import router as anomaly_router
+from src.presentation.routers.public_router import router as public_router
 from src.presentation.routers.sync import router as sync_router
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -40,6 +41,7 @@ async def client(db_session: AsyncSession) -> AsyncClient:
     test_app = FastAPI()
     test_app.include_router(sync_router, prefix="/api")
     test_app.include_router(anomaly_router, prefix="/api")
+    test_app.include_router(public_router, prefix="/api")
     test_app.dependency_overrides[get_db] = lambda: db_session
 
     @test_app.get("/health")

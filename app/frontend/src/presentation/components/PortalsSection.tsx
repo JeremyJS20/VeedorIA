@@ -1,5 +1,6 @@
-import { ArrowRight, Globe, TrendingUp, Verified } from 'lucide-react'
+﻿import { ArrowRight, Globe, TrendingUp, Verified } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import SectionContainer from './SectionContainer'
 import { useTheme } from '@heroui/react'
@@ -18,6 +19,7 @@ const portals = [
 
 export default function PortalsSection() {
   const { t } = useTranslation('landing')
+  const navigate = useNavigate()
   const { resolvedTheme } = useTheme()
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -33,7 +35,7 @@ export default function PortalsSection() {
 
   return (
     <section
-      ref={ref}
+      id="portals-section" ref={ref}
       className={`py-xl px-margin-desktop transition-all duration-700 ${
         resolvedTheme === 'light'
           ? 'bg-surface-container-low'
@@ -50,8 +52,8 @@ export default function PortalsSection() {
 
           return (
             <div
-              key={portal.key}
-              className={`glass p-lg rounded-3xl group transition-all relative overflow-hidden ${
+              key={portal.key} onClick={() => navigate(portal.key === "b2g" ? "/app/bandeja" : portal.key === "b2b" ? "/ranking" : "/public")} role="button" tabIndex={0}
+              className={`glass p-lg rounded-3xl group transition-all relative overflow-hidden cursor-pointer ${
                 resolvedTheme === 'light'
                   ? `hover:bg-white ${isHighlighted ? 'border border-primary/30' : 'border border-outline-variant/30'}`
                   : `hover:bg-white/5 ${isHighlighted ? 'border border-primary/20' : 'border border-white/5'}`

@@ -46,8 +46,8 @@ flowchart TD
 ### Task 1.1: Filtrado Textual `ILIKE` en Backend para Bandeja de Auditoría (`REQ-002`) (~2h)
 - **Description:** Ampliar `AnomalyService.get_anomalies` en `app/backend/src/application/services/anomaly_service.py` y el endpoint `GET /api/anomalies` en `app/backend/src/presentation/routers/anomaly_router.py` para aceptar el parámetro opcional `search: str | None = None`, filtrando de forma insensible a mayúsculas (`ILIKE`) sobre `Anomaly.description`, `Process.dgcp_code`, `Process.title`, `Contract.contract_id`, `Contract.supplier_name` e `Institution.name`.
 - **Acceptance criteria:**
-  - [ ] `GET /api/anomalies?search=MINERD` o por código de contrato/proceso retorna únicamente las anomalías coincidentes y el `total` exacto.
-  - [ ] Si `search` está vacío o contiene solo espacios, el comportamiento existente permanece intacto.
+  - [x] `GET /api/anomalies?search=MINERD` o por código de contrato/proceso retorna únicamente las anomalías coincidentes y el `total` exacto.
+  - [x] Si `search` está vacío o contiene solo espacios, el comportamiento existente permanece intacto.
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/application/services/anomaly_service.py`, `app/backend/src/presentation/routers/anomaly_router.py`
 
@@ -60,8 +60,8 @@ flowchart TD
   - `GET /api/public/suppliers/{rnc}` (perfil de proveedor con RPE/RNC, monto total adjudicado, contratos ganados, instituciones compradoras y alertas).
   - `GET /api/public/institutions/{institution_id}` y `GET /api/public/ranking` (perfil institucional y ranking nacional con Índice de Transparencia `0..100%`).
 - **Acceptance criteria:**
-  - [ ] Los 7 endpoints públicos responden `200 OK` en `< 300ms` sobre la base de datos PostgreSQL real (`veedoria-pg`).
-  - [ ] Solicitudes con `contract_id`, `rnc` o `institution_id` inexistentes devuelven `404 Not Found` estructurado.
+  - [x] Los 7 endpoints públicos responden `200 OK` en `< 300ms` sobre la base de datos PostgreSQL real (`veedoria-pg`).
+  - [x] Solicitudes con `contract_id`, `rnc` o `institution_id` inexistentes devuelven `404 Not Found` estructurado.
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/application/services/public_portal_service.py`, `app/backend/src/presentation/routers/public_router.py`, `app/backend/src/presentation/main.py`
 
@@ -72,15 +72,15 @@ flowchart TD
 ### Task 2.1: Cabecera Pública con `"Sync: LIVE"`, Navegación de Portada y Buscador en Vivo en `AnomalyFilters` (`REQ-001`, `REQ-002`) (~2h)
 - **Description:** Actualizar `Navbar.tsx`, `HeroSection.tsx`, `PortalsSection.tsx` y `CTABanner.tsx` para incluir el badge `"Sync: LIVE"` con punto verde pulsante en la cabecera, navegar mediante `react-router-dom` a `/public`, `/ranking` y `/app/bandeja` (además de scroll suave a secciones B2B/B2G en `/`), y conectar el campo de texto de `AnomalyFilters.tsx` con debounce (`300ms`) hacia `useAnomalies.ts` (`GET /api/anomalies?search=...`).
 - **Acceptance criteria:**
-  - [ ] `Navbar.tsx` muestra el indicador `"Sync: LIVE"` y todos los botones de acción de la portada navegan sin recargar la página.
-  - [ ] Escribir en el buscador de `/app/bandeja` actualiza en vivo las tarjetas de anomalías desde el backend.
+  - [x] `Navbar.tsx` muestra el indicador `"Sync: LIVE"` y todos los botones de acción de la portada navegan sin recargar la página.
+  - [x] Escribir en el buscador de `/app/bandeja` actualiza en vivo las tarjetas de anomalías desde el backend.
 - **Dependencies:** Task 1.1
 - **Files to create/modify:** `app/frontend/src/components/layout/Navbar.tsx`, `app/frontend/src/presentation/components/HeroSection.tsx`, `app/frontend/src/presentation/components/PortalsSection.tsx`, `app/frontend/src/presentation/components/CTABanner.tsx`, `app/frontend/src/features/anomalies/components/AnomalyFilters.tsx`, `app/frontend/src/features/anomalies/hooks/useAnomalies.ts`, `app/frontend/src/features/anomalies/types/anomaly.ts`
 
 ### Task 2.2: Tipos TypeScript, Cliente API, Hooks React Query y Utilidades de Exportación CSV/JSON (`REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`) (~1.5h)
 - **Description:** Crear el módulo `app/frontend/src/features/public-portal/` con los tipos de dominio (`types/publicPortal.ts`), hooks de consulta (`hooks/usePublicPortal.ts` para `tenders`, `budget-overview`, `price-comparison`, `tenderDetail`, `supplierProfile`, `institutionProfile` y `ranking`) y utilidades de descarga de Datos Abiertos (`utils/exportOpenData.ts` generando CSV UTF-8 con BOM `\uFEFF` y JSON conforme a **NORTIC A4:2024**).
 - **Acceptance criteria:**
-  - [ ] Hooks tipados sin uso de `any` y funciones `exportTendersToCsv` / `exportTendersToJson` listas para invocación directa.
+  - [x] Hooks tipados sin uso de `any` y funciones `exportTendersToCsv` / `exportTendersToJson` listas para invocación directa.
 - **Dependencies:** Task 1.2
 - **Files to create/modify:** `app/frontend/src/features/public-portal/types/publicPortal.ts`, `app/frontend/src/features/public-portal/hooks/usePublicPortal.ts`, `app/frontend/src/features/public-portal/utils/exportOpenData.ts`
 
@@ -96,7 +96,7 @@ flowchart TD
   - Widget `"Comparador de Precios Unitarios en Tiempo Real"` (`Precio Adjudicado Estado` vs. `Precio Promedio Mercado` + badge `"SOBREPRECIO DETECTADO: +X%"`).
   - Listado paginado de contrataciones con filtros multicriterio y botones `"Exportar CSV"` y `"Exportar JSON"`.
 - **Acceptance criteria:**
-  - [ ] Los 4 chips de sugerencia, el mapa provincial, el Sankey, el comparador de precios y la exportación CSV/JSON funcionan de forma interactiva sobre los datos reales de PostgreSQL.
+  - [x] Los 4 chips de sugerencia, el mapa provincial, el Sankey, el comparador de precios y la exportación CSV/JSON funcionan de forma interactiva sobre los datos reales de PostgreSQL.
 - **Dependencies:** Task 2.1, Task 2.2
 - **Files to create/modify:** `app/frontend/src/features/public-portal/components/BudgetSankeyCard.tsx`, `app/frontend/src/features/public-portal/components/ProvincialMapCard.tsx`, `app/frontend/src/features/public-portal/components/LivePriceCheckerWidget.tsx`, `app/frontend/src/pages/CivicPortalPage.tsx`
 
@@ -106,7 +106,7 @@ flowchart TD
   - `SupplierProfilePage.tsx` (`/public/supplier/:rnc`): RPE/RNC, razón social, estado, total adjudicado en `RD$`, historial de contratos ganados, instituciones compradoras y alertas de IA.
   - `InstitutionProfilePage.tsx` (`/public/institution/:id`) y `RankingPage.tsx` (`/ranking`): perfil de compras de la entidad y tabla nacional con Índice de Transparencia (`0..100%`) y semáforo.
 - **Acceptance criteria:**
-  - [ ] Navegación fluida de extremo a extremo entre `/public` ↔ `/public/process/:id` ↔ `/public/supplier/:rnc` ↔ `/public/institution/:id` ↔ `/ranking`.
+  - [x] Navegación fluida de extremo a extremo entre `/public` ↔ `/public/process/:id` ↔ `/public/supplier/:rnc` ↔ `/public/institution/:id` ↔ `/ranking`.
 - **Dependencies:** Task 2.2
 - **Files to create/modify:** `app/frontend/src/pages/TenderDetailPage.tsx`, `app/frontend/src/pages/SupplierProfilePage.tsx`, `app/frontend/src/pages/InstitutionProfilePage.tsx`, `app/frontend/src/pages/RankingPage.tsx`, `app/frontend/src/App.tsx`
 
@@ -117,8 +117,8 @@ flowchart TD
 ### Task 4.1: Pruebas Automatizadas Backend (`pytest`), Validación Frontend (`tsc + eslint + vite build`) y Actualización de Arquitectura (~2h)
 - **Description:** Crear la suite de pruebas `app/backend/tests/test_public_portal_api.py` verificando el filtro `GET /api/anomalies?search=...` y todos los endpoints de `/api/public/*`, actualizar `docs/architecture/api-contract.md` con los nuevos contratos públicos, y validar que `pytest`, `npx tsc -b`, `npm run lint` y `npm run build` pasen con `0` errores.
 - **Acceptance criteria:**
-  - [ ] `pytest` pasa al 100% incluyendo los nuevos tests de `test_public_portal_api.py`.
-  - [ ] `npx tsc -b`, `npm run lint` y `npm run build` finalizan sin errores ni advertencias de tipos.
+  - [x] `pytest` pasa al 100% incluyendo los nuevos tests de `test_public_portal_api.py`.
+  - [x] `npx tsc -b`, `npm run lint` y `npm run build` finalizan sin errores ni advertencias de tipos.
 - **Dependencies:** Task 3.1, Task 3.2
 - **Files to create/modify:** `app/backend/tests/test_public_portal_api.py`, `docs/architecture/api-contract.md`
 
@@ -138,9 +138,9 @@ flowchart TD
 ## Total Estimate: ~18h (includes 20% buffer)
 
 ## Completion Checklist
-- [ ] All tasks completed
-- [ ] All tests passing / TypeScript & ESLint clean
-- [ ] Documentation updated (`requirements.md`, `design.md`, `tasks.md`, `test-plan.md`, `test-cases.md`)
+- [x] All tasks completed
+- [x] All tests passing / TypeScript & ESLint clean
+- [x] Documentation updated (`requirements.md`, `design.md`, `tasks.md`, `test-plan.md`, `test-cases.md`)
 
 ---
 > 📍 Pendiente (sin PBI/Feature en ADO) · 🌿 `dev` · Generated by SDD Standard

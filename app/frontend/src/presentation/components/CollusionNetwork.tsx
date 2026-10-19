@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+﻿import { useEffect, useRef } from "react"
 import * as d3 from "d3"
 import type { CollusionLink } from "../../domain/anomaly"
 
@@ -111,7 +111,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       .attr("cursor", "pointer")
 
     function signalDetailsHtml(d: CollusionLink): string {
-      const details = (d as any).signal_details as Record<string, unknown> | undefined
+      const details = (d as unknown as { signal_details?: Record<string, unknown> }).signal_details
       if (!details || Object.keys(details).length === 0) return ""
       const labels: Record<string, string> = {
         shared_phone: "📞 Teléfono",
@@ -136,7 +136,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
         tooltip
           .style("display", "block")
           .html(`
-            <div class="font-semibold text-on-surface">${(d.source as any).id || d.source} ⟷ ${(d.target as any).id || d.target}</div>
+            <div class="font-semibold text-on-surface">${(d.source as unknown as { id?: string }).id || String(d.source)} ⟷ ${(d.target as unknown as { id?: string }).id || String(d.target)}</div>
             <div class="text-outline mt-0.5">${REASON_LABELS[d.reason] || d.reason.replace(/_/g, " ")}</div>
             <div class="text-outline/60 mt-0.5">Peso: ${(d.weight * 100).toFixed(0)}%</div>
             ${signalDetailsHtml(d)}
@@ -176,15 +176,15 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
 
       link.attr("stroke-opacity", (d: unknown) => {
         const l = d as CollusionLink
-        return l.source === activeId || (l.source as any)?.id === activeId ||
-               l.target === activeId || (l.target as any)?.id === activeId ? 0.8 : 0.05
+        return l.source === activeId || (l.source as unknown as { id?: string })?.id === activeId ||
+               l.target === activeId || (l.target as unknown as { id?: string })?.id === activeId ? 0.8 : 0.05
       })
 
-      node.attr("fill-opacity", (d: any) => connected.has(d.id) ? 0.9 : 0.08)
-        .attr("stroke-opacity", (d: any) => connected.has(d.id) ? 1 : 0.08)
+      node.attr("fill-opacity", (d: NodeDatum) => connected.has(d.id) ? 0.9 : 0.08)
+        .attr("stroke-opacity", (d: NodeDatum) => connected.has(d.id) ? 1 : 0.08)
 
       labelGroup.selectAll("text")
-        .attr("fill-opacity", (d: any) => connected.has(d.id) ? 1 : 0.08)
+        .attr("fill-opacity", (d: NodeDatum) => connected.has(d.id) ? 1 : 0.08)
     }
 
     function restoreAll() {
@@ -279,10 +279,10 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
 
     simulation.on("tick", () => {
       link
-        .attr("x1", (d: unknown) => (d as any).source.x)
-        .attr("y1", (d: unknown) => (d as any).source.y)
-        .attr("x2", (d: unknown) => (d as any).target.x)
-        .attr("y2", (d: unknown) => (d as any).target.y)
+        .attr("x1", (d: unknown) => (d as { source: { x: number } }).source.x)
+        .attr("y1", (d: unknown) => (d as { source: { y: number } }).source.y)
+        .attr("x2", (d: unknown) => (d as { target: { x: number } }).target.x)
+        .attr("y2", (d: unknown) => (d as { target: { y: number } }).target.y)
 
       node.attr("cx", (d: NodeDatum) => d.x!).attr("cy", (d: NodeDatum) => d.y!)
       label.attr("x", (d: NodeDatum) => d.x!).attr("y", (d: NodeDatum) => d.y!)

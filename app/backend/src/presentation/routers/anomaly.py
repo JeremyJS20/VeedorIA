@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
@@ -45,6 +45,7 @@ async def list_anomalies(
     anomaly_type: str | None = Query(None, description="Filtrar por tipo (PRICE_ANOMALY, FRAGMENTATION, COLLUSION)"),
     status: str | None = Query(None, description="Filtrar por estado (PENDING, CONFIRMED, DISMISSED)"),
     min_severity: float | None = Query(None, ge=0.0, le=1.0, description="Severidad mínima"),
+    search: str | None = Query(None, description="Búsqueda textual por proceso, contrato, proveedor, institución o descripción"),
     limit: int = Query(50, ge=1, le=200),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
 ) -> ApiResponse[AnomalyListResponse]:
@@ -53,6 +54,7 @@ async def list_anomalies(
         anomaly_type=anomaly_type,
         status=status,
         min_severity=min_severity,
+        search=search,
         limit=limit,
         offset=offset,
     )

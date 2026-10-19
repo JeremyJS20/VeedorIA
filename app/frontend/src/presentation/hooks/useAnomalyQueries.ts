@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+﻿import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import apiClient from "../../infrastructure/apiClient"
 import type { Anomaly, AnomalyContext, AnomalyReviewPayload, AnomalyStats, ApiResponse, PaginatedResponse } from "../../domain/anomaly"
 
@@ -6,6 +6,7 @@ interface AnomalyFilters {
   anomaly_type?: string
   status?: string
   min_severity?: number
+  search?: string
   page?: number
   limit?: number
 }
@@ -15,6 +16,7 @@ export function useAnomalies(filters: AnomalyFilters = {}) {
   if (filters.anomaly_type) params.set("anomaly_type", filters.anomaly_type)
   if (filters.status) params.set("status", filters.status)
   if (filters.min_severity !== undefined) params.set("min_severity", String(filters.min_severity))
+  if (filters.search) params.set("search", filters.search)
   if (filters.page) params.set("offset", String((filters.page - 1) * (filters.limit || 50)))
   if (filters.limit) params.set("limit", String(filters.limit))
 
