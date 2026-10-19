@@ -1,15 +1,6 @@
 ﻿import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import {
-  AlertTriangle,
-  Building2,
-  Download,
-  FileJson,
-  Filter,
-  Search,
-  Sparkles,
-  UserCheck,
-} from "lucide-react"
+import { Download, FileJson, Search } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import SectionContainer from "../components/SectionContainer"
@@ -104,48 +95,50 @@ export default function CivicPortalPage() {
       <Navbar />
 
       <main className="flex-1 pt-28 pb-20 px-4 md:px-8">
-        <SectionContainer className="space-y-10">
-          <div className="text-center max-w-4xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold uppercase tracking-widest text-primary">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Módulo I · Veeduría Ciudadana y Datos Abiertos (NORTIC A4:2024)</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-display font-bold tracking-tight">
+        <SectionContainer className="space-y-8">
+          <div className="bg-surface rounded-lg p-8 border border-outline-variant/30 shadow-sm">
+            <h1 className="text-[28px] md:text-[32px] font-display font-bold text-center text-on-surface mb-6">
               Portal de Veeduría Ciudadana
             </h1>
-            <p className="text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto">
-              Fiscaliza en tiempo real 20,380 contratos públicos, 730 instituciones y 1,262 alertas de inteligencia artificial sin necesidad de cuenta.
-            </p>
 
-            <div className="relative max-w-3xl mx-auto mt-6">
-              <div className="flex items-center bg-surface-container-low border-2 border-primary/30 focus-within:border-primary rounded-2xl px-4 py-2 shadow-lg">
-                <Search className="w-5 h-5 text-primary shrink-0 mr-3" />
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="¿Qué deseas fiscalizar hoy? (ej. Laptops en MINERD, Asfalto en Obras Públicas)"
-                  className="w-full bg-transparent text-sm md:text-base text-on-surface placeholder:text-outline focus:outline-none py-2"
-                />
-                {searchInput && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchInput("")}
-                    className="text-xs font-bold text-outline hover:text-on-surface px-2 cursor-pointer"
-                  >
-                    Limpiar
-                  </button>
-                )}
+            <div className="max-w-4xl mx-auto">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 flex items-center bg-background border border-outline-variant/40 focus-within:border-primary rounded px-4 h-14">
+                  <Search className="w-5 h-5 text-outline shrink-0 mr-3" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="¿Qué deseas fiscalizar hoy? (ej. Laptops en MINERD, Asfalto en Obras Públicas)"
+                    className="w-full bg-transparent text-sm md:text-base text-on-surface placeholder:text-outline focus:outline-none"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchInput("")}
+                      className="text-xs font-medium text-outline hover:text-on-surface px-2 cursor-pointer"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDebouncedSearch(searchInput.trim())}
+                  className="h-14 px-8 rounded bg-primary text-on-primary font-semibold text-sm hover:opacity-95 transition-opacity cursor-pointer shrink-0"
+                >
+                  Buscar
+                </button>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <span className="text-xs font-semibold text-outline">Sugerencias de búsqueda:</span>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-on-surface-variant">Sugerencias de búsqueda:</span>
                 {NATURAL_SUGGESTIONS.map((chip) => (
                   <button
                     key={chip.label}
                     type="button"
                     onClick={() => handleChipClick(chip)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-surface-container-low hover:bg-primary hover:text-on-primary border border-outline-variant/30 transition-all cursor-pointer"
+                    className="h-8 px-3 rounded-[20px] text-xs font-medium bg-surface-container-low text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                   >
                     {chip.label}
                   </button>
@@ -179,20 +172,15 @@ export default function CivicPortalPage() {
             )}
           </div>
 
-          <section className="glass rounded-3xl p-6 md:p-8 border border-outline-variant/25 space-y-6">
+          <section className="bg-surface rounded-lg p-6 md:p-8 border border-outline-variant/30 shadow-sm space-y-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl md:text-2xl font-display font-bold text-on-surface flex items-center gap-2">
-                  <Filter className="w-5 h-5 text-primary" />
-                  <span>Explorador Abierto de Contrataciones y Alertas IA</span>
+                <h2 className="text-[20px] font-display font-bold text-on-surface">
+                  Contrataciones Adjudicadas
                 </h2>
                 <p className="text-sm text-on-surface-variant">
-                  Mostrando{" "}
-                  <span className="font-mono font-bold text-primary">
-                    {(tendersData?.total || 0).toLocaleString("es-DO")}
-                  </span>{" "}
-                  contratos auditados · Volumen filtrado:{" "}
-                  <span className="font-mono font-bold text-on-surface">
+                  {(tendersData?.total || 0).toLocaleString("es-DO")} registros encontrados · Volumen:{" "}
+                  <span className="font-mono font-semibold text-on-surface">
                     RD${" "}
                     {(tendersData?.total_amount_filtered || 0).toLocaleString("es-DO", {
                       maximumFractionDigits: 0,
@@ -206,7 +194,7 @@ export default function CivicPortalPage() {
                   type="button"
                   onClick={() => exportTendersToCsv(items)}
                   disabled={items.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-primary/10 border border-outline-variant/30 text-xs font-bold text-on-surface cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded bg-surface-container-low hover:bg-primary/10 border border-outline-variant/30 text-xs font-semibold text-on-surface cursor-pointer disabled:opacity-50"
                 >
                   <Download className="w-4 h-4 text-primary" />
                   <span>Exportar CSV</span>
@@ -215,7 +203,7 @@ export default function CivicPortalPage() {
                   type="button"
                   onClick={() => exportTendersToJson(items)}
                   disabled={items.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-low hover:bg-primary/10 border border-outline-variant/30 text-xs font-bold text-on-surface cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded bg-surface-container-low hover:bg-primary/10 border border-outline-variant/30 text-xs font-semibold text-on-surface cursor-pointer disabled:opacity-50"
                 >
                   <FileJson className="w-4 h-4 text-primary" />
                   <span>Exportar JSON</span>
@@ -226,7 +214,7 @@ export default function CivicPortalPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-outline block mb-1">
-                  Institución del Estado
+                  Institución
                 </label>
                 <select
                   value={institutionId ?? ""}
@@ -234,7 +222,7 @@ export default function CivicPortalPage() {
                     setInstitutionId(e.target.value ? Number(e.target.value) : undefined)
                     setPage(1)
                   }}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-sm text-on-surface focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded bg-surface-container-low border border-outline-variant/30 text-sm text-on-surface focus:outline-none focus:border-primary"
                 >
                   <option value="">Todas las instituciones ({institutions?.length || 730})</option>
                   {institutions?.map((inst) => (
@@ -246,7 +234,7 @@ export default function CivicPortalPage() {
               </div>
 
               <div className="flex items-end">
-                <label className="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-outline-variant/30 w-full cursor-pointer">
+                <label className="flex items-center gap-2.5 p-2 rounded bg-surface-container-low border border-outline-variant/30 w-full cursor-pointer">
                   <input
                     type="checkbox"
                     checked={onlyWithAnomalies}
@@ -256,9 +244,8 @@ export default function CivicPortalPage() {
                     }}
                     className="w-4 h-4 accent-primary"
                   />
-                  <span className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-error" />
-                    Solo contratos con alertas de IA
+                  <span className="text-sm font-medium text-on-surface">
+                    Solo con hallazgos de auditoría
                   </span>
                 </label>
               </div>
@@ -267,47 +254,43 @@ export default function CivicPortalPage() {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-bold text-outline hover:text-on-surface cursor-pointer"
+                  className="w-full md:w-auto px-4 py-2 rounded bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-semibold text-outline hover:text-on-surface cursor-pointer"
                 >
-                  Restablecer filtros
+                  Limpiar filtros
                 </button>
               </div>
             </div>
 
             {tendersLoading ? (
-              <div className="py-16 text-center text-outline">Consultando registros públicos OCDS...</div>
+              <div className="py-12 text-center text-outline text-sm">Cargando contrataciones...</div>
             ) : items.length === 0 ? (
-              <div className="py-16 text-center space-y-3">
-                <p className="text-base text-on-surface-variant">
-                  No se encontraron contrataciones con los filtros aplicados.
+              <div className="py-12 text-center space-y-3">
+                <p className="text-sm text-on-surface-variant">
+                  No se encontraron contrataciones con los filtros seleccionados.
                 </p>
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 rounded bg-primary text-on-primary text-xs font-semibold cursor-pointer"
                 >
-                  Ver todas las contrataciones
+                  Restablecer búsqueda
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="divide-y divide-outline-variant/20 border-t border-outline-variant/20">
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="p-5 rounded-2xl bg-surface-container-low hover:bg-surface-container-highest/60 border border-outline-variant/25 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
-                    <div className="space-y-1.5 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-md bg-primary/10 text-primary font-mono text-xs font-bold">
-                          {item.dgcp_code}
-                        </span>
-                        <span className="text-xs font-mono text-outline">
-                          Contrato: {item.contract_code}
-                        </span>
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-outline">
+                        <span>{item.dgcp_code}</span>
+                        <span>·</span>
+                        <span>Contrato {item.contract_code}</span>
                         {item.anomaly_count > 0 && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-error/15 text-error text-xs font-bold inline-flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            {item.anomaly_count} Alerta(s) IA · Sev {item.max_severity}%
+                          <span className="text-error font-semibold">
+                            · {item.anomaly_count} hallazgo(s) ({item.max_severity}%)
                           </span>
                         )}
                       </div>
@@ -315,25 +298,24 @@ export default function CivicPortalPage() {
                       <button
                         type="button"
                         onClick={() => navigate(`/public/process/${item.id}`)}
-                        className="text-left text-base font-bold text-on-surface hover:text-primary transition-colors line-clamp-1 cursor-pointer"
+                        className="text-left text-base font-semibold text-on-surface hover:text-primary transition-colors line-clamp-1 cursor-pointer"
                       >
                         {item.title}
                       </button>
 
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-on-surface-variant">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
                         {item.institution_id ? (
                           <button
                             type="button"
                             onClick={() => navigate(`/public/institution/${item.institution_id}`)}
-                            className="inline-flex items-center gap-1 hover:text-primary font-medium cursor-pointer"
+                            className="hover:text-primary hover:underline cursor-pointer"
                           >
-                            <Building2 className="w-3.5 h-3.5 text-primary" />
-                            <span>{item.institution_name}</span>
+                            {item.institution_name}
                           </button>
                         ) : (
                           <span>{item.institution_name}</span>
                         )}
-
+                        <span>·</span>
                         <button
                           type="button"
                           onClick={() =>
@@ -343,35 +325,27 @@ export default function CivicPortalPage() {
                               )}`,
                             )
                           }
-                          className="inline-flex items-center gap-1 hover:text-primary font-medium cursor-pointer"
+                          className="hover:text-primary hover:underline cursor-pointer"
                         >
-                          <UserCheck className="w-3.5 h-3.5 text-sky-500" />
-                          <span>
-                            {item.supplier_name} (RPE: {item.supplier_rpe})
-                          </span>
+                          {item.supplier_name} (RPE: {item.supplier_rpe})
                         </button>
                       </div>
                     </div>
 
                     <div className="flex md:flex-col items-center md:items-end justify-between gap-2 shrink-0">
-                      <div className="text-left md:text-right">
-                        <span className="text-[10px] uppercase tracking-wider text-outline block">
-                          Monto Adjudicado
-                        </span>
-                        <span className="text-lg font-mono font-bold text-on-surface">
-                          RD${" "}
-                          {item.amount_adjudicated.toLocaleString("es-DO", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                      </div>
+                      <span className="text-base font-mono font-bold text-on-surface">
+                        RD${" "}
+                        {item.amount_adjudicated.toLocaleString("es-DO", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
                       <button
                         type="button"
                         onClick={() => navigate(`/public/process/${item.id}`)}
-                        className="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold hover:opacity-90 cursor-pointer"
+                        className="text-xs font-semibold text-primary hover:underline cursor-pointer"
                       >
-                        Ver Ficha OCDS
+                        Ver expediente →
                       </button>
                     </div>
                   </div>
@@ -389,7 +363,7 @@ export default function CivicPortalPage() {
                     type="button"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="px-3.5 py-1.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs font-bold disabled:opacity-40 cursor-pointer"
+                    className="px-3 py-1.5 rounded bg-surface-container-low border border-outline-variant/30 text-xs font-semibold disabled:opacity-40 cursor-pointer"
                   >
                     Anterior
                   </button>
@@ -397,7 +371,7 @@ export default function CivicPortalPage() {
                     type="button"
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="px-3.5 py-1.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs font-bold disabled:opacity-40 cursor-pointer"
+                    className="px-3 py-1.5 rounded bg-surface-container-low border border-outline-variant/30 text-xs font-semibold disabled:opacity-40 cursor-pointer"
                   >
                     Siguiente
                   </button>

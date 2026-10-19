@@ -29,7 +29,7 @@ export default function Navbar() {
   ]
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/85 backdrop-blur-xl border-b border-outline-variant/20 shadow-xl">
+    <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-xl">
       <SectionContainer className="flex justify-between items-center py-sm">
         <button
           type="button"
@@ -59,13 +59,6 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-sm">
-          <div
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400"
-            title="Sincronización activa con Datos Abiertos DGCP"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Sync: LIVE</span>
-          </div>
           <LanguageSwitcher />
           <ThemeToggler />
           <Button variant="primary" size="sm" onClick={() => navigate('/app/bandeja')}>

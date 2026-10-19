@@ -184,7 +184,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
         .attr("stroke-opacity", (d: NodeDatum) => connected.has(d.id) ? 1 : 0.08)
 
       labelGroup.selectAll("text")
-        .attr("fill-opacity", (d: NodeDatum) => connected.has(d.id) ? 1 : 0.08)
+        .attr("fill-opacity", (d: unknown) => connected.has((d as NodeDatum).id) ? 1 : 0.08)
     }
 
     function restoreAll() {
