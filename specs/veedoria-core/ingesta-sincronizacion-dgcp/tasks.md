@@ -88,7 +88,7 @@ flowchart TD
   - [x] `sync_job` ejecuta `run_sync` dentro de `veedoria-worker` con `job_timeout = 3600s`.
   - [x] `python -m src.cli.sync_dgcp` permite ejecutar sincronizaciones manuales con `--full`, `--days-back`, `--skip-*` y `--rate-limit`.
 - **Dependencies:** Task 1.2, Task 2.2
-- **Files to create/modify:** `app/backend/src/cli/arq_worker.py`, `app/backend/src/presentation/runners.py`, `app/backend/src/cli/sync_dgcp.py`
+- **Files to create/modify:** `app/backend/src/cli/arq_worker.py`, `app/backend/src/presentation/runners.py`, `app/backend/src/cli/sync_dgcp.py`, `app/backend/src/cli/run_migrations.py`, `app/backend/src/cli/dev_server.py`
 
 ### Task 2.4: Router FastAPI (`/api/sync`) y recuperación `lifespan` (~1.5h)
 - **Description:** Exponer `POST /api/sync/dgcp` (`202 Accepted` con exclusión mutua sobre `SyncLog.status == 'running'`) y `GET /api/sync/status` en `src/presentation/routers/sync.py`, e integrar en `src/presentation/main.py` la recuperación de registros `running` → `failed` (`server_restart`) al iniciar el servidor y el cron diario en `APScheduler`.
@@ -109,7 +109,7 @@ flowchart TD
   - [x] Suite unitaria `app/backend/tests/unit/test_sync_service.py` pasando.
   - [x] Suite de integración `app/backend/tests/integration/test_sync_endpoint.py` pasando.
 - **Dependencies:** Task 2.4
-- **Files to create/modify:** `app/backend/tests/unit/test_sync_service.py`, `app/backend/tests/integration/test_sync_endpoint.py`
+- **Files to create/modify:** `app/backend/tests/conftest.py`, `app/backend/tests/unit/test_models.py`, `app/backend/tests/unit/test_sync_service.py`, `app/backend/tests/integration/test_sync_endpoint.py`
 
 ---
 

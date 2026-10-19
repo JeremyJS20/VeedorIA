@@ -58,7 +58,7 @@ flowchart TD
   - [x] `FullscreenOverlay` bloquea el scroll del body y se cierra con `Escape` o clic fuera.
   - [x] `SectionErrorBoundary` aísla errores de renderizado en sub-árboles gráficos.
 - **Dependencies:** None
-- **Files to create/modify:** `app/frontend/src/presentation/components/ui/InsetPanel.tsx`, `app/frontend/src/presentation/components/ui/Button.tsx`, `app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx`, `app/frontend/src/presentation/components/SectionErrorBoundary.tsx`
+- **Files to create/modify:** `app/frontend/src/presentation/layouts/DashboardLayout.tsx`, `app/frontend/src/presentation/components/ui/Badge.tsx`, `app/frontend/src/presentation/components/ui/InsetPanel.tsx`, `app/frontend/src/presentation/components/ui/Button.tsx`, `app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx`, `app/frontend/src/presentation/components/SectionErrorBoundary.tsx`
 
 ---
 
@@ -110,7 +110,7 @@ flowchart TD
   - [x] Traducciones completas en español e inglés para filtros, tarjetas, cajón y motivos de descarte.
   - [x] Build de producción (`tsc -b && vite build`) sin errores de tipos.
 - **Dependencies:** Task 3.3
-- **Files to create/modify:** `app/frontend/public/locales/es/dashboard.json`, `app/frontend/public/locales/en/dashboard.json`
+- **Files to create/modify:** `app/frontend/public/locales/es/dashboard.json`, `app/frontend/public/locales/en/dashboard.json`, `app/frontend/public/locales/es/common.json`, `app/frontend/public/locales/en/common.json`
 
 ---
 

@@ -52,7 +52,7 @@ flowchart TD
   - [x] Tablas `anomaly`, `detection_config` y `audit_log` creadas y migradas.
   - [x] Soporte de columna JSON para `detection_metadata` y valores de auditoría.
 - **Dependencies:** None
-- **Files to create/modify:** `app/backend/src/models/anomaly.py`, `app/backend/src/models/detection_config.py`, `app/backend/src/models/audit_log.py`, `app/backend/migrations/versions/*.py`
+- **Files to create/modify:** `app/backend/src/models/anomaly.py`, `app/backend/src/models/detection_config.py`, `app/backend/src/models/audit_log.py`, `app/backend/src/models/user.py`, `app/backend/migrations/versions/*.py`, `app/backend/migrations/001_add_detection_metadata.sql`, `app/backend/migrations/002_add_dismissal_reason.sql`, `app/backend/migrations/003_create_detection_config.sql`
 
 ### Task 1.2: Schemas Pydantic v2 (`AnomalyResponse`, `AnomalyContext`, `AnomalyReviewPayload`) (~1.5h)
 - **Description:** Definir los contratos de entrada y salida en `src/domain/schemas/anomaly.py` incluyendo `AnomalyResponse`, `AnomalyListResponse`, `AnomalyReviewPayload` (con validaciones regex para `status` y `dismissal_reason`), `AnomalyStats`, `MarketPrice`, `TimelineEntry`, `CollusionLink` y `AnomalyContext`.
@@ -111,11 +111,11 @@ flowchart TD
 ## Wave 4: Testing & Polish (~2h)
 
 ### Task 4.1: Pruebas unitarias del motor analítico (`test_anomaly_service`) (~2h)
-- **Description:** Verificar mediante `pytest` la detección de anomalías de precio, fraccionamiento, colusión, contexto enriquecido y preservación de revisiones en `app/backend/tests/unit/test_anomaly_service.py`.
+- **Description:** Verificar mediante `pytest` la detección de anomalías de precio, fraccionamiento, colusión, contexto enriquecido y preservación de revisiones en `app/backend/tests/unit/test_anomaly_service.py`, `app/backend/tests/integration/test_anomaly_endpoints.py`.
 - **Acceptance criteria:**
-  - [x] Suite unitaria `app/backend/tests/unit/test_anomaly_service.py` pasando al 100%.
+  - [x] Suite unitaria `app/backend/tests/unit/test_anomaly_service.py`, `app/backend/tests/integration/test_anomaly_endpoints.py` pasando al 100%.
 - **Dependencies:** Task 2.5
-- **Files to create/modify:** `app/backend/tests/unit/test_anomaly_service.py`
+- **Files to create/modify:** `app/backend/tests/unit/test_anomaly_service.py`, `app/backend/tests/integration/test_anomaly_endpoints.py`
 
 ---
 

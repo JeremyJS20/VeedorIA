@@ -105,6 +105,21 @@ El módulo **Consola y Bandeja de Auditoría** (`/auditor` — `AuditorPage.tsx`
 **Dependencies:** REQ-003
 **Tracker:** Pendiente
 
+### REQ-007: Shell de consola con barra lateral colapsable, simulador de roles y menú de perfil (`DashboardLayout`, `Badge`)
+**Type:** Event-Driven
+**Rule:** WHEN el usuario navega a cualquier ruta bajo `/app` (`DashboardLayout.tsx`), the system SHALL renderizar una barra lateral colapsable (`SIDEBAR_EXPANDED = 260px` ↔ `SIDEBAR_COLLAPSED = 80px`) que conmuta entre el logotipo completo (`Logo.tsx`) y el isotipo adaptativo (`veedoria_isotipo_light.webp` / `veedoria_isotipo_dark.webp`), una cabecera superior con breadcrumbs dinámicos y un selector de simulación de rol (`activeRole`: `'auditor'` | `'admin'` | `'supplier'`) que reconfigura en vivo las secciones del menú lateral (`auditorNav` con `/app/overview`, `/app/processes`, `/app/bandeja` y `lockedItems` con candado `Lock`; `adminNav` para administración; `b2bNav` para panel de proveedores), y un menú flotante de perfil (`Carlos Mendizábal`, badge de rol activo) con conmutación de idioma (`ES`/`EN`), modo claro/oscuro, configuración de cuenta y cierre de sesión.
+**Entities:** `DashboardRoleState`, `SidebarNavigation`
+**Error Handling:** Un listener global `mousedown` sobre `document` cierra automáticamente los menús desplegables de perfil (`profileRef`) y de selector de rol (`roleRef`) al hacer clic fuera de ellos, removiendo el listener al desmontar el layout.
+
+**Acceptance Criteria:**
+- [x] Given el layout expandido (`260px`), when el usuario presiona el botón de colapso lateral, then el ancho se reduce a `80px`, muestra el isotipo (`veedoria_isotipo_*.webp`) y oculta las etiquetas de texto manteniendo íconos e indicadores de notificación.
+- [x] Given el selector `simulate_role` en la cabecera, when el usuario alterna entre `Auditor`, `Admin` y `Proveedor`, then el menú lateral y la insignia del perfil (`Auditor B2G`, `Administrator`, `Supplier B2B`) actualizan inmediatamente sus opciones visibles.
+- [x] Given el menú de perfil abierto, when el usuario hace clic en idioma o tema visual, then `i18n.changeLanguage()` (`es`/`en`) o `setTheme()` (`light`/`dark`) se aplican en caliente sobre toda la consola.
+
+**Priority:** Must
+**Dependencies:** None
+**Tracker:** Pendiente
+
 ## Non-Functional Requirements
 
 ### NFR-001: Caché reactiva y fluidez de interfaz en cambio de filtros y dictámenes
