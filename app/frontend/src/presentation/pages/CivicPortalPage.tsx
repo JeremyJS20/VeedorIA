@@ -1,6 +1,6 @@
-﻿import { useEffect, useState } from "react"
+﻿import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Download, FileJson, Search } from "lucide-react"
+import { Download, FileJson, Loader2, Search, X } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import SectionContainer from "../components/SectionContainer"
@@ -18,18 +18,22 @@ import { exportTendersToCsv, exportTendersToJson } from "../utils/exportOpenData
 const NATURAL_SUGGESTIONS = [
   {
     label: "¿Cuánto gastó mi provincia?",
+    displayQuery: "Gasto público en Santiago",
     action: { search: "", province: "ST", onlyAnomalies: false },
   },
   {
     label: "Laptops con sobreprecio en MINERD",
+    displayQuery: "Laptops con sobreprecio en MINERD",
     action: { search: "Laptops MINERD", province: "", onlyAnomalies: true },
   },
   {
     label: "Proveedores con alertas en Obras Públicas",
+    displayQuery: "Proveedores con alertas en Obras Públicas",
     action: { search: "Obras Públicas", province: "", onlyAnomalies: true },
   },
   {
     label: "Contratos de asfalto en Santiago",
+    displayQuery: "Contratos de asfalto en Santiago",
     action: { search: "Asfalto", province: "ST", onlyAnomalies: false },
   },
 ]
@@ -37,11 +41,14 @@ const NATURAL_SUGGESTIONS = [
 export default function CivicPortalPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const resultsRef = useRef<HTMLElement>(null)
+
   const initialInstId = searchParams.get("institution_id")
   const initialQuery = searchParams.get("q") || ""
 
   const [searchInput, setSearchInput] = useState(initialQuery)
   const [debouncedSearch, setDebouncedSearch] = useState(initialQuery)
+  const [activeChipLabel, setActiveChipLabel] = useState<string | null>(null)
   const [institutionId, setInstitutionId] = useState<number | undefined>(
     initialInstId ? Number(initialInstId) : undefined,
   )
@@ -60,17 +67,25 @@ export default function CivicPortalPage() {
   const { data: institutions } = usePublicInstitutions()
   const { data: budgetOverview } = usePublicBudgetOverview()
   const { data: priceComparisons } = usePublicPriceComparisons()
-  const { data: tendersData, isLoading: tendersLoading } = usePublicTenders({
+  const { data: tendersData, isLoading: tendersLoading, isFetching: tendersFetching } = usePublicTenders({
     search: debouncedSearch || undefined,
     institution_id: institutionId,
     province: province || undefined,
     only_with_anomalies: onlyWithAnomalies,
     page,
-    limit: 15,
+    limit: 12,
   })
 
+  const handleExecuteSearch = () => {
+    setActiveChipLabel(null)
+    setDebouncedSearch(searchInput.trim())
+    setPage(1)
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }
+
   const handleChipClick = (chip: (typeof NATURAL_SUGGESTIONS)[number]) => {
-    setSearchInput(chip.action.search)
+    setActiveChipLabel(chip.label)
+    setSearchInput(chip.displayQuery)
     setDebouncedSearch(chip.action.search)
     setProvince(chip.action.province)
     setOnlyWithAnomalies(chip.action.onlyAnomalies)
@@ -79,6 +94,7 @@ export default function CivicPortalPage() {
   }
 
   const handleResetFilters = () => {
+    setActiveChipLabel(null)
     setSearchInput("")
     setDebouncedSearch("")
     setInstitutionId(undefined)
@@ -87,8 +103,12 @@ export default function CivicPortalPage() {
     setPage(1)
   }
 
+  const hasActiveFilters = Boolean(
+    debouncedSearch || institutionId !== undefined || province || onlyWithAnomalies || activeChipLabel,
+  )
+
   const items = tendersData?.items || []
-  const totalPages = Math.max(1, Math.ceil((tendersData?.total || 0) / 15))
+  const totalPages = Math.max(1, Math.ceil((tendersData?.total || 0) / 12))
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col">
@@ -96,96 +116,101 @@ export default function CivicPortalPage() {
 
       <main className="flex-1 pt-28 pb-20 px-4 md:px-8">
         <SectionContainer className="space-y-8">
-          <div className="bg-surface rounded-lg p-8 border border-outline-variant/30 shadow-sm">
+          <div className="bg-surface rounded-lg p-6 md:p-8 border border-outline-variant/30 shadow-sm">
             <h1 className="text-[28px] md:text-[32px] font-display font-bold text-center text-on-surface mb-6">
               Portal de Veeduría Ciudadana
             </h1>
 
             <div className="max-w-4xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleExecuteSearch()
+                }}
+                className="flex flex-col sm:flex-row gap-2"
+              >
                 <div className="flex-1 flex items-center bg-background border border-outline-variant/40 focus-within:border-primary rounded px-4 h-14">
                   <Search className="w-5 h-5 text-outline shrink-0 mr-3" />
                   <input
                     type="text"
                     value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
+                    onChange={(e) => {
+                      setActiveChipLabel(null)
+                      setSearchInput(e.target.value)
+                    }}
                     placeholder="¿Qué deseas fiscalizar hoy? (ej. Laptops en MINERD, Asfalto en Obras Públicas)"
                     className="w-full bg-transparent text-sm md:text-base text-on-surface placeholder:text-outline focus:outline-none"
                   />
-                  {searchInput && (
+                  {(searchInput || hasActiveFilters) && (
                     <button
                       type="button"
-                      onClick={() => setSearchInput("")}
-                      className="text-xs font-medium text-outline hover:text-on-surface px-2 cursor-pointer"
+                      onClick={handleResetFilters}
+                      className="text-xs font-medium text-outline hover:text-on-surface px-2 inline-flex items-center gap-1 cursor-pointer"
                     >
-                      Limpiar
+                      <X className="w-3.5 h-3.5" />
+                      <span>Limpiar</span>
                     </button>
                   )}
                 </div>
                 <button
-                  type="button"
-                  onClick={() => setDebouncedSearch(searchInput.trim())}
-                  className="h-14 px-8 rounded bg-primary text-on-primary font-semibold text-sm hover:opacity-95 transition-opacity cursor-pointer shrink-0"
+                  type="submit"
+                  className="h-14 px-8 rounded bg-primary text-on-primary font-semibold text-sm hover:opacity-95 transition-opacity cursor-pointer shrink-0 inline-flex items-center justify-center gap-2"
                 >
-                  Buscar
+                  {tendersFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  <span>Buscar</span>
                 </button>
-              </div>
+              </form>
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-xs text-on-surface-variant">Sugerencias de búsqueda:</span>
-                {NATURAL_SUGGESTIONS.map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => handleChipClick(chip)}
-                    className="h-8 px-3 rounded-[20px] text-xs font-medium bg-surface-container-low text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                  >
-                    {chip.label}
-                  </button>
-                ))}
+                {NATURAL_SUGGESTIONS.map((chip) => {
+                  const isSelected = activeChipLabel === chip.label
+                  return (
+                    <button
+                      key={chip.label}
+                      type="button"
+                      onClick={() => handleChipClick(chip)}
+                      className={`h-8 px-3 rounded-[20px] text-xs font-medium transition-colors cursor-pointer border ${
+                        isSelected
+                          ? "bg-primary text-on-primary border-primary font-semibold"
+                          : "bg-surface-container-low text-primary border-transparent hover:bg-primary/10"
+                      }`}
+                    >
+                      {chip.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
 
-          {budgetOverview && (
-            <BudgetSankeyCard
-              institutions={budgetOverview.sankey.institutions}
-              suppliers={budgetOverview.sankey.suppliers}
-              links={budgetOverview.sankey.links}
-              totalFlowAmount={budgetOverview.sankey.total_flow_amount}
-            />
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {budgetOverview && (
-              <ProvincialMapCard
-                provinces={budgetOverview.provinces}
-                selectedProvince={province}
-                onSelectProvince={(p) => {
-                  setProvince(p)
-                  setPage(1)
-                }}
-              />
-            )}
-            {priceComparisons && priceComparisons.length > 0 && (
-              <LivePriceCheckerWidget items={priceComparisons} />
-            )}
-          </div>
-
-          <section className="bg-surface rounded-lg p-6 md:p-8 border border-outline-variant/30 shadow-sm space-y-6">
+          <section
+            ref={resultsRef}
+            className="bg-surface rounded-lg p-6 md:p-8 border border-outline-variant/30 shadow-sm space-y-6"
+          >
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <h2 className="text-[20px] font-display font-bold text-on-surface">
-                  Contrataciones Adjudicadas
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[20px] font-display font-bold text-on-surface">
+                    Contrataciones Adjudicadas
+                  </h2>
+                  {tendersFetching && (
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  )}
+                </div>
                 <p className="text-sm text-on-surface-variant">
-                  {(tendersData?.total || 0).toLocaleString("es-DO")} registros encontrados · Volumen:{" "}
+                  <span className="font-mono font-bold text-primary">
+                    {(tendersData?.total || 0).toLocaleString("es-DO")}
+                  </span>{" "}
+                  registros encontrados · Volumen filtrado:{" "}
                   <span className="font-mono font-semibold text-on-surface">
                     RD${" "}
                     {(tendersData?.total_amount_filtered || 0).toLocaleString("es-DO", {
                       maximumFractionDigits: 0,
                     })}
                   </span>
+                  {province ? ` · Provincia: ${province}` : ""}
+                  {onlyWithAnomalies ? " · Solo con hallazgos" : ""}
                 </p>
               </div>
 
@@ -219,6 +244,7 @@ export default function CivicPortalPage() {
                 <select
                   value={institutionId ?? ""}
                   onChange={(e) => {
+                    setActiveChipLabel(null)
                     setInstitutionId(e.target.value ? Number(e.target.value) : undefined)
                     setPage(1)
                   }}
@@ -239,6 +265,7 @@ export default function CivicPortalPage() {
                     type="checkbox"
                     checked={onlyWithAnomalies}
                     onChange={(e) => {
+                      setActiveChipLabel(null)
                       setOnlyWithAnomalies(e.target.checked)
                       setPage(1)
                     }}
@@ -254,7 +281,8 @@ export default function CivicPortalPage() {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="w-full md:w-auto px-4 py-2 rounded bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-semibold text-outline hover:text-on-surface cursor-pointer"
+                  disabled={!hasActiveFilters && !searchInput}
+                  className="w-full md:w-auto px-4 py-2 rounded bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-semibold text-outline hover:text-on-surface disabled:opacity-40 cursor-pointer"
                 >
                   Limpiar filtros
                 </button>
@@ -379,6 +407,33 @@ export default function CivicPortalPage() {
               </div>
             )}
           </section>
+
+          {budgetOverview && (
+            <BudgetSankeyCard
+              institutions={budgetOverview.sankey.institutions}
+              suppliers={budgetOverview.sankey.suppliers}
+              links={budgetOverview.sankey.links}
+              totalFlowAmount={budgetOverview.sankey.total_flow_amount}
+            />
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {budgetOverview && (
+              <ProvincialMapCard
+                provinces={budgetOverview.provinces}
+                selectedProvince={province}
+                onSelectProvince={(p) => {
+                  setActiveChipLabel(null)
+                  setProvince(p)
+                  setPage(1)
+                  resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+                }}
+              />
+            )}
+            {priceComparisons && priceComparisons.length > 0 && (
+              <LivePriceCheckerWidget items={priceComparisons} />
+            )}
+          </div>
         </SectionContainer>
       </main>
 
