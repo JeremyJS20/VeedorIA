@@ -189,7 +189,7 @@ export default function UsersManagementPage() {
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
             Administración Multi-Tenant SaaS
           </span>
-          <h1 className="text-2xl font-bold text-on-surface mt-1">
+          <h1 className="font-display text-2xl font-bold text-on-surface mt-1">
             Gestión de Usuarios y Organizaciones Suscriptoras
           </h1>
           <p className="text-xs text-on-surface-variant mt-1">
@@ -529,7 +529,7 @@ export default function UsersManagementPage() {
       {showNewUserModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
-            <h2 className="text-lg font-bold text-on-surface">Registrar Nuevo Usuario Institucional</h2>
+            <h2 className="font-display text-lg font-bold text-on-surface">Registrar Nuevo Usuario Institucional</h2>
             <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
               <div>
                 <label className="block font-semibold mb-1">Nombre Completo</label>
@@ -625,7 +625,7 @@ export default function UsersManagementPage() {
       {showNewTenantModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
-            <h2 className="text-lg font-bold text-on-surface">
+            <h2 className="font-display text-lg font-bold text-on-surface">
               Registrar Nueva Organización Suscriptora (Tenant)
             </h2>
             <form onSubmit={handleCreateTenant} className="space-y-3 text-xs">

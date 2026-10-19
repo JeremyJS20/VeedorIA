@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Building2, Shield, Briefcase } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import InsetPanel from "../components/ui/InsetPanel"
 import { useAuth } from "../context/AuthContext"
 
 const DEMO_TENANT_ACCOUNTS = [
@@ -74,13 +75,11 @@ export default function LoginPage() {
       title="Iniciar Sesión Institucional"
       subtitle="Ingresa las credenciales asignadas a tu institución (B2G), órgano rector o empresa proveedora (B2B)."
       footer={
-        <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 shadow-md">
-          <div className="mb-2.5">
-            <span className="text-xs font-semibold text-on-surface">
-              Cuentas de Demostración Multi-Tenant (Clave: VeedorIA2026!)
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-1.5">
+        <InsetPanel className="!p-5">
+          <p className="font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3">
+            Cuentas de Demostración Multi-Tenant (Clave: <span className="font-mono text-on-surface">VeedorIA2026!</span>)
+          </p>
+          <div className="grid grid-cols-1 gap-2">
             {DEMO_TENANT_ACCOUNTS.map((acc) => {
               const Icon = acc.icon
               const isSelected = correo.toLowerCase() === acc.email.toLowerCase()
@@ -89,17 +88,17 @@ export default function LoginPage() {
                   key={acc.email}
                   type="button"
                   onClick={() => fillDemoAccount(acc.email)}
-                  className={`flex items-center justify-between text-left px-3 py-2 rounded-xl border text-xs transition-all cursor-pointer ${
+                  className={`flex items-center justify-between text-left px-3.5 py-2.5 rounded-xl border text-xs transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-primary/10 border-primary/40 text-on-surface"
-                      : "bg-surface-container-low/60 border-outline-variant/20 hover:bg-surface-container text-on-surface-variant"
+                      ? "bg-primary-container/30 border-primary text-on-surface"
+                      : "bg-surface border-outline-variant/40 hover:bg-surface-container-high text-on-surface-variant"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     <Icon className="w-4 h-4 text-primary shrink-0" />
                     <div className="truncate">
-                      <p className="font-semibold text-on-surface truncate">{acc.label}</p>
-                      <p className="text-[11px] text-on-surface-variant font-mono truncate">
+                      <p className="font-display font-bold text-on-surface truncate">{acc.label}</p>
+                      <p className="text-[11px] text-on-surface-variant font-mono truncate mt-0.5">
                         {acc.email} · {acc.scope}
                       </p>
                     </div>
@@ -108,14 +107,14 @@ export default function LoginPage() {
               )
             })}
           </div>
-        </div>
+        </InsetPanel>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2.5 p-3.5 rounded-xl bg-error/10 border border-error/30 text-error text-xs"
+            className="flex items-start gap-2.5 p-3.5 rounded-xl bg-error-container text-on-error-container text-xs font-medium"
           >
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
@@ -123,7 +122,10 @@ export default function LoginPage() {
         )}
 
         <div>
-          <label htmlFor="login-email" className="block text-xs font-semibold text-on-surface mb-1.5">
+          <label
+            htmlFor="login-email"
+            className="block font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
+          >
             Correo Electrónico Institucional
           </label>
           <div className="relative">
@@ -136,14 +138,17 @@ export default function LoginPage() {
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               placeholder="usuario@institucion.gob.do"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container border border-outline-variant text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label htmlFor="login-password" className="block text-xs font-semibold text-on-surface">
+          <div className="flex items-center justify-between mb-2">
+            <label
+              htmlFor="login-password"
+              className="block font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant"
+            >
               Contraseña
             </label>
             <Link
@@ -163,7 +168,7 @@ export default function LoginPage() {
               value={contrasena}
               onChange={(e) => setContrasena(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
+              className="w-full pl-10 pr-10 py-3 rounded-xl bg-surface-container border border-outline-variant text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
             <button
               type="button"
@@ -179,7 +184,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 px-4 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-95 disabled:opacity-50 transition-all shadow-md cursor-pointer"
+          className="btn btn-primary btn-md btn-full-width"
         >
           {isSubmitting ? "Verificando credenciales..." : "Acceder a la Consola VeedorIA"}
         </button>

@@ -26,7 +26,7 @@ export default function RolesMatrixPage() {
         <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
           Gobernanza y Seguridad Relacional
         </span>
-        <h1 className="text-2xl font-bold text-on-surface mt-1">
+        <h1 className="font-display text-2xl font-bold text-on-surface mt-1">
           Matriz de Roles RBAC y Planes Multi-Tenant SaaS
         </h1>
         <p className="text-xs text-on-surface-variant mt-1">
@@ -38,7 +38,7 @@ export default function RolesMatrixPage() {
         {data.roles.map((role) => (
           <div
             key={role.id}
-            className="bg-surface border border-outline-variant/30 rounded-2xl p-5 shadow-sm flex flex-col justify-between"
+            className="inset-panel flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -47,7 +47,7 @@ export default function RolesMatrixPage() {
                 </span>
                 <ShieldCheck className="w-4 h-4 text-primary" />
               </div>
-              <h2 className="text-sm font-bold text-on-surface">{role.nombre}</h2>
+              <h2 className="font-display text-sm font-bold text-on-surface">{role.nombre}</h2>
               <p className="text-xs text-on-surface-variant mt-1.5 leading-relaxed">
                 {role.descripcion}
               </p>
@@ -66,7 +66,7 @@ export default function RolesMatrixPage() {
         <div className="p-5 border-b border-outline-variant/20 flex items-center gap-2.5">
           <Layers className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-sm font-bold text-on-surface">
+            <h2 className="font-display text-sm font-bold text-on-surface">
               Matriz Cruzada de Permisos Granulares ({data.permisos.length} permisos × {data.roles.length} roles)
             </h2>
             <p className="text-xs text-on-surface-variant">
@@ -124,7 +124,7 @@ export default function RolesMatrixPage() {
         <div className="p-5 border-b border-outline-variant/20 flex items-center gap-2.5">
           <Building2 className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-sm font-bold text-on-surface">
+            <h2 className="font-display text-sm font-bold text-on-surface">
               Catálogo de Planes de Suscripción Multi-Tenant (Modelo de Negocio B2G / B2B)
             </h2>
             <p className="text-xs text-on-surface-variant">

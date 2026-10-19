@@ -44,7 +44,7 @@ export default function UserProfilePage() {
         <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
           Identidad y Seguridad Multi-Tenant
         </span>
-        <h1 className="text-2xl font-bold text-on-surface mt-1">Mi Perfil Institucional</h1>
+        <h1 className="font-display text-2xl font-bold text-on-surface mt-1">Mi Perfil Institucional</h1>
         <p className="text-xs text-on-surface-variant mt-1">
           Información de tu cuenta, organización SaaS asignada, permisos efectivos RBAC y gestión de contraseña.
         </p>
@@ -52,7 +52,7 @@ export default function UserProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="inset-panel space-y-5">
             <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/15 text-primary flex items-center justify-center font-bold text-lg">
                 {user.nombre
@@ -63,7 +63,7 @@ export default function UserProfilePage() {
                   .toUpperCase()}
               </div>
               <div>
-                <h2 className="text-lg font-bold text-on-surface">{user.nombre}</h2>
+                <h2 className="font-display text-lg font-bold text-on-surface">{user.nombre}</h2>
                 <p className="text-xs font-mono text-on-surface-variant">{user.correo}</p>
               </div>
             </div>
@@ -92,11 +92,11 @@ export default function UserProfilePage() {
           </div>
 
           {user.tenant && (
-            <div className="bg-surface border border-outline-variant/30 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="inset-panel space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Building2 className="w-5 h-5 text-primary" />
-                  <h3 className="text-sm font-bold text-on-surface">
+                  <h3 className="font-display text-sm font-bold text-on-surface">
                     Organización Suscriptora (Tenant SaaS)
                   </h3>
                 </div>
@@ -130,10 +130,10 @@ export default function UserProfilePage() {
             </div>
           )}
 
-          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-6 shadow-sm space-y-3">
+          <div className="inset-panel space-y-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-on-surface">
+              <h3 className="font-display text-sm font-bold text-on-surface">
                 Permisos Efectivos en tu Sesión ({user.permisos.length})
               </h3>
             </div>
@@ -151,11 +151,11 @@ export default function UserProfilePage() {
         </div>
 
         <div className="lg:col-span-5">
-          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="inset-panel space-y-4">
             <div className="flex items-center gap-2.5">
               <KeyRound className="w-5 h-5 text-primary" />
               <div>
-                <h3 className="text-sm font-bold text-on-surface">Cambiar Contraseña</h3>
+                <h3 className="font-display text-sm font-bold text-on-surface">Cambiar Contraseña</h3>
                 <p className="text-xs text-on-surface-variant">
                   Actualiza tu clave con hash seguro bcrypt.
                 </p>
