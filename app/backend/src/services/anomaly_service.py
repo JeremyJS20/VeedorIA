@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import hashlib
 import logging
 import math
@@ -618,10 +618,24 @@ class AnomalyService:
         status: str | None = None,
         min_severity: float | None = None,
         search: str | None = None,
+        institution_id: int | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[Anomaly], int]:
         base = select(Anomaly)
+        if institution_id is not None:
+            inst_procs = select(Process.id).where(Process.institution_id == institution_id)
+            inst_contracts = (
+                select(Contract.id)
+                .join(Process, Contract.process_id == Process.id)
+                .where(Process.institution_id == institution_id)
+            )
+            base = base.where(
+                or_(
+                    Anomaly.process_id.in_(inst_procs),
+                    Anomaly.contract_id.in_(inst_contracts),
+                )
+            )
         if anomaly_type:
             base = base.where(Anomaly.anomaly_type == anomaly_type)
         if status:
@@ -719,34 +733,42 @@ class AnomalyService:
         result = await self.db.execute(select(Anomaly).where(Anomaly.id == anomaly_id))
         return result.scalar_one_or_none()
 
-    async def get_anomaly_stats(self) -> dict:
-        result = await self.db.execute(text("""
-            SELECT anomaly_type, COUNT(*) as cnt
-            FROM anomaly
-            GROUP BY anomaly_type
-        """))
-        type_rows = result.all()
+    async def get_anomaly_stats(self, institution_id: int | None = None) -> dict:
+        base_filter = []
+        if institution_id is not None:
+            inst_procs = select(Process.id).where(Process.institution_id == institution_id)
+            inst_contracts = (
+                select(Contract.id)
+                .join(Process, Contract.process_id == Process.id)
+                .where(Process.institution_id == institution_id)
+            )
+            base_filter.append(
+                or_(
+                    Anomaly.process_id.in_(inst_procs),
+                    Anomaly.contract_id.in_(inst_contracts),
+                )
+            )
 
-        result = await self.db.execute(text("""
-            SELECT status, COUNT(*) as cnt
-            FROM anomaly
-            GROUP BY status
-        """))
-        status_rows = result.all()
+        type_stmt = select(Anomaly.anomaly_type, func.count(Anomaly.id).label("cnt"))
+        status_stmt = select(Anomaly.status, func.count(Anomaly.id).label("cnt"))
+        avg_stmt = select(func.coalesce(func.avg(Anomaly.severity), 0.0).label("avg_sev"))
 
-        result = await self.db.execute(text("""
-            SELECT COALESCE(AVG(severity), 0.0) as avg_sev
-            FROM anomaly
-        """))
-        avg_row = result.one()
+        if base_filter:
+            type_stmt = type_stmt.where(*base_filter)
+            status_stmt = status_stmt.where(*base_filter)
+            avg_stmt = avg_stmt.where(*base_filter)
 
-        total = sum(r.cnt for r in status_rows)
+        type_rows = (await self.db.execute(type_stmt.group_by(Anomaly.anomaly_type))).all()
+        status_rows = (await self.db.execute(status_stmt.group_by(Anomaly.status))).all()
+        avg_row = (await self.db.execute(avg_stmt)).one()
+
+        total = sum(int(r.cnt) for r in status_rows)
 
         return {
             "total": total,
-            "total_by_type": {r.anomaly_type: r.cnt for r in type_rows},
-            "total_by_status": {r.status: r.cnt for r in status_rows},
-            "avg_severity": float(avg_row.avg_sev),
+            "total_by_type": {r.anomaly_type: int(r.cnt) for r in type_rows},
+            "total_by_status": {r.status: int(r.cnt) for r in status_rows},
+            "avg_severity": float(avg_row.avg_sev or 0.0),
         }
 
     async def get_anomaly_context(self, anomaly_id: str) -> dict | None:

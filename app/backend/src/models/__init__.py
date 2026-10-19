@@ -1,5 +1,13 @@
 from src.models.anomaly import Anomaly
 from src.models.audit_log import AuditLog
+from src.models.auth import (
+    AppUser,
+    PasswordResetToken,
+    Permission,
+    Role,
+    RolePermission,
+    Tenant,
+)
 from src.models.contract import Contract
 from src.models.institution import Institution
 from src.models.item import Item
@@ -10,6 +18,12 @@ from src.models.user import User
 
 __all__ = [
     "User",
+    "Tenant",
+    "Role",
+    "Permission",
+    "RolePermission",
+    "AppUser",
+    "PasswordResetToken",
     "Institution",
     "Process",
     "Contract",

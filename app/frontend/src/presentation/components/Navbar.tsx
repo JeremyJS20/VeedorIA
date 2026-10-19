@@ -1,31 +1,33 @@
-﻿import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate } from 'react-router-dom'
-import LanguageSwitcher from './LanguageSwitcher'
-import ThemeToggler from './ThemeToggler'
-import SectionContainer from './SectionContainer'
-import Button from './ui/Button'
-import Logo from './Logo'
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import LanguageSwitcher from "./LanguageSwitcher"
+import ThemeToggler from "./ThemeToggler"
+import SectionContainer from "./SectionContainer"
+import Button from "./ui/Button"
+import Logo from "./Logo"
+import { useAuth } from "../context/AuthContext"
 
 export default function Navbar() {
-  const { t } = useTranslation('landing')
+  const { t } = useTranslation("landing")
   const navigate = useNavigate()
   const location = useLocation()
+  const { isAuthenticated, user } = useAuth()
 
   const handleBusinessClick = () => {
-    if (location.pathname === '/') {
-      const el = document.getElementById('portals-section')
+    if (location.pathname === "/") {
+      const el = document.getElementById("portals-section")
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
+        el.scrollIntoView({ behavior: "smooth" })
         return
       }
     }
-    navigate('/public')
+    navigate("/public")
   }
 
   const navLinks = [
-    { label: t('navbar.links.citizen'), path: '/public', onClick: () => navigate('/public') },
-    { label: t('navbar.links.business'), path: '/#portals', onClick: handleBusinessClick },
-    { label: t('navbar.links.institutions'), path: '/ranking', onClick: () => navigate('/ranking') },
+    { label: t("navbar.links.citizen"), path: "/public", onClick: () => navigate("/public") },
+    { label: t("navbar.links.business"), path: "/#portals", onClick: handleBusinessClick },
+    { label: t("navbar.links.institutions"), path: "/ranking", onClick: () => navigate("/ranking") },
   ]
 
   return (
@@ -33,7 +35,7 @@ export default function Navbar() {
       <SectionContainer className="flex justify-between items-center py-sm">
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="cursor-pointer focus:outline-none"
           aria-label="Ir al inicio de VeedorIA"
         >
@@ -42,14 +44,16 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-md">
           {navLinks.map((link) => {
-            const isActive = location.pathname === link.path || (link.path === '/public' && location.pathname === '/explore')
+            const isActive =
+              location.pathname === link.path ||
+              (link.path === "/public" && location.pathname === "/explore")
             return (
               <button
                 key={link.label}
                 type="button"
                 onClick={link.onClick}
                 className={`text-base font-medium transition-colors hover:text-primary active:scale-95 cursor-pointer ${
-                  isActive ? 'text-primary font-bold' : 'text-on-surface-variant'
+                  isActive ? "text-primary font-bold" : "text-on-surface-variant"
                 }`}
               >
                 {link.label}
@@ -61,8 +65,14 @@ export default function Navbar() {
         <div className="flex items-center gap-sm">
           <LanguageSwitcher />
           <ThemeToggler />
-          <Button variant="primary" size="sm" onClick={() => navigate('/app/bandeja')}>
-            {t('navbar.login')}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate(isAuthenticated ? "/app/bandeja" : "/login")}
+          >
+            {isAuthenticated
+              ? `Consola (${user?.tenant?.codigo || "Activa"})`
+              : t("navbar.login")}
           </Button>
         </div>
       </SectionContainer>

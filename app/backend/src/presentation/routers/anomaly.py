@@ -1,6 +1,6 @@
-﻿import logging
+import logging
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +14,7 @@ from src.domain.schemas.anomaly import (
 from src.domain.types import ApiResponse
 from src.infrastructure.dependencies import get_db
 from src.models.sync_log import SyncLog
-from src.presentation.dependencies import get_anomaly_service
+from src.presentation.dependencies import get_anomaly_service, get_optional_user
 from src.presentation.runners import run_detection
 from src.services.anomaly_service import AnomalyService
 
@@ -22,8 +22,35 @@ logger = logging.getLogger("veedoria.presentation.routers.anomaly")
 router = APIRouter(prefix="/anomalies", tags=["anomalies"])
 
 
+def _resolve_tenant_institution_id(
+    current_user: dict | None,
+    requested_institution_id: int | None = None,
+) -> int | None:
+    if current_user and current_user.get("tenant"):
+        tenant = current_user["tenant"]
+        if tenant.get("tipo") == "GOV_INSTITUTION" and tenant.get("institution_id") is not None:
+            return int(tenant["institution_id"])
+    return requested_institution_id
+
+
+def _enforce_permission_if_authenticated(current_user: dict | None, perm_code: str) -> None:
+    if current_user is not None:
+        if perm_code not in current_user.get("permisos", []):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "FORBIDDEN_INSUFFICIENT_ROLE_OR_PLAN",
+                    "message": f"Su rol o el plan actual de su organización no incluye el permiso '{perm_code}'.",
+                },
+            )
+
+
 @router.post("/detect", status_code=202)
-async def detect_anomalies(session: AsyncSession = Depends(get_db)) -> ApiResponse:
+async def detect_anomalies(
+    session: AsyncSession = Depends(get_db),
+    current_user: dict | None = Depends(get_optional_user),
+) -> ApiResponse:
+    _enforce_permission_if_authenticated(current_user, "DETECTION_RUN")
     stmt = select(SyncLog).where(
         SyncLog.status == "running",
         SyncLog.process_type == "detection",
@@ -42,19 +69,23 @@ async def detect_anomalies(session: AsyncSession = Depends(get_db)) -> ApiRespon
 @router.get("", response_model=ApiResponse[AnomalyListResponse])
 async def list_anomalies(
     service: AnomalyService = Depends(get_anomaly_service),
+    current_user: dict | None = Depends(get_optional_user),
     anomaly_type: str | None = Query(None, description="Filtrar por tipo (PRICE_ANOMALY, FRAGMENTATION, COLLUSION)"),
     status: str | None = Query(None, description="Filtrar por estado (PENDING, CONFIRMED, DISMISSED)"),
     min_severity: float | None = Query(None, ge=0.0, le=1.0, description="Severidad mínima"),
     search: str | None = Query(None, description="Búsqueda textual por proceso, contrato, proveedor, institución o descripción"),
+    institution_id: int | None = Query(None, description="ID de institución (forzado automáticamente para tenants GOV_INSTITUTION)"),
     limit: int = Query(50, ge=1, le=200),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
 ) -> ApiResponse[AnomalyListResponse]:
+    effective_inst_id = _resolve_tenant_institution_id(current_user, institution_id)
     offset = (page - 1) * limit
     items, total = await service.get_anomalies(
         anomaly_type=anomaly_type,
         status=status,
         min_severity=min_severity,
         search=search,
+        institution_id=effective_inst_id,
         limit=limit,
         offset=offset,
     )
@@ -71,8 +102,11 @@ async def list_anomalies(
 @router.get("/stats", response_model=ApiResponse[AnomalyStats])
 async def get_stats(
     service: AnomalyService = Depends(get_anomaly_service),
+    current_user: dict | None = Depends(get_optional_user),
+    institution_id: int | None = Query(None),
 ) -> ApiResponse[AnomalyStats]:
-    stats = await service.get_anomaly_stats()
+    effective_inst_id = _resolve_tenant_institution_id(current_user, institution_id)
+    stats = await service.get_anomaly_stats(institution_id=effective_inst_id)
     return ApiResponse(data=AnomalyStats(**stats))
 
 
@@ -103,10 +137,13 @@ async def review_anomaly(
     anomaly_id: str,
     payload: AnomalyReviewPayload,
     service: AnomalyService = Depends(get_anomaly_service),
+    current_user: dict | None = Depends(get_optional_user),
 ) -> ApiResponse[AnomalyResponse]:
+    _enforce_permission_if_authenticated(current_user, "ANOMALY_REVIEW")
+    reviewer_id = str(current_user["correo"]) if current_user else payload.reviewer_id
     anomaly = await service.review_anomaly(
         anomaly_id=anomaly_id,
-        reviewer_id=payload.reviewer_id,
+        reviewer_id=reviewer_id,
         status=payload.status,
         notes=payload.notes,
         dismissal_reason=payload.dismissal_reason,

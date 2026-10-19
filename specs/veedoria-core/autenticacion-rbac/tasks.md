@@ -55,7 +55,7 @@ flowchart TD
     4. `MINERD-B2G` (`GOV_INSTITUTION`, `B2G_BASIC`, `institution_id` del MINERD) — `auditor@minerd.gob.do` (`AUDITOR`).
     5. `CONSTRUCTORA-B2B` (`B2B_SUPPLIER`, `B2B_CORPORATE`, `supplier_rpe` real) — `proveedor@constructora.do` (`PROVEEDOR`).
 - **Acceptance criteria:**
-  - [ ] Las 6 tablas existen en PostgreSQL (`veedoria-pg`) y el seed es 100% idempotente con contraseñas cifradas en `bcrypt` (`cost=10`).
+  - [x] Las 6 tablas existen en PostgreSQL (`veedoria-pg`) y el seed es 100% idempotente con contraseñas cifradas en `bcrypt` (`cost=10`).
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/models/auth.py`, `app/backend/src/models/__init__.py`
 
@@ -68,7 +68,7 @@ flowchart TD
   - `GET /api/usuarios`, `POST /api/usuarios`, `PUT /api/usuarios/{id}`, `POST /api/usuarios/{id}/unlock`, `POST /api/usuarios/{id}/reset-link` (con aislamiento `tenant_id` para `TENANT_ADMIN`).
   - `GET /api/tenants`, `POST /api/tenants`, `PUT /api/tenants/{id}` y `GET /api/roles`.
 - **Acceptance criteria:**
-  - [ ] Todos los endpoints responden con las estructuras y códigos HTTP especificados en `design.md` (`200`, `400`, `401`, `403`, `409`, `422`, `429`).
+  - [x] Todos los endpoints responden con las estructuras y códigos HTTP especificados en `design.md` (`200`, `400`, `401`, `403`, `409`, `422`, `429`).
 - **Dependencies:** Task 1.1
 - **Files to create/modify:** `app/backend/src/services/auth_service.py`, `app/backend/src/presentation/routers/auth_router.py`, `app/backend/src/presentation/dependencies.py`, `app/backend/src/presentation/main.py`
 
@@ -81,15 +81,15 @@ flowchart TD
   - Si el usuario pertenece a un tenant `GOV_INSTITUTION` con `institution_id` asignado, filtrar tanto el listado paginado de anomalías como las estadísticas KPI exclusivamente por `Process.institution_id == user.tenant.institution_id`.
   - Proteger `PATCH /api/anomalies/{id}` con `ANOMALY_REVIEW` y `POST /api/anomalies/detect` con `DETECTION_RUN`.
 - **Acceptance criteria:**
-  - [ ] Un auditor de MOPC o MINERD (`GOV_INSTITUTION`) solo recibe en `/api/anomalies` y `/api/anomalies/stats` los hallazgos de su institución; un auditor de DGCP (`GOV_OVERSIGHT`) recibe el total nacional.
+  - [x] Un auditor de MOPC o MINERD (`GOV_INSTITUTION`) solo recibe en `/api/anomalies` y `/api/anomalies/stats` los hallazgos de su institución; un auditor de DGCP (`GOV_OVERSIGHT`) recibe el total nacional.
 - **Dependencies:** Task 1.2
 - **Files to create/modify:** `app/backend/src/services/anomaly_service.py`, `app/backend/src/presentation/routers/anomaly.py`
 
 ### Task 2.2: `AuthContext`, Interceptor JWT en Cliente HTTP y Guardia `RequireAuth` (`REQ-001`, `REQ-002`, `REQ-003`) (~2h)
 - **Description:** Crear `app/frontend/src/presentation/context/AuthContext.tsx`, `app/frontend/src/presentation/components/auth/RequireAuth.tsx` y `app/frontend/src/presentation/hooks/useAuthManagement.ts`, e integrar la cabecera `Authorization: Bearer <token>` en `app/frontend/src/infrastructure/api/anomalyApi.ts` para que todas las peticiones de consola porten el token JWT activo y limpien la caché de React Query al cerrar o cambiar de sesión.
 - **Acceptance criteria:**
-  - [ ] Navegar a cualquier ruta bajo `/app/*` sin sesión activa redirige automáticamente a `/login?callbackUrl=...`.
-  - [ ] Al cerrar sesión se purga `queryClient.clear()` evitando fugas de datos entre tenants.
+  - [x] Navegar a cualquier ruta bajo `/app/*` sin sesión activa redirige automáticamente a `/login?callbackUrl=...`.
+  - [x] Al cerrar sesión se purga `queryClient.clear()` evitando fugas de datos entre tenants.
 - **Dependencies:** Task 1.2
 - **Files to create/modify:** `app/frontend/src/presentation/context/AuthContext.tsx`, `app/frontend/src/presentation/components/auth/RequireAuth.tsx`, `app/frontend/src/presentation/hooks/useAuthManagement.ts`, `app/frontend/src/infrastructure/api/anomalyApi.ts`
 
@@ -102,7 +102,7 @@ flowchart TD
   - `LoginPage.tsx` (`/login`): formulario de correo institucional y contraseña con toggle `Eye`/`EyeOff`, casilla `"Recordarme"`, enlace a `/recuperar-contrasena`, manejo de errores (`401`, `403`, `429`) y selector discreto de cuentas multi-tenant preconfiguradas (NexoDigital Admin, DGCP Oversight, MOPC B2G Premium, MINERD B2G Básico, Proveedor B2B) para pruebas ágiles.
   - `ForgotPasswordPage.tsx` (`/recuperar-contrasena`) y `ResetPasswordPage.tsx` (`/restablecer-contrasena`).
 - **Acceptance criteria:**
-  - [ ] Flujo completo `/login` ↔ `/recuperar-contrasena` ↔ `/restablecer-contrasena` operativo de extremo a extremo.
+  - [x] Flujo completo `/login` ↔ `/recuperar-contrasena` ↔ `/restablecer-contrasena` operativo de extremo a extremo.
 - **Dependencies:** Task 2.2
 - **Files to create/modify:** `app/frontend/src/presentation/components/auth/AuthShell.tsx`, `app/frontend/src/presentation/pages/LoginPage.tsx`, `app/frontend/src/presentation/pages/ForgotPasswordPage.tsx`, `app/frontend/src/presentation/pages/ResetPasswordPage.tsx`
 
@@ -113,8 +113,8 @@ flowchart TD
   - `UsersManagementPage.tsx` (`/app/usuarios`): gestión de organizaciones suscritas (`Tenants` + cambio de `plan_tier`) y directorio de usuarios con creación, edición, activación/inactivación, botón `"Desbloquear Cuenta"` y `"Generar Enlace de Recuperación"` (`REQ-004`, `REQ-008`).
   - `RolesMatrixPage.tsx` (`/app/roles`): catálogo de roles del sistema y matriz visual de permisos × roles × planes SaaS (`REQ-009`).
 - **Acceptance criteria:**
-  - [ ] `DashboardLayout.tsx` refleja la identidad y el tenant reales de la sesión sin selector `"Simular Rol"`.
-  - [ ] `/app/perfil`, `/app/usuarios` y `/app/roles` funcionan contra los endpoints reales de PostgreSQL.
+  - [x] `DashboardLayout.tsx` refleja la identidad y el tenant reales de la sesión sin selector `"Simular Rol"`.
+  - [x] `/app/perfil`, `/app/usuarios` y `/app/roles` funcionan contra los endpoints reales de PostgreSQL.
 - **Dependencies:** Task 2.1, Task 2.2
 - **Files to create/modify:** `app/frontend/src/presentation/layouts/DashboardLayout.tsx`, `app/frontend/src/presentation/pages/UserProfilePage.tsx`, `app/frontend/src/presentation/pages/UsersManagementPage.tsx`, `app/frontend/src/presentation/pages/RolesMatrixPage.tsx`, `app/frontend/src/presentation/components/Navbar.tsx`, `app/frontend/src/App.tsx`
 
@@ -125,8 +125,8 @@ flowchart TD
 ### Task 4.1: Pruebas Automatizadas Multi-Tenant (`pytest`) y Validación Estática Frontend (`tsc -b` + `eslint`) (~1.5h)
 - **Description:** Crear `app/backend/tests/test_auth_multi_tenant.py` validando login exitoso, incremento de `intentos_fallidos` y bloqueo `HTTP 429` al 5.º intento, desbloqueo administrativo, recuperación y restablecimiento de contraseña con token `SHA-256`, cambio de clave, aislamiento multi-tenant en `/api/anomalies` (`DGCP` vs `MOPC` vs `MINERD`) y control de permisos RBAC (`403 Forbidden`), y verificar `0` errores en `tsc -b` y `eslint .`.
 - **Acceptance criteria:**
-  - [ ] `pytest` pasa al 100% incluyendo `test_auth_multi_tenant.py`.
-  - [ ] `npx tsc -b` y `npx eslint .` finalizan con `0` errores.
+  - [x] `pytest` pasa al 100% incluyendo `test_auth_multi_tenant.py`.
+  - [x] `npx tsc -b` y `npx eslint .` finalizan con `0` errores.
 - **Dependencies:** Task 3.1, Task 3.2
 - **Files to create/modify:** `app/backend/tests/test_auth_multi_tenant.py`
 
