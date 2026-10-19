@@ -85,10 +85,12 @@ flowchart LR
 - **Discarded**: Inferencia ML en el hilo principal de `uvicorn` (descartada por bloqueo del event loop) y recálculo sin caché de `IsolationForest` (descartado a favor de caché `joblib` por hash SHA-256).
 
 ### Environments
-| Environment | URL | Deploy trigger |
-|-------------|-----|----------------|
-| Local Development | `http://localhost:3001/api/anomalies` | Manual (`uvicorn` / `python -m src.cli.detect_anomalies`) |
-| Production (Render) | `https://veedoria-api.onrender.com/api/anomalies` | Push manual a rama desplegada según blueprint `render.yaml` |
+| Environment | Branch | URL | Database / Queue | Deploy trigger & Gate |
+|-------------|--------|-----|------------------|-----------------------|
+| **Local** | `feature/*` / `dev` | `http://localhost:3001/api/anomalies` | SQLite (`veedoria.db`) o PostgreSQL Docker + Redis local | Manual (`uvicorn` / `python -m src.cli.detect_anomalies`) |
+| **DEV / QA** | `dev` | `https://dev-api.veedoria.do/api/anomalies` | PostgreSQL DEV + Redis DEV (`veedoria-worker-dev`) | Automático en merge a `dev` tras CI (`ruff` + `pytest` + `alembic upgrade head`) |
+| **CERT (Staging)** | `cert` / `release/*` | `https://cert-api.veedoria.do/api/anomalies` | PostgreSQL CERT + Redis CERT (`veedoria-worker-cert`) | Promoción manual `dev → cert` · **Approval Gate: Dev + QA** (validación de umbrales `DetectionConfig` antes de PROD) |
+| **PROD** | `main` | `https://api.veedoria.do/api/anomalies` | PostgreSQL PROD + Redis PROD (`veedoria-worker`) | Promoción manual `cert → main` + Release Tag `vX.Y.Z` · **Approval Gate: Dev + QA + BA** (nunca directo `dev → prod`) |
 
 ## Database Schema
 

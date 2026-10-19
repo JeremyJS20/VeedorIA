@@ -92,10 +92,12 @@ flowchart LR
 - **Discarded**: Ejecución síncrona dentro del request HTTP (descartada por timeouts de proxy/cliente superando 30s) y ejecución exclusiva en `BackgroundTasks` del mismo proceso web (descartada en producción para aislar memoria entre API y worker).
 
 ### Environments
-| Environment | URL | Deploy trigger |
-|-------------|-----|----------------|
-| Local Development | `http://localhost:3001` (`SQLite` + `Redis` local/Docker) | Manual (`uvicorn` / `docker compose up`) |
-| Production (Render) | `https://veedoria-api.onrender.com` (`PostgreSQL` + `veedoria-worker` + `veedoria-redis`) | Push manual a rama desplegada según blueprint `render.yaml` |
+| Environment | Branch | URL | Database / Queue | Deploy trigger & Gate |
+|-------------|--------|-----|------------------|-----------------------|
+| **Local** | `feature/*` / `dev` | `http://localhost:3001` | SQLite (`veedoria.db`) o PostgreSQL Docker + Redis local (`:6379/0`) | Manual (`uvicorn` / `docker compose up`) |
+| **DEV / QA** | `dev` | `https://dev-api.veedoria.do` (`veedoria-api-dev`) | PostgreSQL DEV + Redis DEV (`veedoria-worker-dev`) | Automático en merge a `dev` tras CI (`ruff` + `pytest` + `alembic upgrade head`) |
+| **CERT (Staging)** | `cert` / `release/*` | `https://cert-api.veedoria.do` (`veedoria-api-cert`) | PostgreSQL CERT + Redis CERT (`veedoria-worker-cert`) | Promoción manual `dev → cert` · **Approval Gate: Dev + QA** (`alembic upgrade head` previo al deploy) |
+| **PROD** | `main` | `https://api.veedoria.do` (`veedoria-api`) | PostgreSQL PROD + Redis PROD (`veedoria-worker`) | Promoción manual `cert → main` + Release Tag `vX.Y.Z` · **Approval Gate: Dev + QA + BA** (nunca directo `dev → prod`) |
 
 ## Database Schema
 

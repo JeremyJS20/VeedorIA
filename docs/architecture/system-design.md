@@ -44,13 +44,15 @@ graph TB
 | Database | SQLite (`aiosqlite`) / PostgreSQL (`asyncpg`) | dev / prod | 10 tablas gestionadas con Alembic (`app/backend/migrations/`) |
 
 ## Ambientes
-| Aspecto | DEV | CERT | PROD |
-|---------|-----|------|------|
-| Instancias API | 1 × Uvicorn local (`--reload`) o contenedor Docker | `[VERIFY]` 1 × Docker container | Render Web Service (`veedoria-api`) |
-| Base de datos | SQLite (`veedoria.db`) o PostgreSQL local (`:5432`) | `[VERIFY]` PostgreSQL | PostgreSQL administrado (`DATABASE_URL` con `asyncpg`) |
-| Redis | `redis:7-alpine` local (`localhost:6379/0`) | `[VERIFY]` Redis instancia única | Render Redis (`veedoria-redis`) |
-| Logs level | `INFO` / `DEBUG` | `INFO` | `INFO` / `WARN` |
-| Datos | Subconjunto de contratos DGCP sincronizados | Subconjunto de validación | Datos abiertos reales de la DGCP (sincronización diaria) |
+| Aspecto | Local | Preview (PR) | DEV / QA (`dev`) | CERT (`cert` / `release/*`) | PROD (`main`) |
+|---------|-------|--------------|------------------|-----------------------------|---------------|
+| Frontend SPA | Vite Dev (`:5173`) | Vercel PR Preview (`pr-{N}`) | `https://dev.veedoria.do` | `https://cert.veedoria.do` | `https://veedoria.do` |
+| Instancias API | Uvicorn (`:3001`) / Docker | Consume API DEV | `veedoria-api-dev` | `veedoria-api-cert` | `veedoria-api` (Render) |
+| Worker `arq` | Proceso local / Docker | Comparte Worker DEV | `veedoria-worker-dev` | `veedoria-worker-cert` | `veedoria-worker` |
+| Base de datos | SQLite (`veedoria.db`) o PG local | PostgreSQL DEV | PostgreSQL DEV | PostgreSQL CERT (aislado) | PostgreSQL PROD (`asyncpg`) |
+| Redis | `localhost:6379/0` | Redis DEV | `veedoria-redis-dev` | `veedoria-redis-cert` | `veedoria-redis` |
+| Promoción / Gate | Manual | Auto por PR (auto-cleanup) | Auto en merge a `dev` | Manual · Gate: **Dev + QA** | Manual + Tag `vX.Y.Z` · Gate: **Dev + QA + BA** |
+| Migraciones DB | `alembic upgrade head` | — | Pre-deploy automático | Pre-deploy con rollback en fallo | Pre-deploy con aprobación manual |
 
 ## Escalabilidad
 - **Desacoplamiento de cargas pesadas**: La ingesta de datos DGCP y la ejecución de algoritmos ML/grafos se delegan a workers `arq` sobre Redis (`202 Accepted`), manteniendo baja la latencia de lectura en la API.
