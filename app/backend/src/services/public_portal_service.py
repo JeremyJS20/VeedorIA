@@ -1,5 +1,6 @@
-﻿import re
-from sqlalchemy import case, desc, func, or_, select
+import re
+import unicodedata
+from sqlalchemy import and_, case, desc, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.anomaly import Anomaly
@@ -21,6 +22,68 @@ DR_PROVINCES_META = [
     {"id": "LA", "province": "La Altagracia (Higüey)", "region": "Yuma", "keywords": ["altagracia", "higüey", "higuey", "punta cana", "bávaro", "verón", "yuma"]},
     {"id": "AZ", "province": "Azua / Región Sur", "region": "Valdesia / Enriquillo", "keywords": ["azua", "barahona", "san juan", "baní", "bani", "peravia", "ocoa", "neiba", "pedernales"]},
 ]
+
+SYNONYM_MAP: dict[str, list[str]] = {
+    "minerd": ["educación", "educacion", "educativa", "ideice", "isfodosu", "inabie"],
+    "educacion": ["educación", "educacion", "educativa"],
+    "educación": ["educación", "educacion", "educativa"],
+    "mopc": ["obras públicas", "obras publicas", "mopc", "viales"],
+    "msp": ["salud pública", "salud publica", "hospital", "sns"],
+    "sns": ["servicio nacional de salud", "hospital", "salud"],
+    "laptop": ["laptop", "computadora portátil", "computadora portatil", "notebook", "ordenador"],
+    "laptops": ["laptop", "computadora portátil", "computadora portatil", "notebook", "ordenador"],
+    "computadora": ["computador", "laptop", "ordenador"],
+    "computadoras": ["computador", "laptop", "ordenador"],
+    "asfalto": ["asfalt", "hormigón asfáltico", "hormigon asfaltico", "bacheo", "pavimento", "viales"],
+    "asfaltado": ["asfalt", "hormigón asfáltico", "hormigon asfaltico", "bacheo", "pavimento", "viales"],
+    "vehiculo": ["vehícul", "vehicul", "camioneta", "camión", "camion", "autobús", "autobus", "flotilla"],
+    "vehiculos": ["vehícul", "vehicul", "camioneta", "camión", "camion", "autobús", "autobus", "flotilla"],
+    "vehículo": ["vehícul", "vehicul", "camioneta", "camión", "camion", "autobús", "autobus", "flotilla"],
+    "vehículos": ["vehícul", "vehicul", "camioneta", "camión", "camion", "autobús", "autobus", "flotilla"],
+    "camion": ["camión", "camion", "camioneta"],
+    "camiones": ["camión", "camion", "camioneta"],
+    "camión": ["camión", "camion", "camioneta"],
+    "medicamento": ["medicament", "farmacéutic", "farmaceutic", "insumos médicos"],
+    "medicamentos": ["medicament", "farmacéutic", "farmaceutic", "insumos médicos"],
+}
+
+
+def _strip_accents(text: str) -> str:
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn"
+    )
+
+
+def _expand_token_variants(tok: str) -> list[str]:
+    low = tok.lower().strip()
+    no_acc = _strip_accents(low)
+    variants: list[str] = [low]
+    if no_acc != low:
+        variants.append(no_acc)
+
+    for base_word in list(variants):
+        if len(base_word) >= 5:
+            if base_word.endswith("iones"):
+                variants.append(base_word[:-5] + "ion")
+                variants.append(base_word[:-5] + "ión")
+            elif base_word.endswith("es") and not base_word.endswith(("bles", "tes", "res")):
+                variants.append(base_word[:-2])
+            elif base_word.endswith("s"):
+                variants.append(base_word[:-1])
+
+    if low in SYNONYM_MAP:
+        variants.extend(SYNONYM_MAP[low])
+    if no_acc in SYNONYM_MAP:
+        variants.extend(SYNONYM_MAP[no_acc])
+
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for v in variants:
+        v_clean = v.strip()
+        if len(v_clean) >= 3 and v_clean not in seen:
+            seen.add(v_clean)
+            deduped.append(v_clean)
+    return deduped or [low]
 
 
 class PublicPortalService:
@@ -90,6 +153,70 @@ class PublicPortalService:
         p_sev = func.coalesce(proc_anom_subq.c.p_max_sev, 0.0)
         max_sev_expr = case((c_sev >= p_sev, c_sev), else_=p_sev)
 
+        relevance_expr = literal(0)
+        token_filters = []
+
+        if search and search.strip():
+            raw_search = search.strip()
+            stop_words = {
+                "de", "en", "con", "el", "la", "los", "las", "para", "por", "del",
+                "mi", "que", "qué", "cuanto", "cuánto", "gasto", "gastó", "compra",
+                "compras", "adquisicion", "adquisición", "contratacion", "contratación",
+                "contratos", "contrato", "proveedores", "proveedor", "alertas", "alerta",
+                "sobreprecio", "sobreprecios", "provincia", "ministerio", "institucion",
+            }
+            tokens = [
+                t for t in re.split(r"[\s,.;:?¿!¡]+", raw_search)
+                if len(t) >= 3 and t.lower() not in stop_words
+            ]
+            if not tokens:
+                tokens = [raw_search]
+            if "sobreprecio" in raw_search.lower() or "alerta" in raw_search.lower():
+                only_with_anomalies = True
+
+            score_parts = []
+            for tok in tokens[:5]:
+                variants = _expand_token_variants(tok)
+                variant_clauses = []
+                title_match_clauses = []
+                inst_match_clauses = []
+                item_subq_clauses = []
+
+                for v in variants:
+                    q_v = f"%{v}%"
+                    title_match_clauses.append(Process.title.ilike(q_v))
+                    title_match_clauses.append(Contract.object_description.ilike(q_v))
+                    inst_match_clauses.append(Institution.name.ilike(q_v))
+                    inst_match_clauses.append(Contract.supplier_name.ilike(q_v))
+                    variant_clauses.extend([
+                        Contract.contract_id.ilike(q_v),
+                        Contract.supplier_name.ilike(q_v),
+                        Contract.object_description.ilike(q_v),
+                        Contract.rpe.ilike(q_v),
+                        Process.dgcp_code.ilike(q_v),
+                        Process.title.ilike(q_v),
+                        Institution.name.ilike(q_v),
+                    ])
+                    item_subq_clauses.append(Item.description.ilike(q_v))
+
+                item_contracts = select(Item.contract_id).where(or_(*item_subq_clauses))
+                variant_clauses.append(Contract.id.in_(item_contracts))
+                token_filters.append(or_(*variant_clauses))
+
+                score_parts.append(
+                    case(
+                        (or_(*title_match_clauses), 30),
+                        (Contract.id.in_(item_contracts), 20),
+                        (or_(*inst_match_clauses), 10),
+                        else_=0,
+                    )
+                )
+
+            if score_parts:
+                relevance_expr = score_parts[0]
+                for sp in score_parts[1:]:
+                    relevance_expr = relevance_expr + sp
+
         base = (
             select(
                 Contract.id.label("id"),
@@ -109,6 +236,7 @@ class PublicPortalService:
                 Contract.creation_date.label("creation_date"),
                 total_anom_expr.label("anomaly_count"),
                 max_sev_expr.label("max_severity"),
+                relevance_expr.label("relevance_score"),
             )
             .outerjoin(Process, Contract.process_id == Process.id)
             .outerjoin(Institution, Process.institution_id == Institution.id)
@@ -140,44 +268,8 @@ class PublicPortalService:
                 clauses.append(Contract.object_description.ilike(q_kw))
             base = base.where(or_(*clauses))
 
-        if search and search.strip():
-            raw_search = search.strip()
-            stop_words = {"de", "en", "con", "el", "la", "los", "las", "para", "por", "del", "mi", "que", "cuanto", "cuánto", "gasto", "gastó", "contratos", "proveedores", "alertas", "sobreprecio", "provincia"}
-            tokens = [
-                t for t in re.split(r"[\s,.;:?¿!¡]+", raw_search)
-                if len(t) >= 3 and t.lower() not in stop_words
-            ]
-            if not tokens:
-                tokens = [raw_search]
-            if "sobreprecio" in raw_search.lower() or "alerta" in raw_search.lower():
-                base = base.where(total_anom_expr > 0)
-            token_map = {
-                "minerd": "educación",
-                "mopc": "obras públicas",
-                "msp": "salud pública",
-                "sns": "servicio nacional de salud",
-            }
-            token_filters = []
-            for tok in tokens[:4]:
-                mapped = token_map.get(tok.lower(), tok)
-                q = f"%{mapped}%"
-                q_orig = f"%{tok}%"
-                item_contracts = select(Item.contract_id).where(Item.description.ilike(q_orig))
-                token_filters.append(
-                    or_(
-                        Contract.contract_id.ilike(q_orig),
-                        Contract.supplier_name.ilike(q_orig),
-                        Contract.object_description.ilike(q_orig),
-                        Contract.rpe.ilike(q_orig),
-                        Process.dgcp_code.ilike(q_orig),
-                        Process.title.ilike(q_orig),
-                        Institution.name.ilike(q),
-                        Institution.name.ilike(q_orig),
-                        Contract.id.in_(item_contracts),
-                    )
-                )
-            if token_filters:
-                base = base.where(or_(*token_filters))
+        if token_filters:
+            base = base.where(and_(*token_filters))
 
         subq = base.subquery()
         agg_stmt = select(
@@ -189,11 +281,27 @@ class PublicPortalService:
         total_amount_filtered = float(agg_row.total_amount or 0.0)
 
         offset = (page - 1) * limit
-        data_stmt = (
-            base.order_by(desc("anomaly_count"), desc("amount_adjudicated"), desc(Contract.id))
-            .offset(offset)
-            .limit(limit)
-        )
+        if search and search.strip():
+            data_stmt = (
+                base.order_by(
+                    desc("relevance_score"),
+                    desc("anomaly_count"),
+                    desc("amount_adjudicated"),
+                    desc(Contract.id),
+                )
+                .offset(offset)
+                .limit(limit)
+            )
+        else:
+            data_stmt = (
+                base.order_by(
+                    desc("anomaly_count"),
+                    desc("amount_adjudicated"),
+                    desc(Contract.id),
+                )
+                .offset(offset)
+                .limit(limit)
+            )
         rows = (await self.db.execute(data_stmt)).all()
 
         items = [

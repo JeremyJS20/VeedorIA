@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Download, FileJson, Loader2, Search, X } from "lucide-react"
 import Navbar from "../components/Navbar"
@@ -22,9 +22,9 @@ const NATURAL_SUGGESTIONS = [
     action: { search: "", province: "ST", onlyAnomalies: false },
   },
   {
-    label: "Laptops con sobreprecio en MINERD",
-    displayQuery: "Laptops con sobreprecio en MINERD",
-    action: { search: "Laptops MINERD", province: "", onlyAnomalies: true },
+    label: "Laptops en Educación (MINERD)",
+    displayQuery: "Laptops en Educación (MINERD)",
+    action: { search: "Laptops MINERD", province: "", onlyAnomalies: false },
   },
   {
     label: "Proveedores con alertas en Obras Públicas",
