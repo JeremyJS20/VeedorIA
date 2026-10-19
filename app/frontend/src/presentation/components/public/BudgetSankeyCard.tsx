@@ -25,8 +25,28 @@ export default function BudgetSankeyCard({
   const [hoveredLink, setHoveredLink] = useState<SankeyFlowLink | null>(null)
 
   const leftNodes = institutions.slice(0, 5)
-  const rightNodes = suppliers.slice(0, 5)
-  const svgHeight = 320
+  const selectedSuppliers: SankeySupplierNode[] = []
+  const seenSupIds = new Set<string>()
+  for (const inst of leftNodes) {
+    const instLink = links.find((l) => l.source === inst.id)
+    if (instLink) {
+      const supObj = suppliers.find((s) => s.id === instLink.target)
+      if (supObj && !seenSupIds.has(supObj.id)) {
+        seenSupIds.add(supObj.id)
+        selectedSuppliers.push(supObj)
+      }
+    }
+  }
+  for (const sup of suppliers) {
+    if (selectedSuppliers.length >= 6) break
+    if (!seenSupIds.has(sup.id)) {
+      seenSupIds.add(sup.id)
+      selectedSuppliers.push(sup)
+    }
+  }
+
+  const rightNodes = selectedSuppliers.slice(0, 6).sort((a, b) => b.total_amount - a.total_amount)
+  const svgHeight = 330
   const leftStep = svgHeight / Math.max(leftNodes.length, 1)
   const rightStep = svgHeight / Math.max(rightNodes.length, 1)
 
@@ -104,15 +124,15 @@ export default function BudgetSankeyCard({
         </div>
 
         <div className="lg:col-span-4 hidden lg:block">
-          <svg viewBox={`0 0 320 ${svgHeight}`} className="w-full h-[320px] overflow-visible">
+          <svg viewBox={`0 0 320 ${svgHeight}`} className="w-full h-[330px] overflow-visible">
             <defs>
-              <linearGradient id="sankeyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#003d9b" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="#0052cc" stopOpacity="0.3" />
+              <linearGradient id="sankeyGrad" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="310" y2="0">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.45" />
               </linearGradient>
-              <linearGradient id="sankeyGradActive" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#003d9b" stopOpacity="0.95" />
-                <stop offset="100%" stopColor="#0052cc" stopOpacity="0.85" />
+              <linearGradient id="sankeyGradActive" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="310" y2="0">
+                <stop offset="0%" stopColor="#2563eb" stopOpacity="1" />
+                <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.95" />
               </linearGradient>
             </defs>
             {links.map((lnk, idx) => {
@@ -121,7 +141,7 @@ export default function BudgetSankeyCard({
               if (!src || !tgt) return null
               const isCurrent =
                 hoveredLink?.source === lnk.source && hoveredLink?.target === lnk.target
-              const strokeW = Math.max(6, Math.min(22, (lnk.percentage / 100) * 90))
+              const strokeW = Math.max(5, Math.min(20, 5 + Math.log10(Math.max(1, lnk.percentage + 1)) * 7))
               const d = `M 10 ${src.y} C 150 ${src.y}, 170 ${tgt.y}, 310 ${tgt.y}`
               return (
                 <g
@@ -130,30 +150,31 @@ export default function BudgetSankeyCard({
                   onMouseEnter={() => setHoveredLink(lnk)}
                   onMouseLeave={() => setHoveredLink(null)}
                 >
-                  <path d={d} fill="none" stroke="transparent" strokeWidth={Math.max(18, strokeW + 8)} />
+                  <path d={d} fill="none" stroke="transparent" strokeWidth={Math.max(20, strokeW + 10)} />
                   <path
                     d={d}
                     fill="none"
                     stroke={isCurrent ? "url(#sankeyGradActive)" : "url(#sankeyGrad)"}
                     strokeWidth={strokeW}
+                    strokeLinecap="round"
                     className="pointer-events-none transition-opacity duration-150"
-                    opacity={hoveredLink && !isCurrent ? 0.25 : 1}
+                    opacity={hoveredLink && !isCurrent ? 0.2 : 0.9}
                   />
                 </g>
               )
             })}
             {Array.from(leftCoords.values()).map(({ y, inst }) => (
-              <circle key={inst.id} cx={10} cy={y} r={4.5} className="fill-primary pointer-events-none" />
+              <circle key={inst.id} cx={10} cy={y} r={5} className="fill-primary pointer-events-none" />
             ))}
             {Array.from(rightCoords.values()).map(({ y, sup }) => (
-              <circle key={sup.id} cx={310} cy={y} r={4.5} className="fill-primary/70 pointer-events-none" />
+              <circle key={sup.id} cx={310} cy={y} r={5} className="fill-primary pointer-events-none" />
             ))}
           </svg>
         </div>
 
         <div className="lg:col-span-4 space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-outline mb-2">
-            Proveedores Privados (Top 5)
+            Proveedores Adjudicados Principales
           </p>
           {rightNodes.map((sup) => {
             const isHighlighted = hoveredLink?.target === sup.id

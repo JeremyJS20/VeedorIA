@@ -261,42 +261,43 @@ class PublicPortalService:
         total_flow = sum(n["total_amount"] for n in institutions_nodes) or 1.0
 
         if inst_ids:
-            flows_stmt = (
-                select(
-                    Institution.id.label("inst_id"),
-                    Institution.name.label("inst_name"),
-                    Contract.supplier_name.label("supplier_name"),
-                    func.max(Contract.rpe).label("supplier_rpe"),
-                    func.coalesce(func.sum(Contract.amount_adjudicated), 0.0).label("flow_amount"),
+            for inst_node in top_insts:
+                flows_stmt = (
+                    select(
+                        Institution.id.label("inst_id"),
+                        Institution.name.label("inst_name"),
+                        Contract.supplier_name.label("supplier_name"),
+                        func.max(Contract.rpe).label("supplier_rpe"),
+                        func.coalesce(func.sum(Contract.amount_adjudicated), 0.0).label("flow_amount"),
+                    )
+                    .join(Process, Process.institution_id == Institution.id)
+                    .join(Contract, Contract.process_id == Process.id)
+                    .where(
+                        Institution.id == inst_node.inst_id,
+                        Contract.amount_adjudicated.isnot(None),
+                        Contract.amount_adjudicated > 0,
+                        Contract.supplier_name.isnot(None),
+                    )
+                    .group_by(Institution.id, Institution.name, Contract.supplier_name)
+                    .order_by(desc("flow_amount"))
+                    .limit(2)
                 )
-                .join(Process, Process.institution_id == Institution.id)
-                .join(Contract, Contract.process_id == Process.id)
-                .where(
-                    Institution.id.in_(inst_ids),
-                    Contract.amount_adjudicated.isnot(None),
-                    Contract.amount_adjudicated > 0,
-                    Contract.supplier_name.isnot(None),
-                )
-                .group_by(Institution.id, Institution.name, Contract.supplier_name)
-                .order_by(desc("flow_amount"))
-                .limit(12)
-            )
-            flow_rows = (await self.db.execute(flows_stmt)).all()
-            for fr in flow_rows:
-                amt = float(fr.flow_amount or 0.0)
-                sname = fr.supplier_name or "Proveedor"
-                suppliers_map[sname] = suppliers_map.get(sname, 0.0) + amt
-                links_list.append(
-                    {
-                        "source": f"inst-{fr.inst_id}",
-                        "source_name": fr.inst_name,
-                        "target": f"sup-{sname[:32]}",
-                        "target_name": sname,
-                        "supplier_rpe": fr.supplier_rpe or sname,
-                        "amount": amt,
-                        "percentage": round((amt / total_flow) * 100, 1),
-                    }
-                )
+                flow_rows = (await self.db.execute(flows_stmt)).all()
+                for fr in flow_rows:
+                    amt = float(fr.flow_amount or 0.0)
+                    sname = fr.supplier_name or "Proveedor"
+                    suppliers_map[sname] = suppliers_map.get(sname, 0.0) + amt
+                    links_list.append(
+                        {
+                            "source": f"inst-{fr.inst_id}",
+                            "source_name": fr.inst_name,
+                            "target": f"sup-{sname[:32]}",
+                            "target_name": sname,
+                            "supplier_rpe": fr.supplier_rpe or sname,
+                            "amount": amt,
+                            "percentage": round((amt / total_flow) * 100, 1),
+                        }
+                    )
 
         suppliers_nodes = [
             {
