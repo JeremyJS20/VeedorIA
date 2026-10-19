@@ -8,35 +8,30 @@ const DEMO_TENANT_ACCOUNTS = [
   {
     label: "Admin Global (NexoDigital)",
     email: "admin@veedoria.gob.do",
-    plan: "PLATFORM_GLOBAL",
-    scope: "Alcance Nacional + Admin SaaS",
+    scope: "Alcance Nacional + Administración SaaS",
     icon: Shield,
   },
   {
     label: "Ente Rector (DGCP / Contraloría)",
     email: "auditor@dgcp.gob.do",
-    plan: "B2G_ENTERPRISE",
     scope: "Alcance Nacional (Todas las instituciones)",
     icon: Shield,
   },
   {
-    label: "Ministerio MOPC (B2G Premium)",
+    label: "Ministerio de Obras Públicas (MOPC)",
     email: "auditor@mopc.gob.do",
-    plan: "B2G_PREMIUM",
-    scope: "Aislado a MOPC (ID #5)",
+    scope: "Aislado a MOPC (Institución #5)",
     icon: Building2,
   },
   {
-    label: "Ministerio MINERD (B2G Básico)",
+    label: "Ministerio de Educación (MINERD)",
     email: "auditor@minerd.gob.do",
-    plan: "B2G_BASIC",
-    scope: "Aislado a MINERD (ID #88)",
+    scope: "Aislado a MINERD (Institución #88)",
     icon: Building2,
   },
   {
-    label: "Proveedor B2B (C & S Tianmu Corp)",
+    label: "Proveedor del Estado (C & S Tianmu Corp)",
     email: "proveedor@constructora.do",
-    plan: "B2B_CORPORATE",
     scope: "RPE 132993 · Inteligencia B2B",
     icon: Briefcase,
   },
@@ -76,17 +71,13 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      badge="Autenticación Multi-Tenant"
       title="Iniciar Sesión Institucional"
-      subtitle="Ingresa tus credenciales asignadas a tu institución (B2G), órgano rector o empresa proveedora (B2B)."
+      subtitle="Ingresa las credenciales asignadas a tu institución (B2G), órgano rector o empresa proveedora (B2B)."
       footer={
         <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-              Cuentas Multi-Tenant Semilla (Clave: VeedorIA2026!)
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
-              Click para autocompletar
+          <div className="mb-2.5">
+            <span className="text-xs font-semibold text-on-surface">
+              Cuentas de Demostración Multi-Tenant (Clave: VeedorIA2026!)
             </span>
           </div>
           <div className="grid grid-cols-1 gap-1.5">
@@ -105,7 +96,7 @@ export default function LoginPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <Icon className="w-4 h-4 text-primary shrink-0" />
                     <div className="truncate">
                       <p className="font-semibold text-on-surface truncate">{acc.label}</p>
                       <p className="text-[11px] text-on-surface-variant font-mono truncate">
@@ -113,9 +104,6 @@ export default function LoginPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-surface border border-outline-variant/30 shrink-0 ml-2">
-                    {acc.plan}
-                  </span>
                 </button>
               )
             })}

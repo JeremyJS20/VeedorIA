@@ -26,7 +26,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      badge="Recuperación de Acceso"
       title="Restablecer Contraseña"
       subtitle="Ingresa tu correo institucional. Si está registrado y activo, generaremos un enlace temporal válido por 15 minutos."
     >

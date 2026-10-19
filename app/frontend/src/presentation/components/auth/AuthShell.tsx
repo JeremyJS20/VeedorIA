@@ -4,7 +4,6 @@ import { ShieldCheck, LockKeyhole, Building2, ArrowLeft } from "lucide-react"
 import Logo from "../Logo"
 
 interface AuthShellProps {
-  badge: string
   title: string
   subtitle: string
   children: ReactNode
@@ -32,18 +31,18 @@ const PILLARS = [
   },
 ]
 
-export default function AuthShell({ badge, title, subtitle, children, footer }: AuthShellProps) {
+export default function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-background text-on-surface">
-      {/* Columna izquierda: Panel institucional oscuro */}
-      <aside className="hidden lg:flex lg:col-span-5 xl:col-span-5 relative overflow-hidden bg-slate-950 text-white p-10 xl:p-12 flex-col justify-between border-r border-slate-800">
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-background text-on-surface">
+      {/* Columna izquierda: Panel institucional sobrio */}
+      <aside className="hidden lg:flex lg:col-span-5 relative overflow-hidden bg-slate-950 text-white p-10 xl:p-12 flex-col justify-between border-r border-slate-800">
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.35), transparent 45%), radial-gradient(circle at 80% 80%, rgba(220, 38, 38, 0.22), transparent 45%)",
+              "radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.30), transparent 45%), radial-gradient(circle at 80% 80%, rgba(15, 23, 42, 0.8), transparent 45%)",
           }}
         />
 
@@ -51,19 +50,13 @@ export default function AuthShell({ badge, title, subtitle, children, footer }: 
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="flex items-center gap-3 text-left focus:outline-none cursor-pointer group"
+            className="flex items-center gap-3 text-left focus:outline-none cursor-pointer"
           >
             <Logo className="h-9" />
           </button>
-          <span className="text-[11px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-full bg-slate-900 text-slate-300 border border-slate-800">
-            Ley 47-25 · OCDS
-          </span>
         </div>
 
         <div className="relative z-10 space-y-6 my-auto py-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-300 tracking-wide uppercase">
-            Plataforma SaaS de Integridad y Veeduría
-          </div>
           <h1 className="text-2xl xl:text-3xl font-bold tracking-tight text-white leading-snug">
             Monitoreo Inteligente y Auditoría Forense de Contrataciones Públicas
           </h1>
@@ -77,9 +70,9 @@ export default function AuthShell({ badge, title, subtitle, children, footer }: 
               return (
                 <div
                   key={item.title}
-                  className="flex items-start gap-3.5 rounded-xl border border-slate-800/90 bg-slate-900/60 p-3.5 backdrop-blur-sm"
+                  className="flex items-start gap-3.5 rounded-xl border border-slate-800/90 bg-slate-900/60 p-4"
                 >
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/20">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-blue-400">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
@@ -93,14 +86,14 @@ export default function AuthShell({ badge, title, subtitle, children, footer }: 
         </div>
 
         <div className="relative z-10 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-4">
-          <span>NexoDigital SRL · VeedorIA SaaS</span>
-          <span className="font-mono text-[11px] text-slate-400">RBAC Multi-Tenant v1.0</span>
+          <span>NexoDigital SRL · VeedorIA</span>
+          <span className="font-mono text-[11px] text-slate-400">República Dominicana</span>
         </div>
       </aside>
 
-      {/* Columna derecha: Formulario de autenticación */}
-      <main className="lg:col-span-7 xl:col-span-7 flex flex-col justify-between p-6 sm:p-10 xl:p-14 bg-background">
-        <div className="flex items-center justify-between">
+      {/* Columna derecha: Formulario de autenticación con ancho explícito en rem */}
+      <main className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 xl:p-14 bg-background">
+        <div className="flex items-center justify-between w-full">
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -114,14 +107,11 @@ export default function AuthShell({ badge, title, subtitle, children, footer }: 
           </div>
         </div>
 
-        <div className="w-full max-w-md mx-auto my-8">
+        <div className="w-full max-w-[32rem] mx-auto my-8">
           <div className="bg-surface border border-outline-variant/30 rounded-2xl shadow-xl p-6 sm:p-8">
             <div className="mb-6">
-              <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-primary/10 text-primary mb-2">
-                {badge}
-              </span>
               <h2 className="text-2xl font-bold text-on-surface tracking-tight">{title}</h2>
-              <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{subtitle}</p>
+              <p className="text-xs text-on-surface-variant mt-1.5 leading-relaxed">{subtitle}</p>
             </div>
 
             {children}
@@ -131,7 +121,7 @@ export default function AuthShell({ badge, title, subtitle, children, footer }: 
         </div>
 
         <div className="text-center text-[11px] text-on-surface-variant">
-          Protegido mediante cifrado bcrypt (factor 10) y tokens firmados HS256 · República Dominicana
+          Acceso institucional protegido · VeedorIA
         </div>
       </main>
     </div>

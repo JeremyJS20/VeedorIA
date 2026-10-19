@@ -21,7 +21,7 @@ export default function RolesMatrixPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-8">
       <div>
         <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
           Gobernanza y Seguridad Relacional

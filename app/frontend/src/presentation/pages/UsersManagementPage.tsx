@@ -183,7 +183,7 @@ export default function UsersManagementPage() {
     }
   }
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
@@ -528,7 +528,7 @@ export default function UsersManagementPage() {
       )}
       {showNewUserModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
             <h2 className="text-lg font-bold text-on-surface">Registrar Nuevo Usuario Institucional</h2>
             <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
               <div>
@@ -624,7 +624,7 @@ export default function UsersManagementPage() {
 
       {showNewTenantModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
             <h2 className="text-lg font-bold text-on-surface">
               Registrar Nueva Organización Suscriptora (Tenant)
             </h2>

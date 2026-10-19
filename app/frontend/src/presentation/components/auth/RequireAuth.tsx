@@ -27,7 +27,7 @@ export default function RequireAuth({ children, permission }: RequireAuthProps) 
 
   if (permission && !hasPermission(permission)) {
     return (
-      <div className="p-8 max-w-2xl mx-auto mt-12">
+      <div className="p-8 max-w-[42rem] mx-auto mt-12">
         <div className="bg-surface border border-error/30 rounded-2xl p-8 text-center shadow-lg">
           <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-6 h-6" />

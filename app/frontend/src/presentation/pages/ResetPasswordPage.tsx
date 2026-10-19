@@ -37,7 +37,6 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell
-      badge="Seguridad de Credenciales"
       title="Definir Nueva Contraseña"
       subtitle="La contraseña debe tener mínimo 8 caracteres, incluir mayúsculas, minúsculas y números."
     >
