@@ -9,7 +9,7 @@ interface SeverityGaugeProps {
 
 export default function SeverityGauge({ value, confidence, signalsCount, className = "" }: SeverityGaugeProps) {
   const { t } = useTranslation("dashboard")
-  const normalized = Math.min(Math.max(value, 0), 100)
+  const normalized = Number(Math.min(Math.max(value, 0), 100).toFixed(2))
   const dashOffset = 100 - normalized
   const isCritical = normalized >= 70
   const isHigh = normalized >= 50
@@ -19,7 +19,7 @@ export default function SeverityGauge({ value, confidence, signalsCount, classNa
     normalized >= 70 ? "drawer.risk_critical" : normalized >= 50 ? "drawer.risk_high" : normalized >= 30 ? "drawer.risk_medium" : "drawer.risk_low"
 
   const factors = signalsCount && signalsCount > 0 ? signalsCount : Math.max(1, Math.floor(normalized / 25))
-  const conf = confidence ?? 94
+  const conf = Number((confidence ?? 94).toFixed(2))
 
   return (
     <div className={`bg-background rounded-2xl p-6 flex items-center gap-8 border border-outline-variant/20 ${className}`}>
@@ -39,7 +39,7 @@ export default function SeverityGauge({ value, confidence, signalsCount, classNa
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="font-data text-2xl font-bold" style={{ color: strokeColor }}>
+          <span className="font-data text-xl font-bold" style={{ color: strokeColor }}>
             {normalized}
           </span>
         </div>
