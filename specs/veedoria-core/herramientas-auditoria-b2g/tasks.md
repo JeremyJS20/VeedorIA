@@ -79,7 +79,7 @@ flowchart TD
   - `CollusionNetworkPage.tsx` (`/app/red-colusion`): estado bloqueado para `B2G_BASIC` y, para planes habilitados, resumen de riesgo relacional + visualización de nodos/vínculos de proveedores + tabla detallada de co-adjudicaciones detectadas.
   - `DetectionConfigPage.tsx` (`/app/configuracion-deteccion`): controles de calibración de umbrales y pesos por categoría de hallazgo con guardado en vivo y aviso de solo lectura para perfiles sin permiso de edición.
 - **Acceptance criteria:**
-  - [ ] Las 3 vistas operan con datos reales del backend y cumplen estrictamente `design-system-theme.md`.
+  - [x] Las 3 vistas operan con datos reales del backend y cumplen estrictamente `design-system-theme.md`.
 - **Dependencies:** Task 2.1
 - **Files to create/modify:** `app/frontend/src/presentation/pages/InstitutionalProcessesPage.tsx`, `app/frontend/src/presentation/pages/CollusionNetworkPage.tsx`, `app/frontend/src/presentation/pages/DetectionConfigPage.tsx`
 
@@ -89,7 +89,7 @@ flowchart TD
   - `ComplianceReportsPage.tsx` (`/app/reportes`): selector de período + vista previa del **Informe Institucional de Cumplimiento y Veeduría** + exportación directa a `CSV` y botón de impresión de acta.
   - `B2GIntegrationsPage.tsx` (`/app/integraciones`): listado de llaves institucionales activas/revocadas, modal de generación de nueva credencial con visualización única del token y guía de cabeceras de interoperabilidad.
 - **Acceptance criteria:**
-  - [ ] Las 3 vistas renderizan datos reales, permiten exportar CSV y crear/revocar credenciales con trazabilidad.
+  - [x] Las 3 vistas renderizan datos reales, permiten exportar CSV y crear/revocar credenciales con trazabilidad.
 - **Dependencies:** Task 2.1
 - **Files to create/modify:** `app/frontend/src/presentation/pages/AuditResolutionsPage.tsx`, `app/frontend/src/presentation/pages/ComplianceReportsPage.tsx`, `app/frontend/src/presentation/pages/B2GIntegrationsPage.tsx`
 
