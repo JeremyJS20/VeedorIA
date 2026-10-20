@@ -31,6 +31,12 @@ const InvitationGatewayPage = lazy(() => import("./presentation/pages/Invitation
 const RegisterPage = lazy(() => import("./presentation/pages/RegisterPage"))
 const OverviewDashboardPage = lazy(() => import("./presentation/pages/OverviewDashboardPage"))
 const MarketIntelligencePage = lazy(() => import("./presentation/pages/MarketIntelligencePage"))
+const InstitutionalProcessesPage = lazy(() => import("./presentation/pages/InstitutionalProcessesPage"))
+const CollusionNetworkPage = lazy(() => import("./presentation/pages/CollusionNetworkPage"))
+const DetectionConfigPage = lazy(() => import("./presentation/pages/DetectionConfigPage"))
+const AuditResolutionsPage = lazy(() => import("./presentation/pages/AuditResolutionsPage"))
+const ComplianceReportsPage = lazy(() => import("./presentation/pages/ComplianceReportsPage"))
+const B2GIntegrationsPage = lazy(() => import("./presentation/pages/B2GIntegrationsPage"))
 
 function LandingPage() {
   return (
@@ -107,6 +113,72 @@ function App() {
                   allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
                 >
                   <AuditorPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="procesos"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <InstitutionalProcessesPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="red-colusion"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <CollusionNetworkPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="configuracion-deteccion"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <DetectionConfigPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="resoluciones"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <AuditResolutionsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="reportes"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <ComplianceReportsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="integraciones"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <B2GIntegrationsPage />
                 </RequireAuth>
               }
             />

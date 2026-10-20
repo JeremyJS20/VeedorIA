@@ -64,7 +64,7 @@ flowchart TD
 ### Task 2.1: Hooks React Query (`useAuditorB2G.ts`) y Enrutamiento Protegido en `App.tsx` y `DashboardLayout.tsx` (~1.8h)
 - **Description:** Crear `app/frontend/src/presentation/hooks/useAuditorB2G.ts` con los hooks tipados para los 6 módulos (`/api/auditor/processes`, `/api/auditor/collusion-network`, `/api/auditor/detection-config`, `/api/auditor/resolutions`, `/api/auditor/reports/summary`, `/api/auditor/integrations`) y actualizar `DashboardLayout.tsx` y `App.tsx` para habilitar los enlaces reales en la barra lateral (eliminando los ítems deshabilitados con candado) y proteger las 6 rutas con `RequireAuth`.
 - **Acceptance criteria:**
-  - [ ] `0` tipos `any` en TypeScript.
+  - [x] `0` tipos `any` en TypeScript.
   - [ ] El menú lateral de `DashboardLayout.tsx` enlaza a las 6 rutas para usuarios B2G y Administración General, y `RequireAuth` bloquea el acceso por URL a proveedores B2B.
 - **Dependencies:** Task 1.2
 - **Files to create/modify:** `app/frontend/src/presentation/hooks/useAuditorB2G.ts`, `app/frontend/src/presentation/layouts/DashboardLayout.tsx`, `app/frontend/src/App.tsx`

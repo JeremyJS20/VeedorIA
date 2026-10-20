@@ -6,9 +6,12 @@ import {
   LayoutDashboard,
   TrendingUp,
   Bell,
-  Lock,
   Share2,
-  Brain,
+  FolderKanban,
+  SlidersHorizontal,
+  CheckCircle2,
+  FileBarChart,
+  KeyRound,
   Users,
   ShieldCheck,
   UserCircle,
@@ -32,7 +35,7 @@ const SIDEBAR_COLLAPSED = 80
 
 
 export default function DashboardLayout() {
-  const { t, i18n } = useTranslation("dashboard")
+  const { i18n } = useTranslation("dashboard")
   const location = useLocation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
@@ -75,11 +78,23 @@ export default function DashboardLayout() {
   const pageTitleMap: Record<string, string> = {
     "/app/dashboard": "Panorama Ejecutivo",
     "/app/mercado": "Inteligencia de Mercado por Rubro",
-    "/app/bandeja": "Bandeja de Anomalías",
+    "/app/bandeja": "Bandeja de Anomal?as",
+    "/app/procesos": "Procesos Institucionales",
+    "/app/red-colusion": "Red de Colusi?n",
+    "/app/configuracion-deteccion": "Par?metros de Detecci?n",
+    "/app/resoluciones": "Historial de Resoluciones",
+    "/app/reportes": "Reportes de Cumplimiento",
+    "/app/integraciones": "Integraciones Institucionales",
     "/app/usuarios": user?.rol?.codigo === "PLATFORM_ADMIN" ? "Usuarios y Organizaciones" : "Usuarios y Equipo",
     "/app/roles": "Roles y Planes de Servicio",
     "/app/perfil": "Mi Perfil Institucional",
   }
+
+  const isB2GOrPlatform =
+    user?.tenant?.tipo === "GOV_INSTITUTION" ||
+    user?.tenant?.tipo === "GOV_OVERSIGHT" ||
+    user?.tenant?.tipo === "PLATFORM" ||
+    user?.rol?.codigo === "PLATFORM_ADMIN"
 
   const currentBreadcrumb = pageTitleMap[location.pathname] || "Consola Operativa"
 
@@ -158,30 +173,45 @@ export default function DashboardLayout() {
               )}
             </NavLink>
 
-            <NavLink
-              to="/app/bandeja"
-              className={({ isActive }) =>
-                `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div
-                      className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
-                    />
-                  )}
-                  <Bell className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                  {!collapsed && (
-                    <span className="text-[13px] flex-1 truncate">Bandeja de Anomalías</span>
-                  )}
-                </>
-              )}
-            </NavLink>
+            {isB2GOrPlatform && (
+              <>
+                {[
+                  { to: "/app/bandeja", label: "Bandeja de Anomal?as", icon: Bell },
+                  { to: "/app/procesos", label: "Procesos Institucionales", icon: FolderKanban },
+                  { to: "/app/red-colusion", label: "Red de Colusi?n", icon: Share2 },
+                  { to: "/app/resoluciones", label: "Historial de Resoluciones", icon: CheckCircle2 },
+                  { to: "/app/reportes", label: "Reportes de Cumplimiento", icon: FileBarChart },
+                  { to: "/app/configuracion-deteccion", label: "Par?metros de Detecci?n", icon: SlidersHorizontal },
+                  { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
+                ].map((navItem) => (
+                  <NavLink
+                    key={navItem.to}
+                    to={navItem.to}
+                    className={({ isActive }) =>
+                      `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <div
+                            className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                          />
+                        )}
+                        <navItem.icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                        {!collapsed && (
+                          <span className="text-[13px] flex-1 truncate">{navItem.label}</span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </>
+            )}
 
             {(user?.tenant?.tipo === "B2B_SUPPLIER" ||
               user?.tenant?.tipo === "GOV_OVERSIGHT" ||
@@ -269,32 +299,7 @@ export default function DashboardLayout() {
               )}
             </NavLink>
 
-            {/* Módulos Próximos */}
-            {[
-              { label: t("sidebar.collusion_network"), icon: Share2 },
-              { label: t("sidebar.ai_config"), icon: Brain },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className={`group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg opacity-45 cursor-not-allowed`}
-              >
-                <item.icon
-                  className={
-                    collapsed
-                      ? "w-5 h-5 text-on-surface-variant"
-                      : "mr-3 w-5 h-5 shrink-0 text-on-surface-variant"
-                  }
-                />
-                {!collapsed && (
-                  <>
-                    <span className="text-[13px] flex-1 truncate text-on-surface-variant">
-                      {item.label}
-                    </span>
-                    <Lock className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />
-                  </>
-                )}
-              </div>
-            ))}
+
           </div>
 
           {/* Gobernanza y Seguridad (Solo Administradores) */}
