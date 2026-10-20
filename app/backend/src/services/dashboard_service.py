@@ -409,16 +409,18 @@ class DashboardService:
         rows: list[dict] = []
         for s in sync_rows:
             is_ok = s.status in ("completed", "success")
+            origin_label = "Programación Automática" if s.triggered_by in ("scheduler", "cli") else "Ejecución de Consola"
+            status_es = "Completado" if is_ok else ("En Curso" if s.status == "running" else "Interrumpido")
             rows.append(
                 {
                     "id": f"sync-{s.id}",
                     "process_code": f"SINC-{s.id or 1:04d}",
-                    "title": f"Sincronización de Datos Abiertos ({s.sync_type.upper()}) — {s.records_synced:,} registros procesados",
-                    "secondary_label": f"Ejecutado por: {s.triggered_by}",
-                    "amount_dop": float(s.records_synced or 0),
-                    "status_badge": "Completado" if is_ok else s.status.capitalize(),
+                    "title": f"Sincronización de contrataciones públicas — {s.records_synced:,} expedientes actualizados",
+                    "secondary_label": origin_label,
+                    "amount_dop": 0.0,
+                    "status_badge": status_es,
                     "status_tone": "low" if is_ok else "warning",
-                    "detail_badge": "Ingesta Automatizada",
+                    "detail_badge": f"{s.records_synced:,} registros",
                     "date_label": s.started_at.strftime("%Y-%m-%d %H:%M") if s.started_at else "2025-11-18",
                     "locked": False,
                 }

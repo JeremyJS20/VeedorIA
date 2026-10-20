@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useTheme } from "@heroui/react"
@@ -366,7 +366,7 @@ export default function DashboardLayout() {
       >
         <header className="h-16 flex items-center justify-between px-8 bg-surface/80 backdrop-blur-md z-40 border-b border-outline-variant/15">
           <nav className="flex items-center space-x-2 text-[13px] text-outline">
-            <span className="hover:text-primary transition-colors">{t("header.breadcrumb_console")}</span>
+            <span className="hover:text-primary transition-colors">Consola</span>
             <ChevronRight className="w-4 h-4" />
             <span className="text-on-surface font-semibold">{currentBreadcrumb}</span>
           </nav>

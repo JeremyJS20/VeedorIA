@@ -1,6 +1,5 @@
 import { useState } from "react"
 import {
-  TrendingUp,
   Building2,
   Award,
   BarChart3,
@@ -39,17 +38,13 @@ export default function MarketIntelligencePage() {
 
   return (
     <div className="w-full max-w-[80rem] mx-auto px-6 py-6 space-y-6">
-      {/* Header + UNSPSC Selector */}
-      <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 shadow-xs">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>Inteligencia Comercial de Contrataciones Públicas</span>
-          </div>
+      {/* Clean Unboxed Header + UNSPSC Selector */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div>
           <h1 className="font-display text-2xl font-bold text-on-surface">
-            Consola de Inteligencia de Mercado por Rubro
+            Inteligencia de Mercado por Rubro
           </h1>
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-xs text-on-surface-variant mt-1">
             Analice precios unitarios históricos, participación de competidores e instituciones compradoras por clasificador UNSPSC.
           </p>
         </div>

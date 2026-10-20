@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import {
   Building2,
-  CheckCircle2,
   AlertTriangle,
   ArrowRight,
   LogIn,
@@ -171,11 +170,7 @@ export default function InvitationGatewayPage() {
           ) : (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Invitación Oficial Verificada</span>
-                </div>
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mt-2">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
                   <Building2 className="w-6 h-6" />
                 </div>
                 <h1 className="font-display text-lg font-bold text-on-surface leading-snug">
