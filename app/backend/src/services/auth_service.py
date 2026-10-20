@@ -236,8 +236,11 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
                 db.add(RolePermission(role_id=ta_role.id, permission_id=b2b_perm.id))
                 changed = True
         role_view_perm = next((p for p in db_perms if p.codigo == "ROLE_VIEW"), None)
+        if role_view_perm and role_view_perm.plan_minimo != "PLATFORM_GLOBAL":
+            role_view_perm.plan_minimo = "PLATFORM_GLOBAL"
+            changed = True
         non_admin_role_ids = [
-            r.id for r in db_roles if r.codigo in ("AUDITOR", "PROVEEDOR") and r.id is not None
+            r.id for r in db_roles if r.codigo in ("TENANT_ADMIN", "AUDITOR", "PROVEEDOR") and r.id is not None
         ]
         if role_view_perm and role_view_perm.id and non_admin_role_ids:
             stale_rps = (
@@ -326,7 +329,6 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
             "DETECTION_RUN",
             "B2B_ANALYTICS",
             "USER_ADMIN",
-            "ROLE_VIEW",
         ],
         "AUDITOR": [
             "ANOMALY_READ",

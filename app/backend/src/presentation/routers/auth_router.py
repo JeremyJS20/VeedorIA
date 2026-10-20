@@ -276,9 +276,20 @@ async def update_tenant_endpoint(
 
 @router.get("/roles", response_model=ApiResponse[dict])
 async def get_roles_matrix_endpoint(
-    current_user: dict = Depends(require_permission("ROLE_VIEW")),
+    current_user: dict = Depends(get_current_user),
     service: AuthService = Depends(get_auth_service),
 ) -> ApiResponse[dict]:
+    if not (
+        "ROLE_VIEW" in current_user.get("permisos", [])
+        or "USER_ADMIN" in current_user.get("permisos", [])
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "FORBIDDEN_INSUFFICIENT_PERMISSIONS",
+                "message": "Acceso denegado: requiere privilegios administrativos.",
+            },
+        )
     data = await service.get_roles_and_permissions_matrix()
     return ApiResponse(data=data)
 
