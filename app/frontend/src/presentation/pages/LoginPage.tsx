@@ -204,7 +204,16 @@ export default function LoginPage() {
           {isSubmitting ? "VERIFICANDO..." : "INICIAR SESIÓN"}
         </button>
 
-        <div className="pt-2 text-center">
+        <div className="pt-3 border-t border-outline-variant/25 space-y-2.5 text-center">
+          <p className="text-[13px] text-on-surface-variant">
+            ?A?n no tienes una cuenta?{" "}
+            <Link
+              to={invitationCode ? `/registro?code=${encodeURIComponent(invitationCode)}` : "/registro"}
+              className="font-semibold text-primary hover:underline"
+            >
+              Crear cuenta o registrar empresa
+            </Link>
+          </p>
           <Link
             to="/public"
             className="inline-flex items-center justify-center gap-1.5 label-md text-on-surface-variant hover:text-primary transition-colors"
