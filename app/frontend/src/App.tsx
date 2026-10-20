@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"
+﻿import { lazy, Suspense } from "react"
 import { Routes, Route, Navigate } from "react-router-dom"
 import { Toast } from "@heroui/react"
 import Navbar from "./presentation/components/Navbar"
@@ -88,13 +88,36 @@ function App() {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<OverviewDashboardPage />} />
-            <Route path="mercado" element={<MarketIntelligencePage />} />
-            <Route path="bandeja" element={<AuditorPage />} />
+            <Route
+              path="mercado"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <MarketIntelligencePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="bandeja"
+              element={
+                <RequireAuth
+                  permission="ANOMALY_READ"
+                  allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
+                >
+                  <AuditorPage />
+                </RequireAuth>
+              }
+            />
             <Route path="perfil" element={<UserProfilePage />} />
             <Route
               path="usuarios"
               element={
-                <RequireAuth permission="USER_ADMIN">
+                <RequireAuth
+                  permission="USER_ADMIN"
+                  allowedRoles={["PLATFORM_ADMIN", "TENANT_ADMIN"]}
+                >
                   <UsersManagementPage />
                 </RequireAuth>
               }
@@ -102,7 +125,10 @@ function App() {
             <Route
               path="roles"
               element={
-                <RequireAuth permission="ROLE_VIEW">
+                <RequireAuth
+                  permission="ROLE_VIEW"
+                  allowedRoles={["PLATFORM_ADMIN"]}
+                >
                   <RolesMatrixPage />
                 </RequireAuth>
               }

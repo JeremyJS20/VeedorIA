@@ -208,9 +208,10 @@ export default function DashboardLayout() {
               )}
             </NavLink>
 
-            {(user?.tenant.tipo === "B2B_SUPPLIER" ||
-              hasPermission("B2B_ANALYTICS") ||
-              user?.rol.codigo === "PLATFORM_ADMIN") && (
+            {(user?.tenant?.tipo === "B2B_SUPPLIER" ||
+              user?.tenant?.tipo === "GOV_OVERSIGHT" ||
+              user?.rol?.codigo === "PLATFORM_ADMIN") &&
+              hasPermission("B2B_ANALYTICS") && (
               <div className="space-y-1">
                 <button
                   type="button"
