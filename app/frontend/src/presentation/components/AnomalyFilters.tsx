@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next"
+﻿import { useTranslation } from "react-i18next"
 import { Search } from "lucide-react"
 
 interface AnomalyFiltersProps {
@@ -27,24 +27,25 @@ export default function AnomalyFilters({
   const { t } = useTranslation("dashboard")
 
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
-      <div className="relative w-full max-w-md">
+    <div className={`flex flex-col lg:flex-row items-stretch lg:items-center gap-3 ${className}`}>
+      <div className="relative flex-1">
+        <Search className="w-4 h-4 text-outline absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t("header.search_placeholder")}
-          className="w-full h-[40px] pl-10 pr-4 rounded-xl border border-outline-variant/30 bg-surface text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+          className="w-full h-10 pl-10 pr-4 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:border-primary transition-all"
         />
-        <Search className="absolute left-3 top-2.5 w-5 h-5 text-outline" />
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="bg-surface border border-outline-variant/20 rounded-lg px-4 py-2 text-xs font-semibold text-on-surface outline-none cursor-pointer"
+          aria-label="Filtrar por estado"
+          className="h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer"
         >
-          <option value="">{t("anomalies.filter_status")}: {t("anomalies.status_pending")}</option>
+          <option value="">{t("anomalies.filter_status")}: Todos</option>
           <option value="PENDING">{t("anomalies.status_pending")}</option>
           <option value="CONFIRMED">{t("anomalies.status_confirmed")}</option>
           <option value="DISMISSED">{t("anomalies.status_dismissed")}</option>
@@ -52,7 +53,8 @@ export default function AnomalyFilters({
         <select
           value={anomalyType}
           onChange={(e) => onTypeChange(e.target.value)}
-          className="bg-surface border border-outline-variant/20 rounded-lg px-4 py-2 text-xs font-semibold text-on-surface outline-none cursor-pointer"
+          aria-label="Filtrar por tipo de anomalía"
+          className="h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer"
         >
           <option value="">{t("anomalies.filter_type")}: {t("anomalies.type_all")}</option>
           <option value="PRICE_ANOMALY">{t("anomalies.type_price")}</option>
@@ -62,7 +64,8 @@ export default function AnomalyFilters({
         <select
           value={severity}
           onChange={(e) => onSeverityChange(e.target.value)}
-          className="bg-surface border border-outline-variant/20 rounded-lg px-4 py-2 text-xs font-semibold text-on-surface outline-none cursor-pointer"
+          aria-label="Filtrar por severidad"
+          className="h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-medium text-on-surface focus:outline-none focus:border-primary cursor-pointer"
         >
           <option value="">{t("anomalies.filter_severity")}: {t("anomalies.severity_all")}</option>
           <option value="0.7">{t("anomalies.severity_critical")}</option>
