@@ -91,11 +91,11 @@ SAA_PLANS_CATALOG = [
     {
         "codigo": "PLATFORM_GLOBAL",
         "segmento": "PLATFORM",
-        "nombre": "NexoDigital Platform Governance",
-        "alcance": "Global Multi-Tenant",
+        "nombre": "Administración General de Plataforma",
+        "alcance": "Alcance Nacional",
         "capacidades": [
             "Administración general de organizaciones suscriptoras, planes, roles y usuarios",
-            "Control de sincronización OCDS y calibración IA",
+            "Control de sincronización de datos DGCP y calibración de detección",
         ],
     },
 ]
@@ -150,8 +150,58 @@ class AuthDomainError(Exception):
         super().__init__(message)
 
 async def ensure_auth_seed(db: AsyncSession) -> None:
+    clean_roles = {
+        "PLATFORM_ADMIN": (
+            "Administrador General (NexoDigital)",
+            "Administración general de la plataforma, organizaciones suscriptoras, planes y usuarios.",
+        ),
+        "TENANT_ADMIN": (
+            "Administrador Organizacional",
+            "Administración de usuarios y supervisión dentro de su propia institución o empresa.",
+        ),
+        "AUDITOR": (
+            "Auditor Institucional",
+            "Inspección preventiva de hallazgos, emisión de dictámenes y análisis de procesos.",
+        ),
+        "PROVEEDOR": (
+            "Analista de Licitaciones",
+            "Consulta de adjudicaciones, comparativa de precios por rubro y oportunidades.",
+        ),
+    }
+    clean_perms = {
+        "ANOMALY_READ": "Visualizar bandeja de hallazgos y métricas de auditoría",
+        "FRAGMENTATION_VIEW": "Analizar alertas de fraccionamiento y línea de tiempo institucional",
+        "PRICE_AI_VIEW": "Inspeccionar análisis estadístico de sobreprecios unitarios",
+        "COLLUSION_VIEW": "Explorar grafos relacionales de colusión entre oferentes",
+        "ANOMALY_REVIEW": "Emitir dictámenes de confirmación o descarte motivado",
+        "PROCESS_READ": "Consultar expedientes de contratación, contratos e ítems adjudicados",
+        "DETECTION_RUN": "Disparar corrida manual de los 4 motores de detección",
+        "AI_CALIBRATE": "Calibrar umbrales de precisión del motor estadístico",
+        "SYNC_TRIGGER": "Ejecutar sincronización de datos con el portal de la DGCP",
+        "B2B_ANALYTICS": "Acceder a inteligencia de precios por rubro e historial de proveedor",
+        "USER_ADMIN": "Gestionar cuentas de usuarios, bloqueos y enlaces de recuperación",
+        "TENANT_MANAGE": "Registrar organizaciones suscriptoras y administrar planes de servicio",
+        "ROLE_VIEW": "Consultar catálogo de roles, permisos y matriz de planes de servicio",
+    }
+
     existing_roles = (await db.execute(select(func.count(Role.id)))).scalar() or 0
     if existing_roles > 0:
+        db_roles = (await db.execute(select(Role))).scalars().all()
+        changed = False
+        for r in db_roles:
+            if r.codigo in clean_roles:
+                new_name, new_desc = clean_roles[r.codigo]
+                if r.nombre != new_name or r.descripcion != new_desc:
+                    r.nombre = new_name
+                    r.descripcion = new_desc
+                    changed = True
+        db_perms = (await db.execute(select(Permission))).scalars().all()
+        for p in db_perms:
+            if p.codigo in clean_perms and p.descripcion != clean_perms[p.codigo]:
+                p.descripcion = clean_perms[p.codigo]
+                changed = True
+        if changed:
+            await db.commit()
         return
 
     logger.info("Seeding Multi-Tenant RBAC tables (roles, permissions, tenants, users)...")
@@ -166,21 +216,21 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
         ),
         Role(
             codigo="TENANT_ADMIN",
-            nombre="Administrador Organizacional (Tenant)",
+            nombre="Administrador Organizacional",
             descripcion="Administración de usuarios y auditoría dentro de su propia institución o empresa.",
             es_sistema=True,
             estado="ACTIVO",
         ),
         Role(
             codigo="AUDITOR",
-            nombre="Auditor Institucional B2G",
+            nombre="Auditor Institucional",
             descripcion="Inspección forense de hallazgos, emisión de dictámenes y análisis de procesos.",
             es_sistema=True,
             estado="ACTIVO",
         ),
         Role(
             codigo="PROVEEDOR",
-            nombre="Analista de Licitaciones B2B",
+            nombre="Analista de Licitaciones",
             descripcion="Consulta de adjudicaciones, benchmarking de precios UNSPSC y oportunidades.",
             es_sistema=True,
             estado="ACTIVO",
@@ -198,10 +248,10 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
         Permission(codigo="PRICE_AI_VIEW", modulo="AUDITORIA", plan_minimo="B2G_PREMIUM", descripcion="Inspeccionar análisis estadístico de sobreprecios unitarios"),
         Permission(codigo="COLLUSION_VIEW", modulo="AUDITORIA", plan_minimo="B2G_PREMIUM", descripcion="Explorar grafos relacionales de colusión entre oferentes"),
         Permission(codigo="ANOMALY_REVIEW", modulo="AUDITORIA", plan_minimo="B2G_BASIC", descripcion="Emitir dictámenes de confirmación o descarte motivado"),
-        Permission(codigo="PROCESS_READ", modulo="PROCESOS", plan_minimo="ALL", descripcion="Consultar expedientes OCDS, contratos e ítems adjudicados"),
+        Permission(codigo="PROCESS_READ", modulo="PROCESOS", plan_minimo="ALL", descripcion="Consultar expedientes de contratación, contratos e ítems adjudicados"),
         Permission(codigo="DETECTION_RUN", modulo="DETECCION", plan_minimo="B2G_ENTERPRISE", descripcion="Disparar corrida manual de los 4 motores de detección"),
         Permission(codigo="AI_CALIBRATE", modulo="DETECCION", plan_minimo="B2G_ENTERPRISE", descripcion="Calibrar umbrales de precisión del motor híbrido"),
-        Permission(codigo="SYNC_TRIGGER", modulo="PROCESOS", plan_minimo="PLATFORM_GLOBAL", descripcion="Ejecutar sincronización ETL contra la API abierta de la DGCP"),
+        Permission(codigo="SYNC_TRIGGER", modulo="PROCESOS", plan_minimo="PLATFORM_GLOBAL", descripcion="Ejecutar sincronización de datos con el portal de la DGCP"),
         Permission(codigo="B2B_ANALYTICS", modulo="PROVEEDORES", plan_minimo="B2B_PYME", descripcion="Acceder a inteligencia de precios UNSPSC e historial de proveedor"),
         Permission(codigo="USER_ADMIN", modulo="SEGURIDAD", plan_minimo="ALL", descripcion="Gestionar cuentas de usuarios, bloqueos y enlaces de recuperación"),
         Permission(codigo="TENANT_MANAGE", modulo="SEGURIDAD", plan_minimo="PLATFORM_GLOBAL", descripcion="Registrar organizaciones suscriptoras y administrar planes de servicio"),

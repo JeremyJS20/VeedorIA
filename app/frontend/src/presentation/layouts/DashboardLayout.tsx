@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+﻿import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useTheme } from "@heroui/react"
@@ -11,15 +11,16 @@ import {
   ShieldCheck,
   UserCircle,
   Search,
-  MoreVertical,
   LogOut,
   Sun,
   Globe,
   ChevronRight,
+  ChevronDown,
   PanelLeftClose,
   PanelLeft,
   Building2,
   ExternalLink,
+  Check,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
@@ -30,16 +31,45 @@ import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
 const SIDEBAR_EXPANDED = 268
 const SIDEBAR_COLLAPSED = 80
 
+const DEMO_ACCOUNTS = [
+  {
+    correo: "admin@veedoria.gob.do",
+    organizacion: "NexoDigital Solutions",
+    rol: "Administrador General",
+  },
+  {
+    correo: "auditor@dgcp.gob.do",
+    organizacion: "DGCP",
+    rol: "Fiscalización Nacional",
+  },
+  {
+    correo: "auditor@mopc.gob.do",
+    organizacion: "MOPC",
+    rol: "Auditor Institucional",
+  },
+  {
+    correo: "auditor@minerd.gob.do",
+    organizacion: "MINERD",
+    rol: "Control Preventivo",
+  },
+  {
+    correo: "proveedor@constructora.do",
+    organizacion: "Constructora del Caribe",
+    rol: "Proveedor RPE #132993",
+  },
+]
+
 export default function DashboardLayout() {
   const { t, i18n } = useTranslation("dashboard")
   const location = useLocation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { user, logout, hasPermission } = useAuth()
+  const { user, login, logout, hasPermission } = useAuth()
   const isDark = resolvedTheme === "dark"
 
   const [collapsed, setCollapsed] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [switchingEmail, setSwitchingEmail] = useState<string | null>(null)
   const isotipo = isDark ? isotipoDark : isotipoLight
   const profileRef = useRef<HTMLDivElement>(null)
 
@@ -59,6 +89,20 @@ export default function DashboardLayout() {
     setProfileOpen(false)
     await logout()
     navigate("/login", { replace: true })
+  }
+
+  const handleQuickSwitch = async (correo: string) => {
+    if (correo === user?.correo) {
+      setProfileOpen(false)
+      return
+    }
+    try {
+      setSwitchingEmail(correo)
+      await login(correo, "VeedorIA2026!")
+      setProfileOpen(false)
+    } finally {
+      setSwitchingEmail(null)
+    }
   }
 
   const initials = (user?.nombre || "VD")
@@ -82,7 +126,7 @@ export default function DashboardLayout() {
       ? "Alcance Institucional"
       : user?.tenant?.tipo === "B2B_SUPPLIER"
         ? `Alcance Proveedor (RPE #${user.tenant.supplier_rpe})`
-        : "Alcance Nacional Transversal"
+        : "Alcance Nacional"
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface overflow-hidden">
@@ -90,7 +134,7 @@ export default function DashboardLayout() {
         className="h-screen fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/30 flex flex-col z-50 transition-all duration-300"
         style={{ width: sbw }}
       >
-        <div className="h-16 flex items-center justify-center mb-2 relative">
+        <div className="h-16 flex items-center justify-center mb-4 relative border-b border-outline-variant/15">
           {collapsed ? (
             <button
               type="button"
@@ -124,24 +168,6 @@ export default function DashboardLayout() {
             )}
           </button>
         </div>
-
-        {/* Tarjeta del Tenant Activo */}
-        {!collapsed && user?.tenant && (
-          <div className="mx-3 mb-4 p-3 rounded-xl bg-surface border border-outline-variant/30 shadow-xs">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary">
-                {formatPlanLabel(user.tenant.plan_tier)}
-              </span>
-              <span className="text-[10px] font-mono text-on-surface-variant">
-                {user.tenant.codigo}
-              </span>
-            </div>
-            <p className="text-xs font-bold text-on-surface mt-1.5 truncate" title={user.tenant.nombre}>
-              {user.tenant.nombre}
-            </p>
-            <p className="text-[11px] text-on-surface-variant mt-0.5 truncate">{scopeLabel}</p>
-          </div>
-        )}
 
         <div className={`flex-1 overflow-y-auto ${collapsed ? "px-2" : "px-3"} space-y-6 pb-6`}>
           {/* Monitoreo y Auditoría */}
@@ -190,7 +216,7 @@ export default function DashboardLayout() {
               )}
             </NavLink>
 
-            {/* Módulos Enterprise / Próximos */}
+            {/* Módulos Próximos */}
             {[
               { label: t("sidebar.collusion_network"), icon: Share2 },
               { label: t("sidebar.ai_config"), icon: Brain },
@@ -218,162 +244,68 @@ export default function DashboardLayout() {
             ))}
           </div>
 
-          {/* Administración RBAC y Multi-Tenant */}
-          <div className="space-y-1">
-            {!collapsed && (
-              <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
-                Gobernanza y Seguridad
-              </p>
-            )}
-
-            {hasPermission("USER_ADMIN") && (
-              <NavLink
-                to="/app/usuarios"
-                className={({ isActive }) =>
-                  `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary/10 text-primary font-semibold"
-                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <div
-                        className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
-                      />
-                    )}
-                    <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                    {!collapsed && (
-                      <span className="text-[13px] flex-1 truncate">Usuarios y Organizaciones</span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            )}
-
-            {hasPermission("ROLE_VIEW") && (
-              <NavLink
-                to="/app/roles"
-                className={({ isActive }) =>
-                  `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary/10 text-primary font-semibold"
-                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <div
-                        className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
-                      />
-                    )}
-                    <ShieldCheck className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                    {!collapsed && (
-                      <span className="text-[13px] flex-1 truncate">Roles y Planes</span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            )}
-
-            <NavLink
-              to="/app/perfil"
-              className={({ isActive }) =>
-                `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <div
-                      className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
-                    />
-                  )}
-                  <UserCircle className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                  {!collapsed && <span className="text-[13px] flex-1 truncate">Mi Perfil</span>}
-                </>
+          {/* Gobernanza y Seguridad */}
+          {(hasPermission("USER_ADMIN") || hasPermission("ROLE_VIEW")) && (
+            <div className="space-y-1">
+              {!collapsed && (
+                <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
+                  Gobernanza y Seguridad
+                </p>
               )}
-            </NavLink>
-          </div>
-        </div>
 
-        {/* Footer de Usuario Autenticado Real */}
-        <div
-          className={`${collapsed ? "p-2" : "p-4"} border-t border-outline-variant/20 bg-surface-container-low/50 relative`}
-          ref={profileRef}
-        >
-          <button
-            type="button"
-            onClick={() => !collapsed && setProfileOpen(!profileOpen)}
-            className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} p-2 rounded-xl transition-all hover:bg-surface-container-high active:scale-[0.98] group cursor-pointer`}
-          >
-            <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-primary/20 flex items-center justify-center">
-                <span className="text-primary font-bold text-xs">{initials}</span>
-              </div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-            </div>
-            {!collapsed && (
-              <>
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-[13px] font-semibold text-on-surface leading-tight truncate">
-                    {user?.nombre}
-                  </p>
-                  <span className="inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider bg-primary/15 text-primary truncate max-w-full">
-                    {user?.rol?.nombre || "Usuario"}
-                  </span>
-                </div>
-                <MoreVertical className="w-4 h-4 text-outline group-hover:text-primary transition-colors shrink-0" />
-              </>
-            )}
-          </button>
+              {hasPermission("USER_ADMIN") && (
+                <NavLink
+                  to="/app/usuarios"
+                  className={({ isActive }) =>
+                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div
+                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                        />
+                      )}
+                      <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                      {!collapsed && (
+                        <span className="text-[13px] flex-1 truncate">Usuarios y Organizaciones</span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              )}
 
-          {!collapsed && profileOpen && (
-            <div className="absolute bottom-20 left-4 right-4 bg-surface shadow-xl rounded-xl border border-outline-variant/30 overflow-hidden py-2 z-50">
-              <button
-                type="button"
-                onClick={() => {
-                  setProfileOpen(false)
-                  navigate("/app/perfil")
-                }}
-                className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
-              >
-                <UserCircle className="w-4 h-4 mr-3" />
-                Mi Perfil y Contraseña
-              </button>
-              <button
-                type="button"
-                onClick={() => i18n.changeLanguage(i18n.language === "es" ? "en" : "es")}
-                className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
-              >
-                <Globe className="w-4 h-4 mr-3" />
-                {t("header.language")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
-              >
-                <Sun className="w-4 h-4 mr-3" />
-                {t(isDark ? "header.light_mode" : "header.dark_mode")}
-              </button>
-              <div className="border-t border-outline-variant/10 my-1" />
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="w-full flex items-center px-4 py-2 text-[13px] text-error hover:bg-error-container/30 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4 mr-3" />
-                Cerrar Sesión Institucional
-              </button>
+              {hasPermission("ROLE_VIEW") && (
+                <NavLink
+                  to="/app/roles"
+                  className={({ isActive }) =>
+                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div
+                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                        />
+                      )}
+                      <ShieldCheck className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                      {!collapsed && (
+                        <span className="text-[13px] flex-1 truncate">Roles y Planes</span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              )}
             </div>
           )}
         </div>
@@ -383,36 +315,163 @@ export default function DashboardLayout() {
         className="flex-1 flex flex-col h-screen overflow-hidden bg-background transition-all duration-300"
         style={{ marginLeft: sbw }}
       >
-        <header className="h-16 flex items-center justify-between px-8 bg-surface/70 backdrop-blur-md z-40 border-b border-outline-variant/10">
+        <header className="h-16 flex items-center justify-between px-8 bg-surface/80 backdrop-blur-md z-40 border-b border-outline-variant/15">
           <nav className="flex items-center space-x-2 text-[13px] text-outline">
             <span className="hover:text-primary transition-colors">{t("header.breadcrumb_console")}</span>
             <ChevronRight className="w-4 h-4" />
             <span className="text-on-surface font-semibold">{currentBreadcrumb}</span>
           </nav>
 
-          <div className="flex items-center gap-4">
-            {user?.tenant && (
-              <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-surface-container border border-outline-variant/25 text-xs">
-                <Building2 className="w-4 h-4 text-primary shrink-0" />
-                <span className="font-semibold text-on-surface">{user.tenant.nombre}</span>
-                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
-                  {formatPlanLabel(user.tenant.plan_tier)}
-                </span>
-                <span className="text-[11px] text-on-surface-variant border-l border-outline-variant/30 pl-2">
-                  {scopeLabel}
-                </span>
-              </div>
-            )}
-
+          {/* Menú Unificado de Usuario, Organización y Rol (Esquina Superior Derecha) */}
+          <div className="relative" ref={profileRef}>
             <button
               type="button"
-              onClick={handleLogout}
-              title="Cerrar sesión"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-error/10 text-xs font-semibold text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-3 pl-3.5 pr-2.5 py-1.5 rounded-xl bg-surface-container border border-outline-variant/30 hover:border-primary/40 transition-all cursor-pointer"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Salir</span>
+              {user?.tenant && (
+                <div className="hidden lg:flex items-center gap-2 pr-3 border-r border-outline-variant/30 text-left">
+                  <Building2 className="w-4 h-4 text-primary shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-on-surface leading-tight max-w-[230px] truncate">
+                      {user.tenant.nombre}
+                    </p>
+                    <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">
+                      {formatPlanLabel(user.tenant.plan_tier)} · {scopeLabel}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2.5">
+                <div className="relative shrink-0">
+                  <div className="w-8 h-8 rounded-full border border-primary/25 bg-primary/15 flex items-center justify-center">
+                    <span className="text-primary font-bold text-xs">{initials}</span>
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full" />
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-bold text-on-surface leading-tight max-w-[165px] truncate">
+                    {user?.nombre || "Usuario"}
+                  </p>
+                  <p className="text-[10px] font-medium text-primary leading-tight mt-0.5 max-w-[165px] truncate">
+                    {user?.rol?.nombre || "Rol"}
+                  </p>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-outline transition-transform duration-200 ${
+                    profileOpen ? "rotate-180 text-primary" : ""
+                  }`}
+                />
+              </div>
             </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-[340px] bg-surface shadow-xl rounded-xl border border-outline-variant/35 overflow-hidden z-50">
+                {/* Resumen Unificado de Identidad, Organización y Plan */}
+                <div className="p-4 bg-surface-container-low border-b border-outline-variant/20">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-on-surface truncate">{user?.nombre}</p>
+                      <p className="text-xs font-mono text-on-surface-variant truncate mt-0.5">
+                        {user?.correo}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/15 text-primary">
+                      {user?.rol?.nombre}
+                    </span>
+                  </div>
+
+                  {user?.tenant && (
+                    <div className="mt-3 pt-2.5 border-t border-outline-variant/20 space-y-1">
+                      <p className="text-xs font-semibold text-on-surface truncate">
+                        {user.tenant.nombre}
+                      </p>
+                      <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
+                        <span>{formatPlanLabel(user.tenant.plan_tier)}</span>
+                        <span className="font-mono">{scopeLabel}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Conmutador Rápido de Perfiles (Modo Demostración) */}
+                <div className="p-2.5 border-b border-outline-variant/20">
+                  <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-outline">
+                    Cambiar Cuenta de Demostración
+                  </p>
+                  <div className="space-y-1">
+                    {DEMO_ACCOUNTS.map((acc) => {
+                      const isCurrent = user?.correo === acc.correo
+                      const isSwitching = switchingEmail === acc.correo
+                      return (
+                        <button
+                          key={acc.correo}
+                          type="button"
+                          disabled={Boolean(switchingEmail)}
+                          onClick={() => handleQuickSwitch(acc.correo)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
+                            isCurrent
+                              ? "bg-primary/10 text-primary font-semibold"
+                              : "hover:bg-surface-container-high text-on-surface"
+                          }`}
+                        >
+                          <div className="min-w-0 pr-2">
+                            <p className="truncate font-semibold">{acc.organizacion}</p>
+                            <p className="text-[11px] text-on-surface-variant truncate">{acc.rol}</p>
+                          </div>
+                          {isSwitching ? (
+                            <span className="text-[10px] font-mono text-primary">...</span>
+                          ) : isCurrent ? (
+                            <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                          ) : null}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Opciones de Cuenta y Apariencia */}
+                <div className="py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false)
+                      navigate("/app/perfil")
+                    }}
+                    className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <UserCircle className="w-4 h-4 mr-3" />
+                    Mi Perfil y Contraseña
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => i18n.changeLanguage(i18n.language === "es" ? "en" : "es")}
+                    className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <Globe className="w-4 h-4 mr-3" />
+                    {t("header.language")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTheme(isDark ? "light" : "dark")}
+                    className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <Sun className="w-4 h-4 mr-3" />
+                    {t(isDark ? "header.light_mode" : "header.dark_mode")}
+                  </button>
+                  <div className="border-t border-outline-variant/15 my-1" />
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center px-4 py-2 text-[13px] text-error hover:bg-error-container/30 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
