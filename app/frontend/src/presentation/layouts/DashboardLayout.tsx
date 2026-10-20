@@ -30,33 +30,6 @@ import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
 const SIDEBAR_EXPANDED = 268
 const SIDEBAR_COLLAPSED = 80
 
-const DEMO_ACCOUNTS = [
-  {
-    correo: "admin@veedoria.gob.do",
-    organizacion: "NexoDigital Solutions",
-    rol: "Administrador General",
-  },
-  {
-    correo: "auditor@dgcp.gob.do",
-    organizacion: "DGCP",
-    rol: "Fiscalización Nacional",
-  },
-  {
-    correo: "auditor@mopc.gob.do",
-    organizacion: "MOPC",
-    rol: "Auditor Institucional",
-  },
-  {
-    correo: "auditor@minerd.gob.do",
-    organizacion: "MINERD",
-    rol: "Control Preventivo",
-  },
-  {
-    correo: "proveedor@constructora.do",
-    organizacion: "Constructora del Caribe",
-    rol: "Proveedor RPE #132993",
-  },
-]
 
 export default function DashboardLayout() {
   const { t, i18n } = useTranslation("dashboard")
@@ -449,42 +422,6 @@ export default function DashboardLayout() {
                       {user?.rol?.nombre}
                       {user?.tenant?.codigo ? ` · ${user.tenant.codigo}` : ""}
                     </span>
-                  </div>
-                </div>
-
-                {/* Conmutador Rápido de Perfiles (Modo Demostración) */}
-                <div className="p-2.5 border-b border-outline-variant/20">
-                  <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-outline">
-                    Cambiar Cuenta de Demostración
-                  </p>
-                  <div className="space-y-1">
-                    {DEMO_ACCOUNTS.map((acc) => {
-                      const isCurrent = user?.correo === acc.correo
-                      const isSwitching = switchingEmail === acc.correo
-                      return (
-                        <button
-                          key={acc.correo}
-                          type="button"
-                          disabled={Boolean(switchingEmail)}
-                          onClick={() => handleQuickSwitch(acc.correo)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
-                            isCurrent
-                              ? "bg-primary/10 text-primary font-semibold"
-                              : "hover:bg-surface-container-high text-on-surface"
-                          }`}
-                        >
-                          <div className="min-w-0 pr-2">
-                            <p className="truncate font-semibold">{acc.organizacion}</p>
-                            <p className="text-[11px] text-on-surface-variant truncate">{acc.rol}</p>
-                          </div>
-                          {isSwitching ? (
-                            <span className="text-[10px] font-mono text-primary">...</span>
-                          ) : isCurrent ? (
-                            <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                          ) : null}
-                        </button>
-                      )
-                    })}
                   </div>
                 </div>
 
