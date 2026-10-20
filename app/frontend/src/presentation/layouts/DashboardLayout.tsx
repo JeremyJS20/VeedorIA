@@ -33,7 +33,7 @@ const SIDEBAR_COLLAPSED = 80
 
 
 export default function DashboardLayout() {
-  const { i18n } = useTranslation("dashboard")
+  const { t, i18n } = useTranslation("dashboard")
   const location = useLocation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
