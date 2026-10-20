@@ -825,3 +825,8 @@ body {
   background: rgba(34, 197, 94, 0.15);
   color: rgb(74, 222, 128);
 }
+
+/* ── Toast Elevation above Drawers & Overlays ── */
+.toast-region {
+  z-index: 9999 !important;
+}

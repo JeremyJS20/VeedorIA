@@ -66,7 +66,7 @@ const PageLoader = () => (
 function App() {
   return (
     <AuthProvider>
-      <Toast.Provider />
+      <Toast.Provider className="!z-[300]" />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
