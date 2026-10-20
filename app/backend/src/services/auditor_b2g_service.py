@@ -254,7 +254,7 @@ class AuditorB2GService:
 
     async def get_collusion_network(self, current_user: dict) -> dict:
         tenant = current_user.get("tenant") or {}
-        plan_code = tenant.get("plan") or "B2G_BASIC"
+        plan_code = tenant.get("plan_tier") or tenant.get("plan") or "B2G_BASIC"
         if plan_code == "B2G_BASIC" and current_user.get("rol", {}).get("codigo") != "PLATFORM_ADMIN":
             return {
                 "locked": True,
@@ -498,7 +498,7 @@ class AuditorB2GService:
                     entity_id=str(current_user.get("tenant", {}).get("id") or "global"),
                     old_value=old_values,
                     new_value={
-                        "actor_email": current_user.get("email"),
+                        "actor_email": (current_user.get("correo") or current_user.get("email")),
                         "actor_name": current_user.get("nombre"),
                         "parameters": new_values,
                     },
@@ -723,7 +723,7 @@ class AuditorB2GService:
     async def list_integrations(self, current_user: dict) -> dict:
         tenant = current_user.get("tenant") or {}
         tenant_id = str(tenant.get("id") or "global")
-        plan_code = tenant.get("plan") or "B2G_BASIC"
+        plan_code = tenant.get("plan_tier") or tenant.get("plan") or "B2G_BASIC"
         role_code = current_user.get("rol", {}).get("codigo", "")
 
         logs = (
@@ -770,7 +770,7 @@ class AuditorB2GService:
                 }
             )
 
-        can_manage = role_code in ("PLATFORM_ADMIN", "TENANT_ADMIN", "CONTRALOR") and plan_code != "B2G_BASIC"
+        can_manage = role_code == "PLATFORM_ADMIN" or (role_code in ("TENANT_ADMIN", "CONTRALOR") and plan_code != "B2G_BASIC")
 
         return {
             "scope_label": tenant.get("nombre") or "Organización Institucional",
@@ -804,7 +804,7 @@ class AuditorB2GService:
     ) -> dict:
         tenant = current_user.get("tenant") or {}
         tenant_id = str(tenant.get("id") or "global")
-        plan_code = tenant.get("plan") or "B2G_BASIC"
+        plan_code = tenant.get("plan_tier") or tenant.get("plan") or "B2G_BASIC"
         role_code = current_user.get("rol", {}).get("codigo", "")
 
         if role_code not in ("PLATFORM_ADMIN", "TENANT_ADMIN", "CONTRALOR") or (
@@ -830,7 +830,7 @@ class AuditorB2GService:
                 "system_target": clean_target,
                 "prefix": prefix,
                 "key_hash": key_hash,
-                "created_by": current_user.get("nombre") or current_user.get("email"),
+                "created_by": current_user.get("nombre") or (current_user.get("correo") or current_user.get("email")),
             },
         )
         self.db.add(log_entry)
@@ -861,7 +861,7 @@ class AuditorB2GService:
                 old_value={"status": "ACTIVE"},
                 new_value={
                     "status": "REVOKED",
-                    "revoked_by": current_user.get("nombre") or current_user.get("email"),
+                    "revoked_by": current_user.get("nombre") or (current_user.get("correo") or current_user.get("email")),
                 },
             )
         )
