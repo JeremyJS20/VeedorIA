@@ -69,6 +69,7 @@ export default function DashboardLayout() {
 
   const [collapsed, setCollapsed] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [marketOpen, setMarketOpen] = useState(true)
   const [switchingEmail, setSwitchingEmail] = useState<string | null>(null)
   const isotipo = isDark ? isotipoDark : isotipoLight
   const profileRef = useRef<HTMLDivElement>(null)
@@ -226,30 +227,73 @@ export default function DashboardLayout() {
             {(user?.tenant.tipo === "B2B_SUPPLIER" ||
               hasPermission("B2B_ANALYTICS") ||
               user?.rol.codigo === "PLATFORM_ADMIN") && (
-              <NavLink
-                to="/app/mercado"
-                className={({ isActive }) =>
-                  `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                    isActive
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (collapsed) {
+                      navigate("/app/mercado?seccion=precios")
+                    } else {
+                      setMarketOpen(!marketOpen)
+                      if (!location.pathname.startsWith("/app/mercado")) {
+                        navigate("/app/mercado?seccion=precios")
+                      }
+                    }
+                  }}
+                  className={`w-full group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 cursor-pointer ${
+                    location.pathname.startsWith("/app/mercado")
                       ? "bg-primary/10 text-primary font-semibold"
                       : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <div
-                        className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                  }`}
+                >
+                  {location.pathname.startsWith("/app/mercado") && (
+                    <div
+                      className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                    />
+                  )}
+                  <TrendingUp className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                  {!collapsed && (
+                    <>
+                      <span className="text-[13px] flex-1 text-left truncate">
+                        Inteligencia de Mercado
+                      </span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                          marketOpen ? "rotate-180" : ""
+                        }`}
                       />
-                    )}
-                    <TrendingUp className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                    {!collapsed && (
-                      <span className="text-[13px] flex-1 truncate">Inteligencia de Mercado</span>
-                    )}
-                  </>
+                    </>
+                  )}
+                </button>
+
+                {!collapsed && marketOpen && (
+                  <div className="ml-5 pl-3 border-l border-outline-variant/30 space-y-0.5">
+                    {[
+                      { id: "precios", label: "Precios e Histórico" },
+                      { id: "competidores", label: "Competidores y Compradores" },
+                      { id: "procesos", label: "Adjudicaciones del Sector" },
+                    ].map((sub) => {
+                      const activeSec = new URLSearchParams(location.search).get("seccion") || "precios"
+                      const isSubActive =
+                        location.pathname.startsWith("/app/mercado") && activeSec === sub.id
+                      return (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => navigate(`/app/mercado?seccion=${sub.id}`)}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                            isSubActive
+                              ? "text-primary font-semibold bg-primary/5"
+                              : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60"
+                          }`}
+                        >
+                          {sub.label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 )}
-              </NavLink>
+              </div>
             )}
 
             <NavLink
