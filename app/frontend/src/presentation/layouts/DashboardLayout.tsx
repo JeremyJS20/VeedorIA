@@ -42,6 +42,8 @@ export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(true)
+  const [usersOpen, setUsersOpen] = useState(true)
+  const [rolesOpen, setRolesOpen] = useState(true)
   const isotipo = isDark ? isotipoDark : isotipoLight
   const profileRef = useRef<HTMLDivElement>(null)
 
@@ -306,62 +308,170 @@ export default function DashboardLayout() {
                 </p>
               )}
 
-              {hasPermission("USER_ADMIN") && (
-                <NavLink
-                  to="/app/usuarios"
-                  className={({ isActive }) =>
-                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
+              {hasPermission("USER_ADMIN") &&
+                (user?.rol?.codigo === "PLATFORM_ADMIN" ? (
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (collapsed) {
+                          navigate("/app/usuarios?seccion=usuarios")
+                        } else {
+                          setUsersOpen(!usersOpen)
+                          if (!location.pathname.startsWith("/app/usuarios")) {
+                            navigate("/app/usuarios?seccion=usuarios")
+                          }
+                        }
+                      }}
+                      className={`w-full group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 cursor-pointer ${
+                        location.pathname.startsWith("/app/usuarios")
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                      }`}
+                    >
+                      {location.pathname.startsWith("/app/usuarios") && (
                         <div
                           className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
                         />
                       )}
                       <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
                       {!collapsed && (
-                        <span className="text-[13px] flex-1 truncate">
-                          {user?.rol?.codigo === "PLATFORM_ADMIN"
-                            ? "Usuarios y Organizaciones"
-                            : "Usuarios y Equipo"}
-                        </span>
+                        <>
+                          <span className="text-[13px] flex-1 text-left truncate">
+                            Usuarios y Organizaciones
+                          </span>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                              usersOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </>
                       )}
-                    </>
-                  )}
-                </NavLink>
-              )}
+                    </button>
+
+                    {!collapsed && usersOpen && (
+                      <div className="ml-5 pl-3 border-l border-outline-variant/30 space-y-0.5">
+                        {[
+                          { id: "usuarios", label: "Usuarios Registrados" },
+                          { id: "organizaciones", label: "Organizaciones Suscriptoras" },
+                        ].map((sub) => {
+                          const activeSec =
+                            new URLSearchParams(location.search).get("seccion") || "usuarios"
+                          const isSubActive =
+                            location.pathname.startsWith("/app/usuarios") && activeSec === sub.id
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={() => navigate(`/app/usuarios?seccion=${sub.id}`)}
+                              className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                                isSubActive
+                                  ? "text-primary font-semibold bg-primary/5"
+                                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60"
+                              }`}
+                            >
+                              {sub.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <NavLink
+                    to="/app/usuarios"
+                    className={({ isActive }) =>
+                      `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <div
+                            className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                          />
+                        )}
+                        <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                        {!collapsed && (
+                          <span className="text-[13px] flex-1 truncate">Usuarios y Equipo</span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
 
               {user?.rol?.codigo === "PLATFORM_ADMIN" && (
-                <NavLink
-                  to="/app/roles"
-                  className={({ isActive }) =>
-                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
-                      isActive
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (collapsed) {
+                        navigate("/app/roles?seccion=roles")
+                      } else {
+                        setRolesOpen(!rolesOpen)
+                        if (!location.pathname.startsWith("/app/roles")) {
+                          navigate("/app/roles?seccion=roles")
+                        }
+                      }
+                    }}
+                    className={`w-full group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 cursor-pointer ${
+                      location.pathname.startsWith("/app/roles")
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <div
-                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                    }`}
+                  >
+                    {location.pathname.startsWith("/app/roles") && (
+                      <div
+                        className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                      />
+                    )}
+                    <ShieldCheck className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                    {!collapsed && (
+                      <>
+                        <span className="text-[13px] flex-1 text-left truncate">
+                          Roles y Planes
+                        </span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                            rolesOpen ? "rotate-180" : ""
+                          }`}
                         />
-                      )}
-                      <ShieldCheck className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-                      {!collapsed && (
-                        <span className="text-[13px] flex-1 truncate">Roles y Planes</span>
-                      )}
-                    </>
+                      </>
+                    )}
+                  </button>
+
+                  {!collapsed && rolesOpen && (
+                    <div className="ml-5 pl-3 border-l border-outline-variant/30 space-y-0.5">
+                      {[
+                        { id: "roles", label: "Roles y Autorizaciones" },
+                        { id: "planes", label: "Planes de Servicio" },
+                      ].map((sub) => {
+                        const activeSec =
+                          new URLSearchParams(location.search).get("seccion") || "roles"
+                        const isSubActive =
+                          location.pathname.startsWith("/app/roles") && activeSec === sub.id
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => navigate(`/app/roles?seccion=${sub.id}`)}
+                            className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                              isSubActive
+                                ? "text-primary font-semibold bg-primary/5"
+                                : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60"
+                            }`}
+                          >
+                            {sub.label}
+                          </button>
+                        )
+                      })}
+                    </div>
                   )}
-                </NavLink>
+                </div>
               )}
             </div>
           )}

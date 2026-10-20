@@ -1,4 +1,5 @@
 import { useState, useMemo, type FormEvent } from "react"
+import { useSearchParams } from "react-router-dom"
 import {
   Users,
   Building2,
@@ -33,7 +34,8 @@ export default function UsersManagementPage() {
   const [rolFilter, setRolFilter] = useState("")
   const [tenantFilter, setTenantFilter] = useState("")
   const [estadoFilter, setEstadoFilter] = useState("")
-  const [activeTab, setActiveTab] = useState<"usuarios" | "tenants">("usuarios")
+  const [searchParams] = useSearchParams()
+  const activeTab: "usuarios" | "tenants" = isPlatformAdmin && searchParams.get("seccion") === "organizaciones" ? "tenants" : "usuarios"
 
   const { data: allUsers = [], isLoading: loadingUsers } = useUsersList()
   const { data: tenants = [], isLoading: loadingTenants } = useTenantsList()
@@ -271,32 +273,85 @@ export default function UsersManagementPage() {
         </div>
       )}
 
-      {isPlatformAdmin && (
-        <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("usuarios")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-              activeTab === "usuarios"
-                ? "bg-primary text-on-primary"
-                : "text-on-surface-variant hover:bg-surface-container"
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            Usuarios Registrados ({users.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("tenants")}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-              activeTab === "tenants"
-                ? "bg-primary text-on-primary"
-                : "text-on-surface-variant hover:bg-surface-container"
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            Organizaciones Suscriptoras ({tenants.length})
-          </button>
+      {activeTab === "usuarios" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                Usuarios Registrados
+              </p>
+              <p className="font-mono text-2xl font-bold text-on-surface mt-1">{allUsers.length}</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                Cuentas Activas
+              </p>
+              <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                {allUsers.filter((u) => u.estado === "ACTIVO" && !u.bloqueado).length}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                {isPlatformAdmin ? "Organizaciones Vinculadas" : "C?digo de Invitaci?n"}
+              </p>
+              <p className="font-mono text-lg font-bold text-primary mt-1">
+                {isPlatformAdmin ? `${tenants.length} activas` : currentUser?.tenant?.codigo || "?"}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Building2 className="w-5 h-5" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                Total Organizaciones
+              </p>
+              <p className="font-mono text-2xl font-bold text-on-surface mt-1">{tenants.length}</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Building2 className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                Entidades P?blicas (B2G)
+              </p>
+              <p className="font-mono text-2xl font-bold text-primary mt-1">
+                {tenants.filter((t) => t.tipo === "GOV_INSTITUTION" || t.tipo === "GOV_OVERSIGHT").length}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                Empresas Proveedoras (B2B)
+              </p>
+              <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                {tenants.filter((t) => t.tipo === "B2B_SUPPLIER").length}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       )}
 
