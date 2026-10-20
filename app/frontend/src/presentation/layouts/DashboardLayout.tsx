@@ -21,7 +21,6 @@ import {
   PanelLeftClose,
   PanelLeft,
   ExternalLink,
-  Check,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
@@ -64,13 +63,12 @@ export default function DashboardLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { user, login, logout, hasPermission } = useAuth()
+  const { user, logout, hasPermission } = useAuth()
   const isDark = resolvedTheme === "dark"
 
   const [collapsed, setCollapsed] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [marketOpen, setMarketOpen] = useState(true)
-  const [switchingEmail, setSwitchingEmail] = useState<string | null>(null)
   const isotipo = isDark ? isotipoDark : isotipoLight
   const profileRef = useRef<HTMLDivElement>(null)
 
@@ -90,20 +88,6 @@ export default function DashboardLayout() {
     setProfileOpen(false)
     await logout()
     navigate("/login", { replace: true })
-  }
-
-  const handleQuickSwitch = async (correo: string) => {
-    if (correo === user?.correo) {
-      setProfileOpen(false)
-      return
-    }
-    try {
-      setSwitchingEmail(correo)
-      await login(correo, "VeedorIA2026!")
-      setProfileOpen(false)
-    } finally {
-      setSwitchingEmail(null)
-    }
   }
 
   const initials = (user?.nombre || "VD")
@@ -444,7 +428,7 @@ export default function DashboardLayout() {
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-[340px] bg-surface shadow-xl rounded-xl border border-outline-variant/35 overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-[280px] bg-surface shadow-xl rounded-xl border border-outline-variant/35 overflow-hidden z-50">
                 {/* Resumen Unificado de Identidad y Rol */}
                 <div className="p-4 bg-surface-container-low border-b border-outline-variant/20">
                   <p className="text-sm font-bold text-on-surface leading-snug">
