@@ -1,40 +1,34 @@
 import { useState, type FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Building2, Shield, Briefcase } from "lucide-react"
+import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, ChevronDown } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
-import InsetPanel from "../components/ui/InsetPanel"
 import { useAuth } from "../context/AuthContext"
 
 const DEMO_TENANT_ACCOUNTS = [
   {
     label: "Admin Global (NexoDigital)",
     email: "admin@veedoria.gob.do",
-    scope: "Alcance Nacional + Administración SaaS",
-    icon: Shield,
+    scope: "Alcance Nacional + Admin SaaS",
   },
   {
     label: "Ente Rector (DGCP / Contraloría)",
     email: "auditor@dgcp.gob.do",
-    scope: "Alcance Nacional (Todas las instituciones)",
-    icon: Shield,
+    scope: "Alcance Nacional Transversal",
   },
   {
     label: "Ministerio de Obras Públicas (MOPC)",
     email: "auditor@mopc.gob.do",
-    scope: "Aislado a MOPC (Institución #5)",
-    icon: Building2,
+    scope: "Aislado a MOPC (ID #5)",
   },
   {
     label: "Ministerio de Educación (MINERD)",
     email: "auditor@minerd.gob.do",
-    scope: "Aislado a MINERD (Institución #88)",
-    icon: Building2,
+    scope: "Aislado a MINERD (ID #88)",
   },
   {
     label: "Proveedor del Estado (C & S Tianmu Corp)",
     email: "proveedor@constructora.do",
     scope: "RPE 132993 · Inteligencia B2B",
-    icon: Briefcase,
   },
 ]
 
@@ -47,6 +41,8 @@ export default function LoginPage() {
   const [correo, setCorreo] = useState("admin@veedoria.gob.do")
   const [contrasena, setContrasena] = useState("VeedorIA2026!")
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
+  const [showDemoAccounts, setShowDemoAccounts] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -64,53 +60,54 @@ export default function LoginPage() {
     }
   }
 
-  const fillDemoAccount = (email: string) => {
-    setCorreo(email)
-    setContrasena("VeedorIA2026!")
-    setError(null)
-  }
-
   return (
     <AuthShell
-      title="Iniciar Sesión Institucional"
-      subtitle="Ingresa las credenciales asignadas a tu institución (B2G), órgano rector o empresa proveedora (B2B)."
+      title="Acceder a VeedorIA"
+      subtitle="Ingresa tus credenciales para acceder a la consola"
       footer={
-        <InsetPanel className="!p-5">
-          <p className="font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-            Cuentas de Demostración Multi-Tenant (Clave: <span className="font-mono text-on-surface">VeedorIA2026!</span>)
-          </p>
-          <div className="grid grid-cols-1 gap-2">
-            {DEMO_TENANT_ACCOUNTS.map((acc) => {
-              const Icon = acc.icon
-              const isSelected = correo.toLowerCase() === acc.email.toLowerCase()
-              return (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => fillDemoAccount(acc.email)}
-                  className={`flex items-center justify-between text-left px-3.5 py-2.5 rounded-xl border text-xs transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-primary-container/30 border-primary text-on-surface"
-                      : "bg-surface border-outline-variant/40 hover:bg-surface-container-high text-on-surface-variant"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon className="w-4 h-4 text-primary shrink-0" />
-                    <div className="truncate">
-                      <p className="font-display font-bold text-on-surface truncate">{acc.label}</p>
-                      <p className="text-[11px] text-on-surface-variant font-mono truncate mt-0.5">
-                        {acc.email} · {acc.scope}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </InsetPanel>
+        <div className="bg-surface-container border border-outline-variant/40 rounded-2xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowDemoAccounts(!showDemoAccounts)}
+            className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
+          >
+            <span>Cuentas de prueba Multi-Tenant (Clave: VeedorIA2026!)</span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${showDemoAccounts ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showDemoAccounts && (
+            <div className="px-4 pb-4 space-y-1.5 border-t border-outline-variant/20 pt-3">
+              {DEMO_TENANT_ACCOUNTS.map((acc) => {
+                const isSelected = correo.toLowerCase() === acc.email.toLowerCase()
+                return (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => {
+                      setCorreo(acc.email)
+                      setContrasena("VeedorIA2026!")
+                      setError(null)
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl border text-xs transition-colors cursor-pointer ${
+                      isSelected
+                        ? "bg-primary-container/40 border-primary text-on-surface"
+                        : "bg-surface-container-lowest dark:bg-surface-container-highest border-outline-variant/30 hover:border-primary/50 text-on-surface-variant"
+                    }`}
+                  >
+                    <p className="font-semibold text-on-surface">{acc.label}</p>
+                    <p className="font-mono text-[11px] text-on-surface-variant">
+                      {acc.email} · {acc.scope}
+                    </p>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div
             role="alert"
@@ -122,11 +119,8 @@ export default function LoginPage() {
         )}
 
         <div>
-          <label
-            htmlFor="login-email"
-            className="block font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2"
-          >
-            Correo Electrónico Institucional
+          <label htmlFor="login-email" className="block label-md text-on-surface-variant mb-1.5">
+            Correo Institucional
           </label>
           <div className="relative">
             <Mail className="w-4 h-4 text-outline absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -138,26 +132,15 @@ export default function LoginPage() {
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               placeholder="usuario@institucion.gob.do"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container border border-outline-variant text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
+              className="w-full h-12 pl-10 pr-4 rounded-xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label
-              htmlFor="login-password"
-              className="block font-display text-xs font-bold uppercase tracking-wider text-on-surface-variant"
-            >
-              Contraseña
-            </label>
-            <Link
-              to="/recuperar-contrasena"
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
+          <label htmlFor="login-password" className="block label-md text-on-surface-variant mb-1.5">
+            Contraseña
+          </label>
           <div className="relative">
             <Lock className="w-4 h-4 text-outline absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
@@ -168,7 +151,7 @@ export default function LoginPage() {
               value={contrasena}
               onChange={(e) => setContrasena(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full pl-10 pr-10 py-3 rounded-xl bg-surface-container border border-outline-variant text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
+              className="w-full h-12 pl-10 pr-10 rounded-xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant text-sm text-on-surface focus:outline-none focus:border-primary transition-colors"
             />
             <button
               type="button"
@@ -181,13 +164,42 @@ export default function LoginPage() {
           </div>
         </div>
 
+        <div className="flex items-center justify-between pt-1">
+          <label className="inline-flex items-center gap-2 text-[13px] text-on-surface-variant cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded border-outline-variant accent-primary"
+            />
+            <span>Recordarme</span>
+          </label>
+
+          <Link
+            to="/recuperar-contrasena"
+            className="text-[13px] font-medium text-primary hover:underline"
+          >
+            Olvidé mi contraseña
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn btn-primary btn-md btn-full-width"
+          className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
         >
-          {isSubmitting ? "Verificando credenciales..." : "Acceder a la Consola VeedorIA"}
+          {isSubmitting ? "VERIFICANDO..." : "INICIAR SESIÓN"}
         </button>
+
+        <div className="pt-2 text-center">
+          <Link
+            to="/public"
+            className="inline-flex items-center justify-center gap-1.5 label-md text-on-surface-variant hover:text-primary transition-colors"
+          >
+            <span>O CONTINUAR COMO CIUDADANO (Acceso libre sin registro)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </form>
     </AuthShell>
   )

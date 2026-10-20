@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react"
 import { Link } from "react-router-dom"
-import { Mail, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react"
+import { Mail, Lock, ShieldCheck, AlertCircle, ExternalLink } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import InsetPanel from "../components/ui/InsetPanel"
 import { useForgotPassword } from "../hooks/useAuthManagement"
 
 export default function ForgotPasswordPage() {
@@ -26,29 +27,38 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Restablecer Contraseña"
-      subtitle="Ingresa tu correo institucional. Si está registrado y activo, generaremos un enlace temporal válido por 15 minutos."
+      title={submittedData ? "Enlace de Acceso Enviado" : "Recuperar Contraseña"}
+      subtitle={
+        submittedData
+          ? `Hemos enviado instrucciones para restablecer tu contraseña a ${correo}. Revisa tu bandeja de entrada.`
+          : "Ingresa tu correo para recibir un enlace de restablecimiento seguro."
+      }
+      icon={
+        submittedData ? (
+          <ShieldCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
+        ) : (
+          <Lock className="w-5 h-5" />
+        )
+      }
     >
       {submittedData ? (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-xs space-y-2">
-            <div className="flex items-center gap-2 font-bold text-green-600 dark:text-green-400">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>Solicitud Procesada</span>
-            </div>
-            <p className="text-on-surface-variant leading-relaxed">{submittedData.message}</p>
-          </div>
+          <InsetPanel className="!p-4 text-center">
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              El enlace enviado tiene una validez de <span className="font-mono font-bold text-on-surface">15 minutos</span> por razones de seguridad institucional.
+            </p>
+          </InsetPanel>
 
           {submittedData.reset_url_preview && (
-            <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/30 text-xs space-y-2">
-              <p className="font-bold text-primary">
-                Enlace de Recuperación (Modo Desarrollo / Demo):
+            <div className="p-3.5 rounded-xl bg-primary-container/30 border border-primary/40 text-xs space-y-1.5">
+              <p className="font-semibold text-on-surface">
+                Enlace directo de prueba (Entorno Local):
               </p>
               <Link
                 to={submittedData.reset_url_preview}
                 className="inline-flex items-center gap-1.5 font-mono text-xs text-primary underline break-all"
               >
-                Abrir formulario de cambio con token temporal
+                Abrir formulario de restablecimiento
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               </Link>
             </div>
@@ -56,23 +66,33 @@ export default function ForgotPasswordPage() {
 
           <Link
             to="/login"
-            className="block w-full text-center py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs transition-colors"
+            className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
           >
-            Volver al Inicio de Sesión
+            VOLVER AL LOGIN
           </Link>
+
+          <div className="text-center pt-1">
+            <button
+              type="button"
+              onClick={() => setSubmittedData(null)}
+              className="text-[13px] font-medium text-on-surface-variant hover:text-primary cursor-pointer"
+            >
+              Reenviar correo de restablecimiento
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-error/10 border border-error/30 text-error text-xs">
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-error-container text-on-error-container text-xs font-medium">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <div>
-            <label htmlFor="forgot-email" className="block text-xs font-semibold text-on-surface mb-1.5">
-              Correo Electrónico Institucional
+            <label htmlFor="forgot-email" className="block label-md text-on-surface-variant mb-1.5">
+              Correo Institucional
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-outline absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -83,7 +103,7 @@ export default function ForgotPasswordPage() {
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
                 placeholder="auditor@mopc.gob.do"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-sm text-on-surface focus:outline-none focus:border-primary"
+                className="w-full h-12 pl-10 pr-4 rounded-xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant text-sm text-on-surface focus:outline-none focus:border-primary"
               />
             </div>
           </div>
@@ -91,14 +111,17 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={forgotMutation.isPending}
-            className="w-full py-2.5 px-4 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-95 disabled:opacity-50 transition-all cursor-pointer"
+            className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
           >
-            {forgotMutation.isPending ? "Generando enlace seguro..." : "Enviar Enlace de Recuperación"}
+            {forgotMutation.isPending ? "ENVIANDO..." : "ENVIAR ENLACE"}
           </button>
 
           <div className="text-center pt-2">
-            <Link to="/login" className="text-xs font-semibold text-on-surface-variant hover:text-primary">
-              Cancelar y volver al login
+            <Link
+              to="/login"
+              className="text-[13px] font-bold text-primary hover:underline"
+            >
+              Volver a Iniciar Sesión
             </Link>
           </div>
         </form>
