@@ -18,13 +18,11 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
-  Building2,
   ExternalLink,
   Check,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
-import { formatPlanLabel } from "../../domain/auth"
 import isotipoLight from "../../assets/veedoria_isotipo_light.webp"
 import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
 
@@ -120,13 +118,6 @@ export default function DashboardLayout() {
   }
 
   const currentBreadcrumb = pageTitleMap[location.pathname] || "Consola Operativa"
-
-  const scopeLabel =
-    user?.tenant?.tipo === "GOV_INSTITUTION"
-      ? "Alcance Institucional"
-      : user?.tenant?.tipo === "B2B_SUPPLIER"
-        ? `Alcance Proveedor (RPE #${user.tenant.supplier_rpe})`
-        : "Alcance Nacional"
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface overflow-hidden">
@@ -352,7 +343,7 @@ export default function DashboardLayout() {
 
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-[340px] bg-surface shadow-xl rounded-xl border border-outline-variant/35 overflow-hidden z-50">
-                {/* Resumen Unificado de Identidad, Rol y Organización */}
+                {/* Resumen Unificado de Identidad y Rol */}
                 <div className="p-4 bg-surface-container-low border-b border-outline-variant/20">
                   <p className="text-sm font-bold text-on-surface leading-snug">
                     {user?.nombre}
@@ -363,23 +354,9 @@ export default function DashboardLayout() {
                   <div className="mt-2">
                     <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-primary/15 text-primary">
                       {user?.rol?.nombre}
+                      {user?.tenant?.codigo ? ` · ${user.tenant.codigo}` : ""}
                     </span>
                   </div>
-
-                  {user?.tenant && (
-                    <div className="mt-3 pt-2.5 border-t border-outline-variant/20 space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <p className="text-xs font-semibold text-on-surface truncate">
-                          {user.tenant.nombre}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
-                        <span>{formatPlanLabel(user.tenant.plan_tier)}</span>
-                        <span className="font-mono">{scopeLabel}</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Conmutador Rápido de Perfiles (Modo Demostración) */}
