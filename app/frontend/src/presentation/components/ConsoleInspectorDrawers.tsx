@@ -19,7 +19,14 @@ export function ProcessInspectorDrawer({
   const { data, isLoading } = useProcessDossier(processId)
 
   return (
-    <aside className="w-full sm:w-[440px] lg:w-[500px] h-full bg-surface shadow-2xl z-30 flex flex-col border-l border-outline-variant/25 shrink-0">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
+    >
+      <aside
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:w-[520px] lg:w-[580px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 shrink-0"
+      >
       <div className="p-6 border-b border-outline-variant/25 flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
@@ -178,7 +185,8 @@ export function ProcessInspectorDrawer({
           </>
         )}
       </div>
-    </aside>
+      </aside>
+    </div>
   )
 }
 
@@ -192,7 +200,14 @@ export function SupplierInspectorDrawer({
   const { data, isLoading } = usePublicSupplierProfile(rpe)
 
   return (
-    <aside className="w-full sm:w-[440px] lg:w-[500px] h-full bg-surface shadow-2xl z-30 flex flex-col border-l border-outline-variant/25 shrink-0">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
+    >
+      <aside
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:w-[520px] lg:w-[580px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 shrink-0"
+      >
       <div className="p-6 border-b border-outline-variant/25 flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
@@ -330,6 +345,7 @@ export function SupplierInspectorDrawer({
           </>
         )}
       </div>
-    </aside>
+      </aside>
+    </div>
   )
 }

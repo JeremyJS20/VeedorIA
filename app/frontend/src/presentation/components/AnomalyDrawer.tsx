@@ -90,7 +90,14 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
   const isCollusion = anomaly.anomaly_type === "COLLUSION"
 
   return (
-    <aside className={`w-[40%] h-full bg-surface shadow-2xl z-20 flex flex-col border-l border-outline-variant/20 ${className}`}>
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
+    >
+      <aside
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full sm:w-[540px] lg:w-[620px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 ${className}`}
+      >
       <div className="p-6 border-b border-outline-variant/20 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
@@ -325,6 +332,7 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <CollusionNetwork links={ctx.collusion_links} fullscreen />
         )}
       </FullscreenOverlay>
-    </aside>
+      </aside>
+    </div>
   )
 }
