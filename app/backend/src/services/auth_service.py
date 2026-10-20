@@ -18,7 +18,9 @@ from src.models.auth import (
     RolePermission,
     Tenant,
 )
+from src.models.contract import Contract
 from src.models.institution import Institution
+from src.models.supplier import Supplier
 
 logger = logging.getLogger("veedoria.services.auth")
 
@@ -989,15 +991,93 @@ class AuthService:
             for t in tenants
         ]
 
+    async def search_directory(self, tipo: str, q: str = "") -> list[dict]:
+        query_str = (q or "").strip()
+        if tipo in ("GOV_INSTITUTION", "GOV_OVERSIGHT"):
+            stmt = select(Institution.id, Institution.dgcp_id, Institution.name)
+            if query_str:
+                stmt = stmt.where(Institution.name.ilike(f"%{query_str}%"))
+            stmt = stmt.order_by(Institution.name.asc()).limit(10)
+            rows = (await self.db.execute(stmt)).all()
+            return [
+                {
+                    "key": f"inst-{r.id}",
+                    "nombre": r.name,
+                    "identificador": f"Unidad de Compra #{r.dgcp_id}",
+                    "institution_id": r.id,
+                    "supplier_rpe": None,
+                }
+                for r in rows
+            ]
+        else:
+            stmt = (
+                select(Contract.rpe, func.max(Contract.supplier_name).label("supplier_name"))
+                .where(Contract.rpe.is_not(None), Contract.supplier_name.is_not(None))
+            )
+            if query_str:
+                stmt = stmt.where(
+                    (Contract.supplier_name.ilike(f"%{query_str}%"))
+                    | (Contract.rpe.ilike(f"%{query_str}%"))
+                )
+            stmt = stmt.group_by(Contract.rpe).order_by(func.max(Contract.supplier_name).asc()).limit(10)
+            rows = (await self.db.execute(stmt)).all()
+            results = [
+                {
+                    "key": f"sup-{r.rpe}",
+                    "nombre": r.supplier_name,
+                    "identificador": f"RPE #{r.rpe}",
+                    "institution_id": None,
+                    "supplier_rpe": str(r.rpe),
+                }
+                for r in rows
+                if r.rpe and r.supplier_name
+            ]
+            if len(results) < 6:
+                s_stmt = select(Supplier.rnc, Supplier.registered_name).where(
+                    Supplier.registered_name.is_not(None)
+                )
+                if query_str:
+                    s_stmt = s_stmt.where(
+                        (Supplier.registered_name.ilike(f"%{query_str}%"))
+                        | (Supplier.rnc.ilike(f"%{query_str}%"))
+                    )
+                s_stmt = s_stmt.order_by(Supplier.registered_name.asc()).limit(6)
+                s_rows = (await self.db.execute(s_stmt)).all()
+                seen_names = {item["nombre"].upper() for item in results}
+                for sr in s_rows:
+                    if sr.registered_name and sr.registered_name.upper() not in seen_names:
+                        results.append(
+                            {
+                                "key": f"rnc-{sr.rnc}",
+                                "nombre": sr.registered_name,
+                                "identificador": f"RNC {sr.rnc}",
+                                "institution_id": None,
+                                "supplier_rpe": str(sr.rnc),
+                            }
+                        )
+            return results[:10]
+
+    def _generate_tenant_code(self, nombre: str, tipo: str) -> str:
+        stop_words = {"DE", "DEL", "LA", "LAS", "EL", "LOS", "Y", "E", "EN", "PARA", "SRL", "SA", "SAS", "EIRL"}
+        words = [w for w in re.findall(r"[A-Za-z0-9]+", nombre.upper()) if w not in stop_words]
+        if not words:
+            base = "ORG"
+        elif len(words) == 1:
+            base = words[0][:10]
+        else:
+            acronym = "".join(w[0] for w in words[:5])
+            base = acronym if len(acronym) >= 3 else words[0][:8]
+        suffix = "B2B" if tipo == "B2B_SUPPLIER" else "GOB"
+        return f"{base}-{suffix}"
+
     async def create_tenant(self, current_user: dict, data: dict) -> dict:
         if current_user["rol"]["codigo"] != "PLATFORM_ADMIN":
             raise AuthDomainError(
                 "FORBIDDEN_INSUFFICIENT_ROLE",
-                "Solo el Administrador Global de la plataforma puede registrar nuevos Tenants.",
+                "Solo el Administrador General puede registrar nuevas organizaciones.",
                 status_code=403,
             )
 
-        codigo = str(data.get("codigo", "")).strip().upper()
         nombre = str(data.get("nombre", "")).strip()
         tipo = str(data.get("tipo", "GOV_INSTITUTION"))
         plan_tier = str(data.get("plan_tier", "B2G_BASIC"))
@@ -1005,12 +1085,15 @@ class AuthService:
         supplier_rpe = str(data["supplier_rpe"]).strip() if data.get("supplier_rpe") else None
         max_cat = 3 if plan_tier == "B2B_PYME" else 9999
 
-        if not codigo or not nombre:
-            raise AuthDomainError("VALIDATION_ERROR", "Código y nombre del tenant son obligatorios.", status_code=422)
+        if not nombre:
+            raise AuthDomainError("VALIDATION_ERROR", "El nombre de la organización es obligatorio.", status_code=422)
+
+        raw_code = str(data.get("codigo") or "").strip().upper()
+        codigo = raw_code if raw_code else self._generate_tenant_code(nombre, tipo)
 
         dup = (await self.db.execute(select(Tenant).where(Tenant.codigo == codigo))).scalar_one_or_none()
         if dup:
-            raise AuthDomainError("TENANT_DUPLICATE", "Ya existe una organización con ese código.", status_code=409)
+            codigo = f"{codigo}-{secrets.token_hex(2).upper()}" 
 
         t = Tenant(
             codigo=codigo,

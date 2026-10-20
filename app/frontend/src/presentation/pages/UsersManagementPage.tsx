@@ -21,6 +21,7 @@ import {
   useGenerateResetLink,
   useCreateTenant,
   useUpdateTenant,
+  useDirectorySearch,
 } from "../hooks/useAuthManagement"
 import { formatPlanLabel, formatTenantTypeLabel } from "../../domain/auth"
 
@@ -75,13 +76,19 @@ export default function UsersManagementPage() {
   })
 
   const [newTenant, setNewTenant] = useState({
-    codigo: "",
     nombre: "",
     tipo: "GOV_INSTITUTION",
     plan_tier: "B2G_PREMIUM",
     institution_id: "",
     supplier_rpe: "",
   })
+  const [catalogQuery, setCatalogQuery] = useState("")
+  const [manualEntry, setManualEntry] = useState(false)
+  const { data: directoryItems = [], isLoading: loadingDirectory } = useDirectorySearch(
+    newTenant.tipo,
+    catalogQuery,
+    showNewTenantModal && !manualEntry,
+  )
 
   const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault()
@@ -116,18 +123,25 @@ export default function UsersManagementPage() {
   const handleCreateTenant = async (e: FormEvent) => {
     e.preventDefault()
     setBannerMsg(null)
+    if (!newTenant.nombre.trim()) {
+      setBannerMsg({
+        type: "err",
+        text: "Selecciona una organización del catálogo o ingresa su nombre manualmente.",
+      })
+      return
+    }
     try {
       await createTenantMutation.mutateAsync({
-        codigo: newTenant.codigo,
-        nombre: newTenant.nombre,
+        nombre: newTenant.nombre.trim(),
         tipo: newTenant.tipo,
         plan_tier: newTenant.plan_tier,
         institution_id: newTenant.institution_id ? Number(newTenant.institution_id) : null,
         supplier_rpe: newTenant.supplier_rpe || null,
       })
       setShowNewTenantModal(false)
+      setCatalogQuery("")
+      setManualEntry(false)
       setNewTenant({
-        codigo: "",
         nombre: "",
         tipo: "GOV_INSTITUTION",
         plan_tier: "B2G_PREMIUM",
@@ -625,27 +639,38 @@ export default function UsersManagementPage() {
 
       {showNewTenantModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
-            <h2 className="font-display text-lg font-bold text-on-surface">
-              Registrar Nueva Organización Suscriptora
-            </h2>
-            <form onSubmit={handleCreateTenant} className="space-y-3 text-xs">
+          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[34rem] w-full p-6 shadow-2xl space-y-4">
+            <div>
+              <h2 className="font-display text-lg font-bold text-on-surface">
+                Registrar Nueva Organización Suscriptora
+              </h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Selecciona la institución o proveedor desde el catálogo de contrataciones públicas o regístrala manualmente si es nueva.
+              </p>
+            </div>
+            <form onSubmit={handleCreateTenant} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Código Único (ej. MISPAS-B2G)</label>
-                  <input
-                    type="text"
-                    required
-                    value={newTenant.codigo}
-                    onChange={(e) => setNewTenant({ ...newTenant, codigo: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono uppercase"
-                  />
-                </div>
                 <div>
                   <label className="block font-semibold mb-1">Segmento</label>
                   <select
                     value={newTenant.tipo}
-                    onChange={(e) => setNewTenant({ ...newTenant, tipo: e.target.value })}
+                    onChange={(e) => {
+                      const nextTipo = e.target.value
+                      const defaultPlan =
+                        nextTipo === "B2B_SUPPLIER"
+                          ? "B2B_CORPORATE"
+                          : nextTipo === "GOV_OVERSIGHT"
+                            ? "B2G_ENTERPRISE"
+                            : "B2G_PREMIUM"
+                      setNewTenant({
+                        nombre: "",
+                        tipo: nextTipo,
+                        plan_tier: defaultPlan,
+                        institution_id: "",
+                        supplier_rpe: "",
+                      })
+                      setCatalogQuery("")
+                    }}
                     className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
                   >
                     <option value="GOV_INSTITUTION">Institución Pública (Ministerio / Dirección)</option>
@@ -653,65 +678,201 @@ export default function UsersManagementPage() {
                     <option value="B2B_SUPPLIER">Empresa Proveedora del Estado</option>
                   </select>
                 </div>
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Nombre de la Institución o Empresa</label>
-                <input
-                  type="text"
-                  required
-                  value={newTenant.nombre}
-                  onChange={(e) => setNewTenant({ ...newTenant, nombre: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Plan de Servicio</label>
-                <select
-                  value={newTenant.plan_tier}
-                  onChange={(e) => setNewTenant({ ...newTenant, plan_tier: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono"
-                >
-                  <option value="B2G_BASIC">Institucional Básico</option>
-                  <option value="B2G_PREMIUM">Institucional Avanzado</option>
-                  <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
-                  <option value="B2B_PYME">Proveedor Pyme</option>
-                  <option value="B2B_CORPORATE">Proveedor Corporativo</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">
-                    Código de Institución Pública (Opcional, ej. 5=MOPC, 88=MINERD)
-                  </label>
-                  <input
-                    type="number"
-                    value={newTenant.institution_id}
-                    onChange={(e) => setNewTenant({ ...newTenant, institution_id: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Registro de Proveedor del Estado — RPE (Opcional)</label>
-                  <input
-                    type="text"
-                    value={newTenant.supplier_rpe}
-                    onChange={(e) => setNewTenant({ ...newTenant, supplier_rpe: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono"
-                  />
+                  <label className="block font-semibold mb-1">Plan de Servicio</label>
+                  <select
+                    value={newTenant.plan_tier}
+                    onChange={(e) => setNewTenant({ ...newTenant, plan_tier: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
+                  >
+                    {newTenant.tipo === "B2B_SUPPLIER" ? (
+                      <>
+                        <option value="B2B_PYME">Proveedor Pyme</option>
+                        <option value="B2B_CORPORATE">Proveedor Corporativo</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="B2G_BASIC">Institucional Básico</option>
+                        <option value="B2G_PREMIUM">Institucional Avanzado</option>
+                        <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
+                      </>
+                    )}
+                  </select>
                 </div>
               </div>
+
+              {!manualEntry ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-semibold">
+                      {newTenant.tipo === "B2B_SUPPLIER"
+                        ? "Buscar Proveedor en el Registro Nacional (por nombre, RPE o RNC)"
+                        : "Buscar Institución en el Catálogo Oficial DGCP"}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualEntry(true)
+                        setNewTenant({
+                          ...newTenant,
+                          nombre: catalogQuery,
+                          institution_id: "",
+                          supplier_rpe: "",
+                        })
+                      }}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      ¿No aparece? Ingresar manualmente
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={catalogQuery}
+                      onChange={(e) => setCatalogQuery(e.target.value)}
+                      placeholder={
+                        newTenant.tipo === "B2B_SUPPLIER"
+                          ? "Ej. Constructora, Distribuidora, RPE 132993..."
+                          : "Ej. Ministerio de Salud, Aduanas, Educación..."
+                      }
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
+                    />
+                  </div>
+
+                  {newTenant.nombre && (
+                    <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Organización seleccionada del catálogo
+                        </p>
+                        <p className="text-xs font-bold text-on-surface truncate mt-0.5">
+                          {newTenant.nombre}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewTenant({ ...newTenant, nombre: "", institution_id: "", supplier_rpe: "" })
+                        }
+                        className="text-[11px] font-semibold text-primary hover:underline shrink-0 cursor-pointer"
+                      >
+                        Cambiar
+                      </button>
+                    </div>
+                  )}
+
+                  {!newTenant.nombre && (
+                    <div className="max-h-44 overflow-y-auto rounded-xl border border-outline-variant/30 bg-surface-container-low divide-y divide-outline-variant/15">
+                      {loadingDirectory ? (
+                        <p className="p-3 text-center text-on-surface-variant">
+                          Consultando catálogo oficial...
+                        </p>
+                      ) : directoryItems.length === 0 ? (
+                        <div className="p-3 text-center space-y-1.5">
+                          <p className="text-on-surface-variant">
+                            No se encontraron coincidencias en el catálogo histórico.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setManualEntry(true)
+                              setNewTenant({ ...newTenant, nombre: catalogQuery })
+                            }}
+                            className="text-primary font-semibold hover:underline cursor-pointer"
+                          >
+                            Registrar "{catalogQuery || "nueva organización"}" manualmente →
+                          </button>
+                        </div>
+                      ) : (
+                        directoryItems.map((item) => (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() =>
+                              setNewTenant({
+                                ...newTenant,
+                                nombre: item.nombre,
+                                institution_id: item.institution_id ? String(item.institution_id) : "",
+                                supplier_rpe: item.supplier_rpe || "",
+                              })
+                            }
+                            className="w-full px-3 py-2 text-left hover:bg-surface-container-high transition-colors flex items-center justify-between gap-2 cursor-pointer"
+                          >
+                            <span className="font-medium text-on-surface truncate">{item.nombre}</span>
+                            <span className="font-mono text-[10px] text-on-surface-variant shrink-0">
+                              {item.identificador}
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3 p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                      Registro Manual de Organización Nueva
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualEntry(false)
+                        setNewTenant({ ...newTenant, nombre: "", institution_id: "", supplier_rpe: "" })
+                      }}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      ← Volver al buscador del catálogo
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">
+                      Nombre de la Institución o Empresa
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newTenant.nombre}
+                      onChange={(e) => setNewTenant({ ...newTenant, nombre: e.target.value })}
+                      placeholder="Ej. Ministerio o Empresa S.R.L."
+                      className="w-full px-3 py-2 rounded-xl bg-surface border border-outline-variant/40"
+                    />
+                  </div>
+                  {newTenant.tipo === "B2B_SUPPLIER" && (
+                    <div>
+                      <label className="block font-semibold mb-1">
+                        RNC o Registro de Proveedor (RPE) — Opcional si está en trámite
+                      </label>
+                      <input
+                        type="text"
+                        value={newTenant.supplier_rpe}
+                        onChange={(e) => setNewTenant({ ...newTenant, supplier_rpe: e.target.value })}
+                        placeholder="Ej. 101-00000-1 o RPE"
+                        className="w-full px-3 py-2 rounded-xl bg-surface border border-outline-variant/40 font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-end gap-2 pt-3">
                 <button
                   type="button"
-                  onClick={() => setShowNewTenantModal(false)}
+                  onClick={() => {
+                    setShowNewTenantModal(false)
+                    setManualEntry(false)
+                    setCatalogQuery("")
+                  }}
                   className="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  disabled={createTenantMutation.isPending}
-                  className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold cursor-pointer"
+                  disabled={createTenantMutation.isPending || !newTenant.nombre.trim()}
+                  className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold disabled:opacity-50 cursor-pointer"
                 >
                   {createTenantMutation.isPending ? "Guardando..." : "Crear Organización"}
                 </button>

@@ -51,7 +51,7 @@ class UpdateUserRequest(BaseModel):
 
 
 class CreateTenantRequest(BaseModel):
-    codigo: str = Field(..., min_length=2)
+    codigo: str | None = None
     nombre: str = Field(..., min_length=3)
     tipo: str = "GOV_INSTITUTION"
     plan_tier: str = "B2G_BASIC"
@@ -208,6 +208,16 @@ async def manual_reset_link_endpoint(
         return ApiResponse(data=data)
     except AuthDomainError as exc:
         _raise_http(exc)
+
+
+@router.get("/tenants/directory-search", response_model=ApiResponse[list[dict]])
+async def directory_search_endpoint(
+    tipo: str = "GOV_INSTITUTION",
+    q: str = "",
+    service: AuthService = Depends(get_auth_service),
+) -> ApiResponse[list[dict]]:
+    data = await service.search_directory(tipo=tipo, q=q)
+    return ApiResponse(data=data)
 
 
 @router.get("/tenants", response_model=ApiResponse[list[dict]])

@@ -105,11 +105,33 @@ export function useGenerateResetLink() {
   })
 }
 
+export interface DirectoryCatalogItem {
+  key: string
+  nombre: string
+  identificador: string
+  institution_id: number | null
+  supplier_rpe: string | null
+}
+
+export function useDirectorySearch(tipo: string, q: string, enabled = true) {
+  return useQuery({
+    queryKey: ["directory-search", tipo, q],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: DirectoryCatalogItem[] }>(
+        "/tenants/directory-search",
+        { params: { tipo, q } },
+      )
+      return data.data
+    },
+    enabled,
+  })
+}
+
 export function useCreateTenant() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (payload: {
-      codigo: string
+      codigo?: string
       nombre: string
       tipo: string
       plan_tier: string
