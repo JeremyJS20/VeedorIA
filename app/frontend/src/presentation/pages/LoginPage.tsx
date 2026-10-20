@@ -6,29 +6,29 @@ import { useAuth } from "../context/AuthContext"
 
 const DEMO_TENANT_ACCOUNTS = [
   {
-    label: "Admin Global (NexoDigital)",
+    label: "Administración General (NexoDigital)",
     email: "admin@veedoria.gob.do",
-    scope: "Alcance Nacional + Admin SaaS",
+    scope: "Cobertura Nacional · Gestión de Organizaciones",
   },
   {
-    label: "Ente Rector (DGCP / Contraloría)",
+    label: "Órgano Rector (DGCP / Contraloría)",
     email: "auditor@dgcp.gob.do",
-    scope: "Alcance Nacional Transversal",
+    scope: "Cobertura Nacional Transversal",
   },
   {
     label: "Ministerio de Obras Públicas (MOPC)",
     email: "auditor@mopc.gob.do",
-    scope: "Aislado a MOPC (ID #5)",
+    scope: "Cobertura Institucional MOPC",
   },
   {
     label: "Ministerio de Educación (MINERD)",
     email: "auditor@minerd.gob.do",
-    scope: "Aislado a MINERD (ID #88)",
+    scope: "Cobertura Institucional MINERD",
   },
   {
     label: "Proveedor del Estado (C & S Tianmu Corp)",
     email: "proveedor@constructora.do",
-    scope: "RPE 132993 · Inteligencia B2B",
+    scope: "RPE 132993 · Inteligencia de Mercado",
   },
 ]
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
             onClick={() => setShowDemoAccounts(!showDemoAccounts)}
             className="w-full px-4 py-3 flex items-center justify-between text-left text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
           >
-            <span>Cuentas de prueba Multi-Tenant (Clave: VeedorIA2026!)</span>
+            <span>Cuentas institucionales de demostración</span>
             <ChevronDown
               className={`w-4 h-4 transition-transform ${showDemoAccounts ? "rotate-180" : ""}`}
             />

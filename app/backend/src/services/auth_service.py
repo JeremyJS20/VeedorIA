@@ -53,7 +53,7 @@ SAA_PLANS_CATALOG = [
         "alcance": "Institucional + IA Forense",
         "capacidades": [
             "Todo lo del Plan B2G Básico",
-            "Motor IA Isolation Forest para sobreprecios unitarios",
+            "Detección estadística avanzada de sobreprecios unitarios",
             "Grafos relacionales de colusión (4 señales)",
         ],
     },
@@ -94,7 +94,7 @@ SAA_PLANS_CATALOG = [
         "nombre": "NexoDigital Platform Governance",
         "alcance": "Global Multi-Tenant",
         "capacidades": [
-            "Administración global de Tenants, Planes SaaS, Roles y Usuarios",
+            "Administración general de organizaciones suscriptoras, planes, roles y usuarios",
             "Control de sincronización OCDS y calibración IA",
         ],
     },
@@ -160,7 +160,7 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
         Role(
             codigo="PLATFORM_ADMIN",
             nombre="Administrador Global (NexoDigital)",
-            descripcion="Gobierno global de la plataforma, tenants, planes SaaS, usuarios y motores IA.",
+            descripcion="Gobierno general de la plataforma, organizaciones suscriptoras, planes y usuarios.",
             es_sistema=True,
             estado="ACTIVO",
         ),
@@ -195,7 +195,7 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
     perms_data = [
         Permission(codigo="ANOMALY_READ", modulo="AUDITORIA", plan_minimo="ALL", descripcion="Visualizar bandeja de hallazgos y métricas de auditoría"),
         Permission(codigo="FRAGMENTATION_VIEW", modulo="AUDITORIA", plan_minimo="B2G_BASIC", descripcion="Analizar alertas de fraccionamiento y línea de tiempo institucional"),
-        Permission(codigo="PRICE_AI_VIEW", modulo="AUDITORIA", plan_minimo="B2G_PREMIUM", descripcion="Inspeccionar modelos Isolation Forest de sobreprecios unitarios"),
+        Permission(codigo="PRICE_AI_VIEW", modulo="AUDITORIA", plan_minimo="B2G_PREMIUM", descripcion="Inspeccionar análisis estadístico de sobreprecios unitarios"),
         Permission(codigo="COLLUSION_VIEW", modulo="AUDITORIA", plan_minimo="B2G_PREMIUM", descripcion="Explorar grafos relacionales de colusión entre oferentes"),
         Permission(codigo="ANOMALY_REVIEW", modulo="AUDITORIA", plan_minimo="B2G_BASIC", descripcion="Emitir dictámenes de confirmación o descarte motivado"),
         Permission(codigo="PROCESS_READ", modulo="PROCESOS", plan_minimo="ALL", descripcion="Consultar expedientes OCDS, contratos e ítems adjudicados"),
@@ -204,8 +204,8 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
         Permission(codigo="SYNC_TRIGGER", modulo="PROCESOS", plan_minimo="PLATFORM_GLOBAL", descripcion="Ejecutar sincronización ETL contra la API abierta de la DGCP"),
         Permission(codigo="B2B_ANALYTICS", modulo="PROVEEDORES", plan_minimo="B2B_PYME", descripcion="Acceder a inteligencia de precios UNSPSC e historial de proveedor"),
         Permission(codigo="USER_ADMIN", modulo="SEGURIDAD", plan_minimo="ALL", descripcion="Gestionar cuentas de usuarios, bloqueos y enlaces de recuperación"),
-        Permission(codigo="TENANT_MANAGE", modulo="SEGURIDAD", plan_minimo="PLATFORM_GLOBAL", descripcion="Crear organizaciones (Tenants) y administrar planes SaaS"),
-        Permission(codigo="ROLE_VIEW", modulo="SEGURIDAD", plan_minimo="ALL", descripcion="Consultar catálogo de roles, permisos y matriz de planes SaaS"),
+        Permission(codigo="TENANT_MANAGE", modulo="SEGURIDAD", plan_minimo="PLATFORM_GLOBAL", descripcion="Registrar organizaciones suscriptoras y administrar planes de servicio"),
+        Permission(codigo="ROLE_VIEW", modulo="SEGURIDAD", plan_minimo="ALL", descripcion="Consultar catálogo de roles, permisos y matriz de planes de servicio"),
     ]
     for p in perms_data:
         db.add(p)

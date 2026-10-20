@@ -2,6 +2,11 @@ import { useState, type FormEvent } from "react"
 import { Shield, Building2, KeyRound, CheckCircle2, AlertCircle, UserCheck } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 import { useChangePassword } from "../hooks/useAuthManagement"
+import {
+  formatPlanLabel,
+  formatTenantTypeLabel,
+  formatPermissionLabel,
+} from "../../domain/auth"
 
 export default function UserProfilePage() {
   const { user } = useAuth()
@@ -42,11 +47,13 @@ export default function UserProfilePage() {
     <div className="p-6 sm:p-8 max-w-[72rem] mx-auto space-y-6">
       <div>
         <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
-          Identidad y Seguridad Multi-Tenant
+          Identidad y Seguridad Institucional
         </span>
-        <h1 className="font-display text-2xl font-bold text-on-surface mt-1">Mi Perfil Institucional</h1>
+        <h1 className="font-display text-2xl font-bold text-on-surface mt-1">
+          Mi Perfil Institucional
+        </h1>
         <p className="text-xs text-on-surface-variant mt-1">
-          Información de tu cuenta, organización SaaS asignada, permisos efectivos RBAC y gestión de contraseña.
+          Información de tu cuenta, entidad adscrita, permisos de acceso y gestión de contraseña.
         </p>
       </div>
 
@@ -77,16 +84,12 @@ export default function UserProfilePage() {
                 <span className="text-on-surface-variant block mb-1">Estado de Cuenta</span>
                 <span className="font-semibold text-green-600 dark:text-green-400">{user.estado}</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/20">
-                <span className="text-on-surface-variant block mb-1">Rol RBAC Asignado</span>
+              <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/20 sm:col-span-2">
+                <span className="text-on-surface-variant block mb-1">Rol Institucional Asignado</span>
                 <div className="flex items-center gap-1.5 font-semibold text-primary">
                   <UserCheck className="w-4 h-4" />
                   <span>{user.rol.nombre}</span>
                 </div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/20">
-                <span className="text-on-surface-variant block mb-1">Código de Rol</span>
-                <span className="font-mono font-bold text-on-surface">{user.rol.codigo}</span>
               </div>
             </div>
           </div>
@@ -97,11 +100,11 @@ export default function UserProfilePage() {
                 <div className="flex items-center gap-2.5">
                   <Building2 className="w-5 h-5 text-primary" />
                   <h3 className="font-display text-sm font-bold text-on-surface">
-                    Organización Suscriptora (Tenant SaaS)
+                    Entidad u Organización Adscrita
                   </h3>
                 </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                  {user.tenant.plan_tier}
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                  {formatPlanLabel(user.tenant.plan_tier)}
                 </span>
               </div>
 
@@ -111,19 +114,19 @@ export default function UserProfilePage() {
                   <span className="font-bold text-on-surface mt-0.5 block">{user.tenant.nombre}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-surface-container-low">
-                  <span className="text-on-surface-variant block">Código de Tenant / Segmento</span>
-                  <span className="font-mono font-semibold text-on-surface mt-0.5 block">
-                    {user.tenant.codigo} · {user.tenant.tipo}
+                  <span className="text-on-surface-variant block">Tipo de Organización</span>
+                  <span className="font-semibold text-on-surface mt-0.5 block">
+                    {formatTenantTypeLabel(user.tenant.tipo)}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-surface-container-low sm:col-span-2">
-                  <span className="text-on-surface-variant block">Alcance de Aislamiento de Datos</span>
+                  <span className="text-on-surface-variant block">Alcance de Consulta y Auditoría</span>
                   <span className="font-semibold text-on-surface mt-0.5 block">
                     {user.tenant.tipo === "GOV_INSTITUTION"
-                      ? `Aislamiento Institucional Estricto (Institution ID #${user.tenant.institution_id})`
+                      ? `Cobertura exclusiva para procesos de ${user.tenant.nombre}`
                       : user.tenant.tipo === "B2B_SUPPLIER"
-                        ? `Entorno Empresarial Proveedor (RPE #${user.tenant.supplier_rpe})`
-                        : "Alcance Transversal Nacional (Todas las Unidades de Compra del Estado)"}
+                        ? `Entorno empresarial para proveedor registrado (RPE #${user.tenant.supplier_rpe})`
+                        : "Cobertura transversal nacional sobre todas las unidades de compra del Estado"}
                   </span>
                 </div>
               </div>
@@ -134,16 +137,16 @@ export default function UserProfilePage() {
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
               <h3 className="font-display text-sm font-bold text-on-surface">
-                Permisos Efectivos en tu Sesión ({user.permisos.length})
+                Autorizaciones Habilitadas en tu Cuenta ({user.permisos.length})
               </h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {user.permisos.map((perm) => (
                 <span
                   key={perm}
-                  className="text-xs font-mono px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface"
+                  className="text-xs font-medium px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-on-surface"
                 >
-                  {perm}
+                  {formatPermissionLabel(perm)}
                 </span>
               ))}
             </div>
@@ -157,7 +160,7 @@ export default function UserProfilePage() {
               <div>
                 <h3 className="font-display text-sm font-bold text-on-surface">Cambiar Contraseña</h3>
                 <p className="text-xs text-on-surface-variant">
-                  Actualiza tu clave con hash seguro bcrypt.
+                  Actualiza tu clave de acceso institucional.
                 </p>
               </div>
             </div>

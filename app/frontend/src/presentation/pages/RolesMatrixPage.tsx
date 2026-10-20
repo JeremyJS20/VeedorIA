@@ -1,5 +1,6 @@
 import { ShieldCheck, Check, Minus, Layers, Building2 } from "lucide-react"
 import { useRolesMatrix } from "../hooks/useAuthManagement"
+import { formatPlanLabel, formatPermissionLabel } from "../../domain/auth"
 
 export default function RolesMatrixPage() {
   const { data, isLoading, error } = useRolesMatrix()
@@ -7,7 +8,7 @@ export default function RolesMatrixPage() {
   if (isLoading) {
     return (
       <div className="p-8 text-sm font-mono text-on-surface-variant">
-        Cargando matriz relacional de roles, permisos y planes SaaS...
+        Cargando catálogo de roles, permisos y planes de servicio...
       </div>
     )
   }
@@ -15,7 +16,7 @@ export default function RolesMatrixPage() {
   if (error || !data) {
     return (
       <div className="p-8 text-sm text-error">
-        No fue posible cargar la matriz de roles: {error instanceof Error ? error.message : "Error"}
+        No fue posible cargar el catálogo de roles: {error instanceof Error ? error.message : "Error"}
       </div>
     )
   }
@@ -24,13 +25,13 @@ export default function RolesMatrixPage() {
     <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-8">
       <div>
         <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
-          Gobernanza y Seguridad Relacional
+          Gobernanza y Control de Acceso
         </span>
         <h1 className="font-display text-2xl font-bold text-on-surface mt-1">
-          Matriz de Roles RBAC y Planes Multi-Tenant SaaS
+          Catálogo de Roles y Planes de Servicio
         </h1>
         <p className="text-xs text-on-surface-variant mt-1">
-          Estructura relacional de permisos por rol (PostgreSQL) combinada con los alcances del modelo de negocio B2G y B2B.
+          Estructura de autorizaciones por perfil institucional combinada con los alcances de suscripción para entidades públicas y proveedores.
         </p>
       </div>
 
@@ -42,8 +43,8 @@ export default function RolesMatrixPage() {
           >
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                  {role.codigo}
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                  Rol Institucional
                 </span>
                 <ShieldCheck className="w-4 h-4 text-primary" />
               </div>
@@ -53,9 +54,9 @@ export default function RolesMatrixPage() {
               </p>
             </div>
             <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between text-xs">
-              <span className="text-on-surface-variant">Permisos / Usuarios</span>
+              <span className="text-on-surface-variant">Autorizaciones / Usuarios</span>
               <span className="font-mono font-bold text-on-surface">
-                {role.permisos.length} perms · {role.usuarios_count} usr
+                {role.permisos.length} permisos · {role.usuarios_count} usuarios
               </span>
             </div>
           </div>
@@ -67,10 +68,10 @@ export default function RolesMatrixPage() {
           <Layers className="w-5 h-5 text-primary" />
           <div>
             <h2 className="font-display text-sm font-bold text-on-surface">
-              Matriz Cruzada de Permisos Granulares ({data.permisos.length} permisos × {data.roles.length} roles)
+              Matriz de Autorizaciones por Rol ({data.permisos.length} permisos × {data.roles.length} roles)
             </h2>
             <p className="text-xs text-on-surface-variant">
-              Validados por dependencia de seguridad en cada endpoint del backend FastAPI.
+              Permisos verificados automáticamente en cada operación de la plataforma.
             </p>
           </div>
         </div>
@@ -79,13 +80,13 @@ export default function RolesMatrixPage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant/20 text-on-surface-variant uppercase font-mono text-[11px]">
-                <th className="py-3 px-4">Código de Permiso</th>
+                <th className="py-3 px-4">Autorización</th>
                 <th className="py-3 px-4">Módulo</th>
-                <th className="py-3 px-4">Plan Mínimo</th>
+                <th className="py-3 px-4">Plan Requerido</th>
                 <th className="py-3 px-4">Descripción Funcional</th>
                 {data.roles.map((r) => (
                   <th key={r.id} className="py-3 px-4 text-center">
-                    {r.codigo}
+                    {r.nombre}
                   </th>
                 ))}
               </tr>
@@ -93,9 +94,13 @@ export default function RolesMatrixPage() {
             <tbody className="divide-y divide-outline-variant/15">
               {data.permisos.map((perm) => (
                 <tr key={perm.id} className="hover:bg-surface-container-low/50 transition-colors">
-                  <td className="py-2.5 px-4 font-mono font-semibold text-primary">{perm.codigo}</td>
+                  <td className="py-2.5 px-4 font-semibold text-primary">
+                    {formatPermissionLabel(perm.codigo)}
+                  </td>
                   <td className="py-2.5 px-4 font-semibold text-on-surface">{perm.modulo}</td>
-                  <td className="py-2.5 px-4 font-mono text-[11px]">{perm.plan_minimo}</td>
+                  <td className="py-2.5 px-4 text-[11px] font-medium">
+                    {formatPlanLabel(perm.plan_minimo)}
+                  </td>
                   <td className="py-2.5 px-4 text-on-surface-variant">{perm.descripcion}</td>
                   {data.roles.map((r) => {
                     const hasPerm = r.permisos.includes(perm.codigo)
@@ -125,10 +130,10 @@ export default function RolesMatrixPage() {
           <Building2 className="w-5 h-5 text-primary" />
           <div>
             <h2 className="font-display text-sm font-bold text-on-surface">
-              Catálogo de Planes de Suscripción Multi-Tenant (Modelo de Negocio B2G / B2B)
+              Catálogo de Planes de Suscripción Institucional y Empresarial
             </h2>
             <p className="text-xs text-on-surface-variant">
-              Determina el aislamiento institucional (`institution_id`), alcance por proveedor RPE y capacidades habilitadas.
+              Define la cobertura por institución pública o proveedor del Estado y las capacidades habilitadas.
             </p>
           </div>
         </div>
@@ -141,9 +146,15 @@ export default function RolesMatrixPage() {
             >
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono text-xs font-bold text-primary">{tier.codigo}</span>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-surface border border-outline-variant/30 text-on-surface-variant">
-                    {tier.segmento}
+                  <span className="text-xs font-bold text-primary">
+                    {formatPlanLabel(tier.codigo)}
+                  </span>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-surface border border-outline-variant/30 text-on-surface-variant">
+                    {tier.segmento === "B2G"
+                      ? "Sector Público"
+                      : tier.segmento === "B2B"
+                        ? "Proveedores"
+                        : "Administración"}
                   </span>
                 </div>
                 <p className="text-xs font-bold text-on-surface">{tier.nombre}</p>

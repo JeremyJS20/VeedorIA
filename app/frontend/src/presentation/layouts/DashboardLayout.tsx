@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
+import { formatPlanLabel } from "../../domain/auth"
 import isotipoLight from "../../assets/veedoria_isotipo_light.webp"
 import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
 
@@ -69,8 +70,8 @@ export default function DashboardLayout() {
 
   const pageTitleMap: Record<string, string> = {
     "/app/bandeja": "Bandeja Forense de Anomalías",
-    "/app/usuarios": "Usuarios y Organizaciones (Tenants)",
-    "/app/roles": "Matriz de Roles RBAC y Planes SaaS",
+    "/app/usuarios": "Usuarios y Organizaciones",
+    "/app/roles": "Roles y Planes de Servicio",
     "/app/perfil": "Mi Perfil Institucional",
   }
 
@@ -78,7 +79,7 @@ export default function DashboardLayout() {
 
   const scopeLabel =
     user?.tenant?.tipo === "GOV_INSTITUTION"
-      ? `Alcance Institucional (ID #${user.tenant.institution_id})`
+      ? "Alcance Institucional"
       : user?.tenant?.tipo === "B2B_SUPPLIER"
         ? `Alcance Proveedor (RPE #${user.tenant.supplier_rpe})`
         : "Alcance Nacional Transversal"
@@ -129,7 +130,7 @@ export default function DashboardLayout() {
           <div className="mx-3 mb-4 p-3 rounded-xl bg-surface border border-outline-variant/30 shadow-xs">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary">
-                {user.tenant.plan_tier}
+                {formatPlanLabel(user.tenant.plan_tier)}
               </span>
               <span className="text-[10px] font-mono text-on-surface-variant">
                 {user.tenant.codigo}
@@ -245,7 +246,7 @@ export default function DashboardLayout() {
                     )}
                     <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
                     {!collapsed && (
-                      <span className="text-[13px] flex-1 truncate">Usuarios y Tenants</span>
+                      <span className="text-[13px] flex-1 truncate">Usuarios y Organizaciones</span>
                     )}
                   </>
                 )}
@@ -272,7 +273,7 @@ export default function DashboardLayout() {
                     )}
                     <ShieldCheck className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
                     {!collapsed && (
-                      <span className="text-[13px] flex-1 truncate">Roles y Planes SaaS</span>
+                      <span className="text-[13px] flex-1 truncate">Roles y Planes</span>
                     )}
                   </>
                 )}
@@ -395,7 +396,7 @@ export default function DashboardLayout() {
                 <Building2 className="w-4 h-4 text-primary shrink-0" />
                 <span className="font-semibold text-on-surface">{user.tenant.nombre}</span>
                 <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
-                  {user.tenant.plan_tier}
+                  {formatPlanLabel(user.tenant.plan_tier)}
                 </span>
                 <span className="text-[11px] text-on-surface-variant border-l border-outline-variant/30 pl-2">
                   {scopeLabel}

@@ -8,6 +8,53 @@ export type PlanTier =
   | "B2B_PYME"
   | "B2B_CORPORATE"
 
+export const PLAN_LABELS: Record<string, string> = {
+  ALL: "Todos los Planes",
+  PLATFORM_GLOBAL: "Gobierno de Plataforma",
+  B2G_BASIC: "Institucional Básico",
+  B2G_PREMIUM: "Institucional Avanzado",
+  B2G_ENTERPRISE: "Ente Rector Nacional",
+  B2B_PYME: "Proveedor Pyme",
+  B2B_CORPORATE: "Proveedor Corporativo",
+}
+
+export const TENANT_TYPE_LABELS: Record<string, string> = {
+  PLATFORM: "Administración Central",
+  GOV_OVERSIGHT: "Órgano Rector",
+  GOV_INSTITUTION: "Institución Pública",
+  B2B_SUPPLIER: "Empresa Proveedora",
+}
+
+export const PERMISSION_LABELS: Record<string, string> = {
+  ANOMALY_READ: "Consulta de Hallazgos",
+  FRAGMENTATION_VIEW: "Análisis de Fraccionamiento",
+  PRICE_AI_VIEW: "Análisis de Sobreprecios",
+  COLLUSION_VIEW: "Red de Colusión entre Oferentes",
+  ANOMALY_REVIEW: "Emisión de Dictámenes",
+  PROCESS_READ: "Consulta de Expedientes",
+  DETECTION_RUN: "Ejecución de Auditoría",
+  AI_CALIBRATE: "Calibración de Umbrales",
+  SYNC_TRIGGER: "Sincronización de Datos DGCP",
+  B2B_ANALYTICS: "Inteligencia de Mercado",
+  USER_ADMIN: "Administración de Usuarios",
+  TENANT_MANAGE: "Gestión de Organizaciones",
+  ROLE_VIEW: "Consulta de Roles y Permisos",
+}
+
+export function formatPlanLabel(plan: string | undefined | null): string {
+  if (!plan) return "Institucional"
+  return PLAN_LABELS[plan] || plan
+}
+
+export function formatTenantTypeLabel(tipo: string | undefined | null): string {
+  if (!tipo) return "Institución"
+  return TENANT_TYPE_LABELS[tipo] || tipo
+}
+
+export function formatPermissionLabel(code: string): string {
+  return PERMISSION_LABELS[code] || code
+}
+
 export interface AuthRoleInfo {
   id: number
   codigo: string

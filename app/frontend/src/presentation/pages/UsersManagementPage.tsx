@@ -22,6 +22,7 @@ import {
   useCreateTenant,
   useUpdateTenant,
 } from "../hooks/useAuthManagement"
+import { formatPlanLabel, formatTenantTypeLabel } from "../../domain/auth"
 
 export default function UsersManagementPage() {
   const [buscar, setBuscar] = useState("")
@@ -133,7 +134,7 @@ export default function UsersManagementPage() {
         institution_id: "",
         supplier_rpe: "",
       })
-      setBannerMsg({ type: "ok", text: "Organización (Tenant SaaS) registrada correctamente." })
+      setBannerMsg({ type: "ok", text: "Organización suscriptora registrada correctamente." })
     } catch (err) {
       setBannerMsg({
         type: "err",
@@ -187,13 +188,13 @@ export default function UsersManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
-            Administración Multi-Tenant SaaS
+            Administración Institucional
           </span>
           <h1 className="font-display text-2xl font-bold text-on-surface mt-1">
             Gestión de Usuarios y Organizaciones Suscriptoras
           </h1>
           <p className="text-xs text-on-surface-variant mt-1">
-            Administra usuarios institucionales, asigna roles RBAC, desbloquea cuentas y gestiona los Tenants B2G / B2B.
+            Administra cuentas institucionales, asigna perfiles de acceso, desbloquea usuarios y gestiona las organizaciones suscriptoras.
           </p>
         </div>
 
@@ -204,7 +205,7 @@ export default function UsersManagementPage() {
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface border border-outline-variant/40 text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
           >
             <PlusCircle className="w-4 h-4 text-primary" />
-            Nueva Organización (Tenant)
+            Nueva Organización
           </button>
           <button
             type="button"
@@ -276,7 +277,7 @@ export default function UsersManagementPage() {
           }`}
         >
           <Building2 className="w-4 h-4" />
-          Organizaciones / Tenants SaaS ({tenants.length})
+          Organizaciones Suscriptoras ({tenants.length})
         </button>
       </div>
 
@@ -300,7 +301,7 @@ export default function UsersManagementPage() {
               className="px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs text-on-surface"
               aria-label="Filtrar por Organización Tenant"
             >
-              <option value="">Todas las Organizaciones (Tenants)</option>
+              <option value="">Todas las Organizaciones</option>
               {tenants.map((t) => (
                 <option key={t.id} value={String(t.id)}>
                   {t.codigo} — {t.nombre}
@@ -314,7 +315,7 @@ export default function UsersManagementPage() {
               className="px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs text-on-surface"
               aria-label="Filtrar por Rol"
             >
-              <option value="">Todos los Roles RBAC</option>
+              <option value="">Todos los Roles</option>
               {rolesData?.roles.map((r) => (
                 <option key={r.id} value={String(r.id)}>
                   {r.nombre}
@@ -344,8 +345,8 @@ export default function UsersManagementPage() {
                   <thead>
                     <tr className="bg-surface-container-low border-b border-outline-variant/20 text-on-surface-variant uppercase font-mono text-[11px]">
                       <th className="py-3 px-4">Usuario / Correo</th>
-                      <th className="py-3 px-4">Organización (Tenant SaaS)</th>
-                      <th className="py-3 px-4">Rol RBAC</th>
+                      <th className="py-3 px-4">Organización</th>
+                      <th className="py-3 px-4">Rol Asignado</th>
                       <th className="py-3 px-4">Cargo</th>
                       <th className="py-3 px-4">Estado</th>
                       <th className="py-3 px-4 text-right">Acciones Administrativas</th>
@@ -362,7 +363,7 @@ export default function UsersManagementPage() {
                           <div>
                             <span className="font-semibold text-on-surface block">{u.tenant.nombre}</span>
                             <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary inline-block mt-0.5">
-                              {u.tenant.codigo} · {u.tenant.plan_tier}
+                              {formatPlanLabel(u.tenant.plan_tier)}
                             </span>
                           </div>
                         </td>
@@ -456,8 +457,8 @@ export default function UsersManagementPage() {
                   <tr className="bg-surface-container-low border-b border-outline-variant/20 text-on-surface-variant uppercase font-mono text-[11px]">
                     <th className="py-3 px-4">Código / Organización</th>
                     <th className="py-3 px-4">Segmento</th>
-                    <th className="py-3 px-4">Plan SaaS</th>
-                    <th className="py-3 px-4">Vínculo de Aislamiento</th>
+                    <th className="py-3 px-4">Plan de Servicio</th>
+                    <th className="py-3 px-4">Alcance de Datos</th>
                     <th className="py-3 px-4">Usuarios Activos</th>
                     <th className="py-3 px-4">Estado</th>
                   </tr>
@@ -469,7 +470,7 @@ export default function UsersManagementPage() {
                         <span className="font-mono font-bold text-primary block">{t.codigo}</span>
                         <span className="font-semibold text-on-surface">{t.nombre}</span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px]">{t.tipo}</td>
+                      <td className="py-3 px-4 text-xs">{formatTenantTypeLabel(t.tipo)}</td>
                       <td className="py-3 px-4">
                         <select
                           value={t.plan_tier}
@@ -482,17 +483,17 @@ export default function UsersManagementPage() {
                           aria-label={`Cambiar plan SaaS de ${t.nombre}`}
                           className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-mono font-bold text-primary"
                         >
-                          <option value="PLATFORM_GLOBAL">PLATFORM_GLOBAL</option>
-                          <option value="B2G_BASIC">B2G_BASIC</option>
-                          <option value="B2G_PREMIUM">B2G_PREMIUM</option>
-                          <option value="B2G_ENTERPRISE">B2G_ENTERPRISE</option>
-                          <option value="B2B_PYME">B2B_PYME</option>
-                          <option value="B2B_CORPORATE">B2B_CORPORATE</option>
+                          <option value="PLATFORM_GLOBAL">Gobierno de Plataforma</option>
+                          <option value="B2G_BASIC">Institucional Básico</option>
+                          <option value="B2G_PREMIUM">Institucional Avanzado</option>
+                          <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
+                          <option value="B2B_PYME">Proveedor Pyme</option>
+                          <option value="B2B_CORPORATE">Proveedor Corporativo</option>
                         </select>
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px]">
                         {t.institution_id
-                          ? `Institution ID #${t.institution_id}`
+                          ? `Cobertura Institucional #${t.institution_id}`
                           : t.supplier_rpe
                             ? `Proveedor RPE #${t.supplier_rpe}`
                             : "Alcance Nacional (Global)"}
@@ -553,7 +554,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Organización (Tenant SaaS)</label>
+                  <label className="block font-semibold mb-1">Organización</label>
                   <select
                     value={newUser.tenant_id || String(tenants[0]?.id ?? "")}
                     onChange={(e) => setNewUser({ ...newUser, tenant_id: e.target.value })}
@@ -567,7 +568,7 @@ export default function UsersManagementPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Rol RBAC</label>
+                  <label className="block font-semibold mb-1">Rol Asignado</label>
                   <select
                     value={newUser.role_id || String(rolesData?.roles[0]?.id ?? "")}
                     onChange={(e) => setNewUser({ ...newUser, role_id: e.target.value })}
@@ -626,7 +627,7 @@ export default function UsersManagementPage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
             <h2 className="font-display text-lg font-bold text-on-surface">
-              Registrar Nueva Organización Suscriptora (Tenant)
+              Registrar Nueva Organización Suscriptora
             </h2>
             <form onSubmit={handleCreateTenant} className="space-y-3 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -647,9 +648,9 @@ export default function UsersManagementPage() {
                     onChange={(e) => setNewTenant({ ...newTenant, tipo: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
                   >
-                    <option value="GOV_INSTITUTION">GOV_INSTITUTION (Ministerio B2G)</option>
-                    <option value="GOV_OVERSIGHT">GOV_OVERSIGHT (Ente Rector)</option>
-                    <option value="B2B_SUPPLIER">B2B_SUPPLIER (Proveedor B2B)</option>
+                    <option value="GOV_INSTITUTION">Institución Pública (Ministerio / Dirección)</option>
+                    <option value="GOV_OVERSIGHT">Órgano Rector / Control</option>
+                    <option value="B2B_SUPPLIER">Empresa Proveedora del Estado</option>
                   </select>
                 </div>
               </div>
@@ -664,23 +665,23 @@ export default function UsersManagementPage() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-1">Plan de Suscripción SaaS</label>
+                <label className="block font-semibold mb-1">Plan de Servicio</label>
                 <select
                   value={newTenant.plan_tier}
                   onChange={(e) => setNewTenant({ ...newTenant, plan_tier: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono"
                 >
-                  <option value="B2G_BASIC">B2G_BASIC</option>
-                  <option value="B2G_PREMIUM">B2G_PREMIUM</option>
-                  <option value="B2G_ENTERPRISE">B2G_ENTERPRISE</option>
-                  <option value="B2B_PYME">B2B_PYME</option>
-                  <option value="B2B_CORPORATE">B2B_CORPORATE</option>
+                  <option value="B2G_BASIC">Institucional Básico</option>
+                  <option value="B2G_PREMIUM">Institucional Avanzado</option>
+                  <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
+                  <option value="B2B_PYME">Proveedor Pyme</option>
+                  <option value="B2B_CORPORATE">Proveedor Corporativo</option>
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">
-                    Institution ID (Opcional, ej. 5=MOPC, 88=MINERD)
+                    Código de Institución Pública (Opcional, ej. 5=MOPC, 88=MINERD)
                   </label>
                   <input
                     type="number"
@@ -690,7 +691,7 @@ export default function UsersManagementPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">RPE Proveedor (Opcional B2B)</label>
+                  <label className="block font-semibold mb-1">Registro de Proveedor del Estado — RPE (Opcional)</label>
                   <input
                     type="text"
                     value={newTenant.supplier_rpe}

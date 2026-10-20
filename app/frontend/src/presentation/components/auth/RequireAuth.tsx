@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom"
 import { ShieldAlert } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
+import { formatPermissionLabel } from "../../../domain/auth"
 import type { ReactNode } from "react"
 
 interface RequireAuthProps {
@@ -32,11 +33,11 @@ export default function RequireAuth({ children, permission }: RequireAuthProps) 
           <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-on-surface mb-2">
-            Acceso Restringido por Rol / Alcance Multi-Tenant
+          <h2 className="font-display text-lg font-bold text-on-surface mb-2">
+            Acceso Restringido por Nivel de Autorización
           </h2>
           <p className="text-sm text-on-surface-variant mb-4">
-            Tu cuenta no posee el permiso requerido (<code className="font-mono text-xs px-1.5 py-0.5 rounded bg-surface-container">{permission}</code>) para acceder a este módulo.
+            Tu cuenta no cuenta con la autorización necesaria (<span className="font-semibold text-on-surface">{formatPermissionLabel(permission)}</span>) para consultar esta sección.
           </p>
         </div>
       </div>
