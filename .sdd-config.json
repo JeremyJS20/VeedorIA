@@ -39,10 +39,14 @@
   "deployment": {
     "_comment": "Filled by project-scanner or solution-designer. services = stack files to load (empty = load all).",
     "pattern": "monorepo-split",
-    "provider": "",
+    "provider": "vercel,render",
     "app": "docker",
     "infra": "docker-compose",
-    "services": []
+    "services": [
+      "veedoria-api",
+      "veedoria-worker",
+      "veedoria-redis"
+    ]
   },
   "migration": {
     "_comment": "Only for project_type=migration. Empty for new/existing.",

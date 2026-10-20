@@ -93,24 +93,24 @@ with Diagram(
     citizens = Users("Ciudadanos / ONGs\nPortal Público")
     subscribers = Users("Auditores B2G /\nProveedores B2B")
 
-    with Cluster("FRONTEND PLATFORM  ·  SPA", graph_attr=CLUSTER_VERCEL):
+    with Cluster("VERCEL PLATFORM  ·  Frontend SPA", graph_attr=CLUSTER_VERCEL):
         with Cluster("Edge CDN", graph_attr=CLUSTER_INNER):
             cdn = Cloudflare("TLS / HTTPS\nEdge Routing")
         with Cluster("Frontend SPA", graph_attr=CLUSTER_INNER):
             spa = React("React 19 + Vite 8\nTypeScript 6 + D3.js")
 
-    with Cluster("RENDER / DOCKER CLOUD  ·  VeedorIA Backend", graph_attr=CLUSTER_ONPREM):
+    with Cluster("RENDER CLOUD (render.yaml)  ·  VeedorIA Backend", graph_attr=CLUSTER_ONPREM):
         with Cluster("Security & Multi-Tenant Layer", graph_attr=CLUSTER_SECURITY):
             rate_limit = Firewall("CORS + Rate Limit\nSecurity Headers")
             jwt_rbac = Vault("JWT + RBAC (13 perms)\nTenant Isolation B2G/B2B")
 
         with Cluster("API & Services Layer", graph_attr=CLUSTER_INNER):
-            api = FastAPI("FastAPI + Uvicorn\n/api/public · /api/auth\n/api/anomalies · /api/sync")
+            api = FastAPI("veedoria-api (FastAPI)\n/api/public · /api/auth\n/api/anomalies · /api/sync")
             ml_engine = Python("Motor Detección (4)\nIsolation Forest + MAD\nNetworkX + RapidFuzz")
 
         with Cluster("Async Ingestion & Background Jobs", graph_attr=CLUSTER_INNER):
-            redis_q = Redis("Redis 7\nCola arq + Cache")
-            worker = Docker("arq Worker + APScheduler\nSync OCDS & Auto-Tuning")
+            redis_q = Redis("veedoria-redis (Redis 7)\nCola arq + Cache")
+            worker = Docker("veedoria-worker (arq)\nAPScheduler + Sync OCDS")
 
         with Cluster("Persistence Layer", graph_attr=CLUSTER_INNER):
             pg = PostgreSQL("PostgreSQL 16\n15 Tablas (OCDS + RBAC)\nSQLAlchemy 2.0 Async")
