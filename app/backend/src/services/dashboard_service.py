@@ -12,30 +12,39 @@ from src.services.auth_service import PLAN_CLEAN_LABELS
 
 UNSPSC_FAMILY_LABELS: dict[str, str] = {
     "8210": "Servicios de Publicidad, Comunicación Institucional y Medios",
-    "9010": "Servicios de Alimentación, Catering y Eventos Oficiales",
     "7210": "Servicios de Mantenimiento y Reparación de Edificaciones",
+    "1411": "Productos de Papel, Impresos e Insumos Institucionales",
+    "4111": "Instrumentos de Medición, Observación y Ensayo de Laboratorio",
+    "5114": "Medicamentos del Sistema Nervioso Central y Neurológicos",
+    "4713": "Suministros de Limpieza, Higiene y Saneamiento Institucional",
+    "5020": "Bebidas, Lácteos y Suministros Alimenticios Escolares",
+    "5110": "Medicamentos Antiinfecciosos y Tratamientos Clínicos",
+    "9010": "Servicios de Alimentación, Catering y Comedores Oficiales",
+    "4412": "Suministros, Papelería y Material de Oficina",
+    "4410": "Maquinaria, Equipos y Suministros de Impresión de Oficina",
+    "4214": "Suministros Clínicos y Quirúrgicos para Pacientes",
+    "7818": "Servicios de Mantenimiento y Reparación de Flotillas Vehiculares",
+    "5215": "Utensilios, Menaje y Suministros de Cocina Institucional",
+    "3120": "Adhesivos, Selladores e Insumos de Ferretería Industrial",
+    "3912": "Equipos, Suministros y Componentes Eléctricos",
+    "4110": "Equipos Científicos y Suministros para Laboratorio Clínico",
+    "4231": "Productos para el Cuidado de Heridas y Vendajes Médicos",
+    "5013": "Productos Lácteos, Huevos y Derivados Alimenticios",
+    "2711": "Herramientas Manuales y Equipamiento de Mantenimiento",
     "7212": "Construcción de Edificaciones Públicas y No Residenciales",
     "7214": "Servicios de Construcción Pesada, Carreteras y Obras Viales",
-    "7215": "Servicios Especializados de Construcción y Acondicionamiento",
     "4321": "Equipos Informáticos, Computadoras y Servidores",
     "4323": "Licencias de Software y Plataformas Tecnológicas",
-    "4412": "Suministros, Papelería y Material de Oficina",
     "1510": "Combustibles, Lubricantes y Derivados Energéticos",
     "2510": "Vehículos de Transporte Oficial y Flotillas",
     "3011": "Cemento, Hormigón, Asfalto y Materiales de Obra Gris",
-    "4214": "Suministros Clínicos y Quirúrgicos Desechables",
     "4218": "Equipos y Suministros de Examen y Monitoreo Médico",
     "4229": "Instrumentos y Productos Quirúrgicos Especializados",
-    "4713": "Suministros de Limpieza, Higiene y Saneamiento Institucional",
     "5019": "Alimentos Preparados, Raciones y Provisiones Institucionales",
-    "5020": "Bebidas, Lácteos y Suministros Alimenticios Escolares",
-    "5110": "Medicamentos Antiinfecciosos y Tratamientos Clínicos",
     "5310": "Indumentaria Institucional, Uniformes y Calzado de Trabajo",
     "5610": "Mobiliario de Oficina y Equipamiento Escolar",
     "7811": "Servicios de Transporte de Pasajeros y Logística Institucional",
     "8011": "Servicios Profesionales y Consultoría Institucional",
-    "8014": "Servicios de Comercialización, Distribución y Logística",
-    "8111": "Servicios de Ingeniería Informática y Soporte Tecnológico",
 }
 
 
@@ -247,7 +256,7 @@ class DashboardService:
         own_amount = float(own_row[1] or 0.0) if own_row else 0.0
 
         fam_stmt = (
-            select(func.coalesce(Item.unspsc_family, func.substr(Item.unspsc_code, 1, 4)).label("fam"))
+            select(func.substr(func.coalesce(Item.unspsc_family, Item.unspsc_code), 1, 4).label("fam"))
             .join(Contract, Item.contract_id == Contract.id)
             .where(Contract.rpe == str(supplier_rpe))
             .group_by("fam")
@@ -256,9 +265,9 @@ class DashboardService:
         fam_rows = [str(r[0]) for r in (await self.db.execute(fam_stmt)).all() if r[0]]
         if not fam_rows:
             default_fam_stmt = (
-                select(Item.unspsc_family)
+                select(func.substr(Item.unspsc_family, 1, 4))
                 .where(Item.unspsc_family.is_not(None))
-                .group_by(Item.unspsc_family)
+                .group_by(func.substr(Item.unspsc_family, 1, 4))
                 .order_by(desc(func.count(Item.id)))
                 .limit(3)
             )
@@ -267,7 +276,7 @@ class DashboardService:
         sector_contracts_stmt = (
             select(func.count(func.distinct(Contract.id)))
             .join(Item, Item.contract_id == Contract.id)
-            .where(Item.unspsc_family.in_(fam_rows))
+            .where(func.substr(func.coalesce(Item.unspsc_family, Item.unspsc_code), 1, 4).in_(fam_rows))
         ) if fam_rows else select(func.count(Contract.id))
         sector_contracts = int((await self.db.execute(sector_contracts_stmt)).scalar() or 0)
 
@@ -489,7 +498,7 @@ class DashboardService:
         plan_tier = tenant.get("plan_tier", "B2B_CORPORATE")
         is_pyme = plan_tier == "B2B_PYME"
 
-        fam_expr = func.coalesce(Item.unspsc_family, func.substr(Item.unspsc_code, 1, 4))
+        fam_expr = func.substr(func.coalesce(Item.unspsc_family, Item.unspsc_code), 1, 4)
         top_fams_stmt = (
             select(
                 fam_expr.label("family_code"),
