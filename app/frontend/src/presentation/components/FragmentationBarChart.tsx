@@ -24,7 +24,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
 
     const width = svgRef.current.clientWidth
     const height = fullscreen ? svgRef.current.clientHeight : 200
-    const margin = { top: 16, right: 16, bottom: 48, left: 64 }
+    const margin = { top: 20, right: 16, bottom: 52, left: 68 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
 
@@ -45,7 +45,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
 
     const yAxis = d3.axisLeft(yScale)
       .ticks(5)
-      .tickFormat((d) => `RD$${d3.format(",.0f")(d)}`)
+      .tickFormat((d) => Number(d) >= 1_000_000 ? `RD$${(Number(d) / 1_000_000).toFixed(Number(d) % 1_000_000 === 0 ? 0 : 1)}M` : Number(d) >= 1_000 ? `RD$${(Number(d) / 1_000).toFixed(0)}k` : `RD$${d}`)
       .tickSize(-innerWidth)
 
     g.append("g")

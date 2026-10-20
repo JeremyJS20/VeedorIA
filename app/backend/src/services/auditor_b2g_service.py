@@ -61,6 +61,15 @@ DEFAULT_DETECTION_CONFIG: dict[str, dict] = {
         "step": 5.0,
         "description": "Porcentaje mínimo por encima de la mediana del sector para levantar una alerta preventiva de precio.",
     },
+    "FRAGMENTATION_THRESHOLD_DOP": {
+        "value": 6500000.0,
+        "label": "Umbral Base de Fraccionamiento General (DOP)",
+        "category": "UMBRALES",
+        "min": 1000000.0,
+        "max": 25000000.0,
+        "step": 500000.0,
+        "description": "Monto acumulado de referencia en DOP cuando el proceso no especifica una modalidad particular (CD, CM, CP, PEIN, PEEN).",
+    },
     "FRAGMENTATION_WINDOW_DAYS": {
         "value": 30.0,
         "label": "Ventana Temporal de Fraccionamiento (Días)",

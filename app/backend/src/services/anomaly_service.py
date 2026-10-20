@@ -35,6 +35,23 @@ ml_executor = ProcessPoolExecutor(max_workers=2)
 
 FRAGMENTATION_WINDOW_DAYS = 30
 FRAGMENTATION_THRESHOLD_DOP = 8_000_000
+
+
+def _resolve_dgcp_modality_threshold(process_code: str | None, fallback_dop: float = 8_000_000.0) -> tuple[float, str]:
+    code = (process_code or "").upper()
+    if "-CD-" in code:
+        return 250_000.0, "Compra por Debajo del Umbral (CD)"
+    if "-CM-" in code or "-DAF-CM-" in code:
+        return 1_650_000.0, "Compra Menor (CM)"
+    if "-CP-" in code:
+        return 6_500_000.0, "Comparación de Precios (CP)"
+    if "-PEIN-" in code or "-PEPU-" in code:
+        return 8_000_000.0, "Procedimiento de Excepción / Arrendamiento (PEIN/PEPU)"
+    if "-LPN-" in code or "-LPI-" in code:
+        return 15_000_000.0, "Licitación Pública (LPN)"
+    if "-PEEN-" in code or "-PEEX-" in code or "-PEUR-" in code:
+        return 25_000_000.0, "Excepción por Emergencia / Urgencia (PEEN/PEUR)"
+    return float(fallback_dop), "Umbral General de Licitación (DGCP)"
 IF_MIN_ITEMS = 30
 IF_CONTAMINATION = 0.02
 IF_N_ESTIMATORS = 100
@@ -793,12 +810,10 @@ class AnomalyService:
         await self._ensure_config()
         market_prices: list[dict] = []
         recent_contracts: list[dict] = []
-        frag_threshold = float(self._get_param("fragmentation_threshold_dop", FRAGMENTATION_THRESHOLD_DOP))
+        base_cfg_thresh = float(self._get_param("fragmentation_threshold_dop", self._get_param("FRAGMENTATION_THRESHOLD_DOP", FRAGMENTATION_THRESHOLD_DOP)))
+        frag_threshold, _modality_label = _resolve_dgcp_modality_threshold(process_code, base_cfg_thresh)
         frag_combined: float | None = None
         if anomaly.description and anomaly.anomaly_type == "FRAGMENTATION":
-            m_thresh = re.search(r"umbral de licitaci[oó]n\s*\(DOP \$([0-9,]+\.[0-9]{2})\)", anomaly.description)
-            if m_thresh:
-                frag_threshold = float(m_thresh.group(1).replace(",", ""))
             m_sum = re.search(r"suman DOP \$([0-9,]+\.[0-9]{2})", anomaly.description)
             if m_sum:
                 frag_combined = float(m_sum.group(1).replace(",", ""))
@@ -881,7 +896,7 @@ class AnomalyService:
 
             alert_codes: set[str] = set()
             if anomaly.description:
-                m_codes = re.search(r"contratos\s+(\S+)\s+y\s+(\S+)", anomaly.description)
+                m_codes = re.search(r"contratos\s+(.+?)\s+y\s+(.+?)\s+suman", anomaly.description)
                 if m_codes:
                     alert_codes.add(m_codes.group(1))
                     alert_codes.add(m_codes.group(2))
