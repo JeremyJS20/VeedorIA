@@ -159,6 +159,7 @@ flowchart LR
 - **Behavior**: Consulta las anomalías dictaminadas (`status IN ('CONFIRMED', 'DISMISSED')`) acotadas a la institución del auditor junto con su registro en `AuditLog` (`reviewed_by`, `reviewed_at`, `reviewer_notes`, `dismissal_reason`).
 
 ### 5. `GET /api/auditor/reports/summary` (`REQ-005` — Pantalla `#19`)
+- **Legal Framework Integration**: Tanto `AnomalyDrawer.tsx` como `ComplianceReportsPage.tsx` incorporan la matriz de fundamentación jurídica bajo la **Ley 340-06 y Reglamento 416-23** (Art. 3 Eficiencia/Transparencia y normativa CBS/UNSPSC para sobreprecio y mala catalogación; Arts. 16, 17 y Reg. 416-23 Art. 62 para fraccionamiento; Arts. 11, 14, 66 Párrafo II y Ley 42-08 Art. 5 para colusión).
 - **Query Params**: `?period=ALL|2025|2026`
 - **Auth**: JWT (`ANOMALY_READ`, segmento B2G / Plataforma).
 - **Behavior**: Devuelve el consolidado ejecutivo para el **Informe Institucional de Cumplimiento y Veeduría** (métricas de procesos fiscalizados, distribución de hallazgos por categoría, listado de contratos observados y dictámenes emitidos) listo para previsualización, impresión y exportación directa a CSV en el cliente.

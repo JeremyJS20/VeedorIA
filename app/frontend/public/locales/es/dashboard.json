@@ -90,7 +90,7 @@
     "dismiss_reason_placeholder": "Seleccione un motivo...",
     "dismiss_reason_FALSE_POSITIVE": "Falso positivo — precio correcto",
     "dismiss_reason_DUPLICATE": "Duplicado de otra alerta",
-    "dismiss_reason_DATA_ERROR": "Error en datos de origen",
+    "dismiss_reason_DATA_ERROR": "Error de datos / Mala catalogación CBS-UNSPSC (Art. 3 Ley 340-06)",
     "dismiss_reason_ALREADY_KNOWN": "Ya conocido / investigado",
     "dismiss_reason_required": "Debe seleccionar un motivo para descartar"
   }

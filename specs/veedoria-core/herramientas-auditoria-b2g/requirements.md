@@ -70,7 +70,7 @@ Este módulo implementa las **6 pantallas especializadas del Paquete 2 (Consola 
 **Error Handling:** Si aún no existen resoluciones en el filtro seleccionado, muestra el resumen en cero y enlace directo hacia `/app/bandeja` para dictaminar alertas pendientes.
 
 **Acceptance Criteria:**
-- [x] Given alertas previamente confirmadas o descartadas, when el auditor accede a `/app/resoluciones`, then visualiza los contadores de *Total Dictaminadas*, *Hallazgos Confirmados* y *Alertas Descartadas* junto con la tabla histórica filtrable por dictamen y tipo de hallazgo.
+- [x] Given alertas previamente confirmadas o descartadas, when el auditor accede a `/app/resoluciones` o al inspector `AnomalyDrawer`, then visualiza los contadores de *Total Dictaminadas*, *Hallazgos Confirmados* y *Alertas Descartadas* junto con la tipificación legal aplicable de la **Ley 340-06 y Reglamento 416-23** (incluyendo detección de agrupamiento indebido de catálogo CBS/UNSPSC conforme al Art. 3 de Transparencia).
 
 **Priority:** Must
 **Dependencies:** None

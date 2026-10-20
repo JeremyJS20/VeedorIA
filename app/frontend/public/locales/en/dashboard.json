@@ -90,7 +90,7 @@
     "dismiss_reason_placeholder": "Select a reason...",
     "dismiss_reason_FALSE_POSITIVE": "False positive — price is correct",
     "dismiss_reason_DUPLICATE": "Duplicate of another alert",
-    "dismiss_reason_DATA_ERROR": "Source data error",
+    "dismiss_reason_DATA_ERROR": "Data error / Improper UNSPSC catalogation (Law 340-06 Art. 3)",
     "dismiss_reason_ALREADY_KNOWN": "Already known / investigated",
     "dismiss_reason_required": "You must select a reason to dismiss"
   }

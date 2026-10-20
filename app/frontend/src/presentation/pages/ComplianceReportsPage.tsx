@@ -267,6 +267,38 @@ export default function ComplianceReportsPage() {
         </div>
       </div>
 
+      {/* Matriz de Tipificación Legal (Ley 340-06 y Reglamento 416-23) */}
+      <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 space-y-4 shadow-xs">
+        <div>
+          <h2 className="font-display text-base font-bold text-on-surface">
+            Sustento Normativo y Tipificación Legal (Ley 340-06 · Decreto 416-23)
+          </h2>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            Base jurídica aplicable a los hallazgos preventivos y faltas administrativas de catalogación incluidos en el presente informe
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
+            <p className="font-bold text-on-surface">1. Sobreprecio y Catalogación CBS/UNSPSC</p>
+            <p className="text-on-surface-variant leading-relaxed">
+              <strong>Art. 3 (Eficiencia y Transparencia — Ley 340-06)</strong> y <strong>Arts. 96–97 del Reg. 416-23</strong>. Incluye tanto desviaciones de precio unitario frente a la mediana del SECP como el agrupamiento indebido de artículos heterogéneos bajo un mismo código UNSPSC genérico.
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
+            <p className="font-bold text-on-surface">2. Fraccionamiento de Contrataciones</p>
+            <p className="text-on-surface-variant leading-relaxed">
+              <strong>Arts. 16 y 17 Párrafo I de la Ley 340-06</strong> y <strong>Art. 62 del Reg. 416-23</strong>. Prohibición expresa de subdividir adquisiciones de bienes o servicios similares para eludir los umbrales de selección del PACC, sancionable conforme a los <strong>Arts. 65 y 66</strong>.
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
+            <p className="font-bold text-on-surface">3. Colusión y Prácticas Concertadas</p>
+            <p className="text-on-surface-variant leading-relaxed">
+              <strong>Art. 3 nums. 2 y 6</strong>, <strong>Arts. 11 y 14</strong> y <strong>Art. 66 Párrafo II de la Ley 340-06</strong> (inhabilitación del RPE de 1 a 5 años), en concordancia con el <strong>Art. 5 de la Ley 42-08</strong> sobre coordinación de posturas entre oferentes vinculados.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Central Table Section */}
       <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant/25 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">

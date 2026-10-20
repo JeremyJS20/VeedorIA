@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Maximize2, X } from "lucide-react"
+import { Maximize2, X, Scale, AlertTriangle } from "lucide-react"
 import { toast } from "@heroui/react"
 import type { Anomaly, DismissalReason } from "../../domain/anomaly"
 import { useAnomalyContext, useReviewAnomaly } from "../hooks/useAnomalyQueries"
@@ -156,6 +156,55 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
             )}
           </div>
         )}
+
+        {/* Marco Normativo Aplicable (Ley 340-06 y Reglamento 416-23) */}
+        <div className="bg-surface-container-low/70 rounded-xl p-4 border border-outline-variant/30 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Scale className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+              Marco Normativo Aplicable · Ley 340-06 y Reg. 416-23
+            </p>
+          </div>
+          {isPriceAnomaly && (
+            <div className="space-y-2 text-xs text-on-surface-variant leading-relaxed">
+              <p>
+                <strong className="text-on-surface">Sobreprecio / Razonabilidad:</strong> Posible vulneración del{" "}
+                <span className="font-semibold text-on-surface">Art. 3 (Principio de Eficiencia y Economía — Ley 340-06)</span> y{" "}
+                <span className="font-semibold text-on-surface">Arts. 96–97 del Reglamento 416-23</span> sobre estimación previa y estudio de precios de mercado en el SECP.
+              </p>
+              {marketPrices.filter((mp) => mp.contract_id === anomaly.contract_id).length > 1 && (
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="font-bold">Indicio de Agrupamiento Indebido CBS/UNSPSC:</strong> Este mismo contrato registra múltiples renglones bajo el mismo código UNSPSC con dispersión interna de precios. Si los bienes físicos son distintos, constituye una{" "}
+                    <span className="font-semibold">falta administrativa de catalogación (Art. 3 num. 3 Transparencia y Normativa CBS-DGCP)</span>; seleccione el motivo de descarte por catalogación para dejar constancia en el acta.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {isFragmentation && (
+            <div className="space-y-1.5 text-xs text-on-surface-variant leading-relaxed">
+              <p>
+                <strong className="text-on-surface">Prohibición de Fraccionamiento:</strong> Tipificado en los{" "}
+                <span className="font-semibold text-on-surface">Arts. 16 y 17 Párrafo I de la Ley 340-06</span> y{" "}
+                <span className="font-semibold text-on-surface">Art. 62 del Reglamento 416-23</span> (presunción de subdivisión de compras de la misma familia UNSPSC para eludir umbrales del PACC), sujeto al régimen sancionador de los{" "}
+                <span className="font-semibold text-on-surface">Arts. 65 y 66</span>.
+              </p>
+            </div>
+          )}
+          {isCollusion && (
+            <div className="space-y-1.5 text-xs text-on-surface-variant leading-relaxed">
+              <p>
+                <strong className="text-on-surface">Colusión y Libre Competencia:</strong> Tipificado en el{" "}
+                <span className="font-semibold text-on-surface">Art. 3 nums. 2 y 6</span>,{" "}
+                <span className="font-semibold text-on-surface">Arts. 11 y 14 (Prohibiciones por Vinculación / Beneficiario Final)</span> y{" "}
+                <span className="font-semibold text-on-surface">Art. 66 Párrafo II de la Ley 340-06</span> (inhabilitación del RPE de 1 a 5 años), en concordancia con el{" "}
+                <span className="font-semibold text-on-surface">Art. 5 de la Ley 42-08 (Defensa de la Competencia)</span>.
+              </p>
+            </div>
+          )}
+        </div>
 
         {ctxLoading && (
           <div className="space-y-4 animate-pulse">
