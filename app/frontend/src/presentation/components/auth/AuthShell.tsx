@@ -1,4 +1,4 @@
-import { type ReactNode } from "react"
+﻿import { type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { Shield } from "lucide-react"
 import Logo from "../Logo"
@@ -9,11 +9,21 @@ interface AuthShellProps {
   title: string
   subtitle: string
   icon?: ReactNode
+  maxWidthClass?: string
+  topSlot?: ReactNode
   children: ReactNode
   footer?: ReactNode
 }
 
-export default function AuthShell({ title, subtitle, icon, children, footer }: AuthShellProps) {
+export default function AuthShell({
+  title,
+  subtitle,
+  icon,
+  maxWidthClass = "max-w-[450px]",
+  topSlot,
+  children,
+  footer,
+}: AuthShellProps) {
   const navigate = useNavigate()
 
   return (
@@ -35,9 +45,11 @@ export default function AuthShell({ title, subtitle, icon, children, footer }: A
         </div>
       </header>
 
-      {/* Contenedor central (450px según login_register/design.md) */}
+      {/* Contenedor central (450px por defecto o 560px en pasos multi-columna) */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-6">
-        <div className="w-full max-w-[450px]">
+        <div className={`w-full ${maxWidthClass} transition-all`}>
+          {topSlot && <div className="mb-5">{topSlot}</div>}
+
           <div className="bg-surface-container-lowest dark:bg-surface-container-highest border border-outline-variant/40 rounded-2xl p-8 shadow-lg">
             <div className="text-center mb-6">
               <div className="w-11 h-11 rounded-xl bg-primary-container/50 text-primary flex items-center justify-center mx-auto mb-3.5">
