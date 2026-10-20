@@ -1,19 +1,16 @@
 ﻿import {
-  FileBarChart,
   Download,
   Printer,
-  ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
   Building2,
 } from "lucide-react"
 import { useComplianceReportSummary } from "../hooks/useAuditorB2G"
 
-function formatDopCompact(val: number): string {
-  if (val >= 1_000_000_000) return `RD$ ${(val / 1_000_000_000).toFixed(2)}B`
-  if (val >= 1_000_000) return `RD$ ${(val / 1_000_000).toFixed(2)}M`
-  if (val >= 1_000) return `RD$ ${(val / 1_000).toFixed(1)}K`
-  return `RD$ ${val.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
+function formatCompactDop(amount: number): string {
+  const v = amount || 0
+  if (v >= 1_000_000_000) return `RD$ ${(v / 1_000_000_000).toFixed(2)}B`
+  if (v >= 1_000_000) return `RD$ ${(v / 1_000_000).toFixed(2)}M`
+  if (v >= 1_000) return `RD$ ${(v / 1_000).toFixed(1)}K`
+  return `RD$ ${v.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
 }
 
 export default function ComplianceReportsPage() {
@@ -33,6 +30,7 @@ export default function ComplianceReportsPage() {
   }
   const breakdown = data?.breakdown_by_type || []
   const topFindings = data?.top_findings || []
+  const maxTypeAmount = Math.max(...breakdown.map((b) => b.amount), 1)
 
   const handleDownloadCsv = () => {
     if (!data) return
@@ -67,220 +65,259 @@ export default function ComplianceReportsPage() {
 
   return (
     <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface tracking-tight">
-            Reportes de Cumplimiento
+          <h1 className="font-display text-2xl font-bold text-on-surface">
+            Reportes Ejecutivos de Cumplimiento
           </h1>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Consolidado ejecutivo de fiscalización, distribución por tipología de hallazgo y exportación de actas.
+          <p className="text-xs text-on-surface-variant mt-1">
+            Consolidado institucional de fiscalización, distribución por tipología de hallazgo y emisión de actas.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             disabled={!data}
             onClick={handleDownloadCsv}
-            className="h-10 px-4 rounded-lg border border-outline-variant/40 bg-surface text-xs font-semibold text-on-surface hover:bg-surface-container-high flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer disabled:opacity-50"
           >
-            <Download className="w-3.5 h-3.5" />
-            Exportar CSV
+            <Download className="w-3.5 h-3.5 text-primary" />
+            <span>Exportar CSV</span>
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="h-10 px-4 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 flex items-center gap-2 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-95 transition-opacity shadow-xs cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5" />
-            Imprimir Acta Ejecutiva
+            <Printer className="w-4 h-4" />
+            <span>Imprimir Acta Ejecutiva</span>
           </button>
         </div>
       </div>
 
-      {/* Encabezado Formal de Acta */}
-      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-6 space-y-5">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-outline-variant/20">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-on-surface">
-                Acta Resumen de Veeduría y Control Preventivo
-              </h2>
-              <p className="text-xs text-on-surface-variant mt-0.5">
-                Entidad: <strong className="text-on-surface">{data?.organization_name || "—"}</strong> · Alcance:{" "}
-                <strong className="text-on-surface">{data?.scope_label || "—"}</strong>
-              </p>
-            </div>
-          </div>
-
-          <div className="text-xs text-on-surface-variant lg:text-right">
-            <div>
-              Emitido por: <strong className="text-on-surface">{data?.prepared_by || "—"}</strong>
-            </div>
-            <div className="font-mono mt-0.5">{data?.generated_at || "—"}</div>
+      {/* 4 KPI Cards matching OverviewDashboardPage */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Procesos y Contratos
+          </span>
+          <div className="mt-2.5 space-y-1">
+            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
+              {kpis.total_processes.toLocaleString("es-DO")} / {kpis.total_contracts.toLocaleString("es-DO")}
+            </p>
+            <p className="text-xs text-on-surface-variant">
+              Total contratado: {formatCompactDop(kpis.total_amount)}
+            </p>
           </div>
         </div>
 
-        {/* KPIs del Informe */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="bg-surface border border-outline-variant/25 rounded-xl p-4">
-            <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1.5">
-              <span>Procesos y Contratos</span>
-              <FileBarChart className="w-4 h-4 text-primary" />
-            </div>
-            <p className="text-xl font-bold font-mono text-on-surface">
-              {kpis.total_processes.toLocaleString("es-DO")} / {kpis.total_contracts.toLocaleString("es-DO")}
-            </p>
-            <p className="text-[11px] text-on-surface-variant mt-1">
-              Total contratado: {formatDopCompact(kpis.total_amount)}
-            </p>
-          </div>
-
-          <div className="bg-surface border border-outline-variant/25 rounded-xl p-4">
-            <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1.5">
-              <span>Hallazgos Detectados</span>
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-            </div>
-            <p className="text-xl font-bold font-mono text-on-surface">
+        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Hallazgos Detectados
+          </span>
+          <div className="mt-2.5 space-y-1">
+            <p className="font-mono text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
               {kpis.total_anomalies.toLocaleString("es-DO")} ({kpis.critical_count} críticos)
             </p>
-            <p className="text-[11px] text-on-surface-variant mt-1">
-              Exposición en revisión: {formatDopCompact(kpis.exposed_amount)}
+            <p className="text-xs text-on-surface-variant">
+              Exposición en revisión: {formatCompactDop(kpis.exposed_amount)}
             </p>
           </div>
+        </div>
 
-          <div className="bg-surface border border-outline-variant/25 rounded-xl p-4">
-            <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1.5">
-              <span>Dictámenes Emitidos</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
-            <p className="text-xl font-bold font-mono text-on-surface">
+        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Dictámenes Emitidos
+          </span>
+          <div className="mt-2.5 space-y-1">
+            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
               {kpis.confirmed_count} conf. · {kpis.dismissed_count} desest.
             </p>
-            <p className="text-[11px] text-on-surface-variant mt-1">
+            <p className="text-xs text-on-surface-variant">
               Pendientes de revisión: {kpis.pending_count}
             </p>
           </div>
+        </div>
 
-          <div className="bg-surface border border-outline-variant/25 rounded-xl p-4">
-            <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1.5">
-              <span>Tasa de Resolución</span>
-              <ShieldCheck className="w-4 h-4 text-primary" />
-            </div>
-            <p className="text-xl font-bold font-mono text-primary">
+        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Tasa de Resolución
+          </span>
+          <div className="mt-2.5 space-y-1">
+            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
               {kpis.resolution_rate_pct}%
             </p>
-            <p className="text-[11px] text-on-surface-variant mt-1">
+            <p className="text-xs text-on-surface-variant">
               Porcentaje de alertas dictaminadas
             </p>
           </div>
         </div>
       </div>
 
-      {/* Desglose por Tipología */}
-      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-outline-variant/20">
-          <h2 className="text-base font-bold text-on-surface">
-            Distribución por Tipología de Riesgo
-          </h2>
-          <p className="text-xs text-on-surface-variant mt-0.5">
-            Resumen cuantitativo de alertas agrupadas según la naturaleza de la señal preventiva.
-          </p>
+      {/* Two-Column Executive Acta & Breakdown matching MarketIntelligencePage */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Distribución por Tipología con barras */}
+        <div className="lg:col-span-7 bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 space-y-5 shadow-xs">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h2 className="font-display text-base font-bold text-on-surface">
+                Distribución por Tipología de Riesgo
+              </h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Volumen económico e incidencia de alertas según la naturaleza de la señal preventiva
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-mono font-semibold text-on-surface shrink-0">
+              {breakdown.length} categorías
+            </span>
+          </div>
+
+          {isLoading ? (
+            <div className="py-12 text-center font-mono text-xs text-on-surface-variant">
+              Generando consolidado por tipología...
+            </div>
+          ) : breakdown.length === 0 ? (
+            <div className="py-12 text-center text-xs text-on-surface-variant">
+              No existen hallazgos registrados en el alcance actual.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {breakdown.map((b) => {
+                const pct = Math.max(12, Math.round((b.amount / maxTypeAmount) * 100))
+                return (
+                  <div
+                    key={b.anomaly_type}
+                    className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-on-surface">{b.label}</span>
+                      <span className="font-mono font-bold text-primary">
+                        {formatCompactDop(b.amount)}
+                      </span>
+                    </div>
+                    <div className="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-mono text-on-surface-variant">
+                      <span>Total alertas: {b.count}</span>
+                      <span>
+                        Confirmadas: <strong className="text-red-600 dark:text-red-400">{b.confirmed}</strong> · Pendientes:{" "}
+                        <strong className="text-amber-600 dark:text-amber-400">{b.pending}</strong>
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container/50 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-4">Categoría de Hallazgo</th>
-                <th className="py-3 px-4 text-center">Alertas Totales</th>
-                <th className="py-3 px-4 text-center">Confirmadas</th>
-                <th className="py-3 px-4 text-center">Pendientes</th>
-                <th className="py-3 px-4 text-right">Monto Involucrado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/15 text-sm">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-on-surface-variant">
-                    Generando consolidado por tipología...
-                  </td>
-                </tr>
-              ) : breakdown.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-on-surface-variant">
-                    No existen hallazgos registrados en el alcance actual.
-                  </td>
-                </tr>
-              ) : (
-                breakdown.map((b) => (
-                  <tr key={b.anomaly_type} className="hover:bg-surface-container-high/40">
-                    <td className="py-3 px-4 font-semibold text-on-surface">{b.label}</td>
-                    <td className="py-3 px-4 text-center font-mono text-xs">{b.count}</td>
-                    <td className="py-3 px-4 text-center font-mono text-xs text-red-600 dark:text-red-400 font-semibold">
-                      {b.confirmed}
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono text-xs text-amber-600 dark:text-amber-400">
-                      {b.pending}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-on-surface">
-                      RD$ {b.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Right: Ficha Formal de Emisión del Acta */}
+        <div className="lg:col-span-5 bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 space-y-5 shadow-xs flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-outline-variant/25">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-display text-base font-bold text-on-surface">
+                  Datos de Emisión del Acta
+                </h2>
+                <p className="text-xs text-on-surface-variant">
+                  Certificación interna de veeduría preventiva
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between py-2 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Organización</span>
+                <span className="font-semibold text-on-surface text-right">
+                  {data?.organization_name || "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Cobertura Auditada</span>
+                <span className="font-semibold text-on-surface text-right">
+                  {data?.scope_label || "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-outline-variant/20">
+                <span className="text-on-surface-variant">Emitido por</span>
+                <span className="font-semibold text-on-surface text-right">
+                  {data?.prepared_by || "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-on-surface-variant">Fecha y Hora de Corte</span>
+                <span className="font-mono font-semibold text-primary">
+                  {data?.generated_at || "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs text-on-surface-variant leading-relaxed">
+            Este documento consolida los indicadores de control preventivo registrados hasta la fecha de corte y puede adjuntarse como respaldo en informes de auditoría interna.
+          </div>
         </div>
       </div>
 
-      {/* Principales Hallazgos Incluidos en el Acta */}
-      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-outline-variant/20">
-          <h2 className="text-base font-bold text-on-surface">
-            Anexo de Principales Hallazgos por Severidad
-          </h2>
-          <p className="text-xs text-on-surface-variant mt-0.5">
-            Expedientes prioritarios incluidos en la exportación oficial del informe.
-          </p>
+      {/* Central Table Section */}
+      <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-6 py-4 border-b border-outline-variant/25 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 className="font-display text-base font-bold text-on-surface">
+              Anexo de Principales Hallazgos por Severidad
+            </h2>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              Expedientes prioritarios incluidos en la exportación oficial del informe
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-mono font-semibold text-on-surface shrink-0">
+            Top {topFindings.length} casos
+          </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container/50 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-4">Código de Proceso</th>
-                <th className="py-3 px-4">Organismo</th>
-                <th className="py-3 px-4">Proveedor Adjudicatario</th>
-                <th className="py-3 px-4">Tipología</th>
-                <th className="py-3 px-4 text-center">Severidad</th>
-                <th className="py-3 px-4">Estado</th>
-                <th className="py-3 px-4 text-right">Monto</th>
+              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+                <th className="py-3 px-5">Código de Proceso</th>
+                <th className="py-3 px-5">Organismo</th>
+                <th className="py-3 px-5">Proveedor Adjudicatario</th>
+                <th className="py-3 px-5">Tipología</th>
+                <th className="py-3 px-5 text-center">Severidad</th>
+                <th className="py-3 px-5">Estado</th>
+                <th className="py-3 px-5 text-right">Monto</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/15 text-sm">
+            <tbody className="divide-y divide-outline-variant/20 text-xs">
               {topFindings.map((f) => (
-                <tr key={f.id} className="hover:bg-surface-container-high/40">
-                  <td className="py-3 px-4 font-mono text-xs font-semibold text-primary">
+                <tr key={f.id} className="hover:bg-surface-container-low/50 transition-colors">
+                  <td className="py-3.5 px-5 font-mono font-bold text-primary">
                     {f.process_code}
                   </td>
-                  <td className="py-3 px-4 text-xs text-on-surface-variant">
+                  <td className="py-3.5 px-5 text-on-surface-variant">
                     {f.institution_name}
                   </td>
-                  <td className="py-3 px-4 text-xs font-medium text-on-surface">
+                  <td className="py-3.5 px-5 font-semibold text-on-surface">
                     {f.supplier_name}
                   </td>
-                  <td className="py-3 px-4 text-xs text-on-surface-variant">
+                  <td className="py-3.5 px-5 text-on-surface-variant">
                     {f.anomaly_type_label}
                   </td>
-                  <td className="py-3 px-4 text-center font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                    {Math.round(f.severity * 100)}%
+                  <td className="py-3.5 px-5 text-center">
+                    <span className="px-2.5 py-0.5 rounded-lg font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
+                      {Math.round(f.severity * 100)}%
+                    </span>
                   </td>
-                  <td className="py-3 px-4 text-xs text-on-surface">{f.status_label}</td>
-                  <td className="py-3 px-4 text-right font-mono text-xs font-semibold text-on-surface">
+                  <td className="py-3.5 px-5 font-medium text-on-surface">{f.status_label}</td>
+                  <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface">
                     RD$ {f.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
                   </td>
                 </tr>

@@ -302,7 +302,7 @@ export default function UsersManagementPage() {
           <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {isPlatformAdmin ? "Organizaciones Vinculadas" : "C?digo de Invitaci?n"}
+                {isPlatformAdmin ? "Organizaciones Vinculadas" : "Código de Invitación"}
               </p>
               <p className="font-mono text-lg font-bold text-primary mt-1">
                 {isPlatformAdmin ? `${tenants.length} activas` : currentUser?.tenant?.codigo || "?"}
@@ -329,7 +329,7 @@ export default function UsersManagementPage() {
           <div className="bg-surface border border-outline-variant/30 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                Entidades P?blicas (B2G)
+                Entidades Públicas (B2G)
               </p>
               <p className="font-mono text-2xl font-bold text-primary mt-1">
                 {tenants.filter((t) => t.tipo === "GOV_INSTITUTION" || t.tipo === "GOV_OVERSIGHT").length}
