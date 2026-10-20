@@ -12,6 +12,7 @@ from src.infrastructure.database import engine, init_db
 from src.infrastructure.queue import close_arq_pool, get_arq_pool
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.auth_router import router as auth_router
+from src.presentation.routers.auditor_b2g_router import router as auditor_b2g_router
 from src.presentation.routers.dashboard_router import router as dashboard_router
 from src.services.auth_service import ensure_auth_seed
 from src.infrastructure.database import async_session_maker
@@ -127,6 +128,7 @@ app.include_router(anomaly_router, prefix="/api")
 app.include_router(public_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
+app.include_router(auditor_b2g_router, prefix="/api")
 
 
 @app.get("/", include_in_schema=False)

@@ -41,9 +41,9 @@ flowchart TD
   - `get_collusion_network(current_user, min_shared_processes)`: aplica bloqueo `locked: true` cuando `plan_tier == "B2G_BASIC"`; para planes habilitados construye los nodos y enlaces relacionales entre proveedores que co-participan o concentran adjudicaciones y alertas de colusión.
   - `get_detection_config(current_user)` y `update_detection_config(current_user, payload)`: lectura y calibración de los pesos y umbrales sobre `DetectionConfig` con registro en `AuditLog`.
 - **Acceptance criteria:**
-  - [ ] `list_institutional_processes` aísla correctamente por `institution_id` y soporta búsqueda y filtro de hallazgos.
-  - [ ] `get_collusion_network` devuelve `locked: true` en `B2G_BASIC` y el grafo relacional completo en `B2G_PREMIUM` / `B2G_ENTERPRISE` / `PLATFORM_GLOBAL`.
-  - [ ] `update_detection_config` persiste cambios en `DetectionConfig` y escribe en `AuditLog`.
+  - [x] `list_institutional_processes` aísla correctamente por `institution_id` y soporta búsqueda y filtro de hallazgos.
+  - [x] `get_collusion_network` devuelve `locked: true` en `B2G_BASIC` y el grafo relacional completo en `B2G_PREMIUM` / `B2G_ENTERPRISE` / `PLATFORM_GLOBAL`.
+  - [x] `update_detection_config` persiste cambios en `DetectionConfig` y escribe en `AuditLog`.
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/services/auditor_b2g_service.py`
 
@@ -53,7 +53,7 @@ flowchart TD
   - `get_compliance_report_summary(current_user, period)`: genera el resumen ejecutivo institucional, distribución por categoría de hallazgo y tabla exportable para CSV / impresión.
   - `list_integrations(current_user)`, `create_integration_key(current_user, payload)` y `revoke_integration_key(current_user, key_id)`: administra credenciales de interoperabilidad institucional con prefijo enmascarado y traza en `AuditLog`.
 - **Acceptance criteria:**
-  - [ ] Todos los endpoints bajo `/api/auditor/*` están protegidos por JWT y bloquean el acceso a cuentas del segmento `B2B_SUPPLIER` (`403`).
+  - [x] Todos los endpoints bajo `/api/auditor/*` están protegidos por JWT y bloquean el acceso a cuentas del segmento `B2B_SUPPLIER` (`403`).
 - **Dependencies:** Task 1.1
 - **Files to create/modify:** `app/backend/src/services/auditor_b2g_service.py`, `app/backend/src/presentation/routers/auditor_b2g_router.py`, `app/backend/src/presentation/dependencies.py`, `app/backend/src/presentation/main.py`
 

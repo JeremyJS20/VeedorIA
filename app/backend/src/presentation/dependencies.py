@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.infrastructure.dependencies import get_db
 from src.services.anomaly_service import AnomalyService
 from src.services.auth_service import AuthDomainError, AuthService
+from src.services.auditor_b2g_service import AuditorB2GService
 from src.services.dashboard_service import DashboardService
 from src.services.public_portal_service import PublicPortalService
 
@@ -19,6 +20,10 @@ def get_public_portal_service(db: AsyncSession = Depends(get_db)) -> PublicPorta
 
 def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     return AuthService(db=db)
+
+
+def get_auditor_b2g_service(db: AsyncSession = Depends(get_db)) -> AuditorB2GService:
+    return AuditorB2GService(db=db)
 
 
 def get_dashboard_service(db: AsyncSession = Depends(get_db)) -> DashboardService:

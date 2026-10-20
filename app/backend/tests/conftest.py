@@ -9,6 +9,7 @@ from sqlmodel import SQLModel
 from src.infrastructure.dependencies import get_db
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.auth_router import router as auth_router
+from src.presentation.routers.auditor_b2g_router import router as auditor_b2g_router
 from src.presentation.routers.dashboard_router import router as dashboard_router
 from src.presentation.routers.public_router import router as public_router
 from src.presentation.routers.sync import router as sync_router
@@ -46,6 +47,7 @@ async def client(db_session: AsyncSession) -> AsyncClient:
     test_app.include_router(public_router, prefix="/api")
     test_app.include_router(auth_router, prefix="/api")
     test_app.include_router(dashboard_router, prefix="/api")
+    test_app.include_router(auditor_b2g_router, prefix="/api")
     test_app.dependency_overrides[get_db] = lambda: db_session
 
     @test_app.get("/health")
