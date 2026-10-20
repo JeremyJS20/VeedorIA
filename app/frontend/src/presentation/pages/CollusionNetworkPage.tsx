@@ -24,7 +24,7 @@ export default function CollusionNetworkPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-on-surface tracking-tight">Red de Colusión</h1>
           <p className="text-sm text-on-surface-variant mt-1">
@@ -40,7 +40,7 @@ export default function CollusionNetworkPage() {
 
   if (data?.locked) {
     return (
-      <div className="space-y-6">
+      <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-on-surface tracking-tight">Red de Colusión</h1>
           <p className="text-sm text-on-surface-variant mt-1">
@@ -93,7 +93,7 @@ export default function CollusionNetworkPage() {
   const recurrent = data?.recurrent_suppliers || []
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-on-surface tracking-tight">Red de Colusión</h1>
         <p className="text-sm text-on-surface-variant mt-1">

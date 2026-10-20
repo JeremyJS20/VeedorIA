@@ -15,7 +15,6 @@ import {
   Users,
   ShieldCheck,
   UserCircle,
-  Search,
   LogOut,
   Sun,
   Globe,
@@ -23,7 +22,6 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
-  ExternalLink,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
@@ -78,10 +76,10 @@ export default function DashboardLayout() {
   const pageTitleMap: Record<string, string> = {
     "/app/dashboard": "Panorama Ejecutivo",
     "/app/mercado": "Inteligencia de Mercado por Rubro",
-    "/app/bandeja": "Bandeja de Anomal?as",
+    "/app/bandeja": "Bandeja de Anomalías",
     "/app/procesos": "Procesos Institucionales",
-    "/app/red-colusion": "Red de Colusi?n",
-    "/app/configuracion-deteccion": "Par?metros de Detecci?n",
+    "/app/red-colusion": "Red de Colusión",
+    "/app/configuracion-deteccion": "Parámetros de Detección",
     "/app/resoluciones": "Historial de Resoluciones",
     "/app/reportes": "Reportes de Cumplimiento",
     "/app/integraciones": "Integraciones Institucionales",
@@ -140,11 +138,11 @@ export default function DashboardLayout() {
         </div>
 
         <div className={`flex-1 overflow-y-auto ${collapsed ? "px-2" : "px-3"} space-y-6 pb-6`}>
-          {/* Monitoreo y Auditoría */}
+          {/* Secci?n 1: Veedur?a y Monitoreo */}
           <div className="space-y-1">
             {!collapsed && (
               <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
-                Veeduría y Auditoría
+                Veeduría y Monitoreo
               </p>
             )}
 
@@ -176,13 +174,9 @@ export default function DashboardLayout() {
             {isB2GOrPlatform && (
               <>
                 {[
-                  { to: "/app/bandeja", label: "Bandeja de Anomal?as", icon: Bell },
+                  { to: "/app/bandeja", label: "Bandeja de Anomalías", icon: Bell },
                   { to: "/app/procesos", label: "Procesos Institucionales", icon: FolderKanban },
-                  { to: "/app/red-colusion", label: "Red de Colusi?n", icon: Share2 },
-                  { to: "/app/resoluciones", label: "Historial de Resoluciones", icon: CheckCircle2 },
-                  { to: "/app/reportes", label: "Reportes de Cumplimiento", icon: FileBarChart },
-                  { to: "/app/configuracion-deteccion", label: "Par?metros de Detecci?n", icon: SlidersHorizontal },
-                  { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
+                  { to: "/app/red-colusion", label: "Red de Colusión", icon: Share2 },
                 ].map((navItem) => (
                   <NavLink
                     key={navItem.to}
@@ -285,22 +279,91 @@ export default function DashboardLayout() {
                 )}
               </div>
             )}
-
-            <NavLink
-              to="/public"
-              className={`group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 text-on-surface-variant hover:bg-surface-container-high hover:text-primary`}
-            >
-              <Search className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
-              {!collapsed && (
-                <>
-                  <span className="text-[13px] flex-1 truncate">Buscador Ciudadano</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                </>
-              )}
-            </NavLink>
-
-
           </div>
+
+          {/* Secci?n 2: Dict?menes y Cumplimiento (B2G y Administraci?n) */}
+          {isB2GOrPlatform && (
+            <div className="space-y-1">
+              {!collapsed && (
+                <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
+                  Dictámenes y Reportes
+                </p>
+              )}
+
+              {[
+                { to: "/app/resoluciones", label: "Historial de Resoluciones", icon: CheckCircle2 },
+                { to: "/app/reportes", label: "Reportes de Cumplimiento", icon: FileBarChart },
+              ].map((navItem) => (
+                <NavLink
+                  key={navItem.to}
+                  to={navItem.to}
+                  className={({ isActive }) =>
+                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div
+                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                        />
+                      )}
+                      <navItem.icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                      {!collapsed && (
+                        <span className="text-[13px] flex-1 truncate">{navItem.label}</span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          )}
+
+          {/* Secci?n 3: Calibraci?n e Interoperabilidad (B2G y Administraci?n) */}
+          {isB2GOrPlatform && (
+            <div className="space-y-1">
+              {!collapsed && (
+                <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
+                  Calibración y Conectores
+                </p>
+              )}
+
+              {[
+                { to: "/app/configuracion-deteccion", label: "Parámetros de Detección", icon: SlidersHorizontal },
+                { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
+              ].map((navItem) => (
+                <NavLink
+                  key={navItem.to}
+                  to={navItem.to}
+                  className={({ isActive }) =>
+                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div
+                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                        />
+                      )}
+                      <navItem.icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                      {!collapsed && (
+                        <span className="text-[13px] flex-1 truncate">{navItem.label}</span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          )}
 
           {/* Gobernanza y Seguridad (Solo Administradores) */}
           {(hasPermission("USER_ADMIN") || user?.rol?.codigo === "PLATFORM_ADMIN") && (
@@ -309,7 +372,7 @@ export default function DashboardLayout() {
                 <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
                   {user?.rol?.codigo === "PLATFORM_ADMIN"
                     ? "Gobernanza y Seguridad"
-                    : "Administraci?n"}
+                    : "Administración"}
                 </p>
               )}
 

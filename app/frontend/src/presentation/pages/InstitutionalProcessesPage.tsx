@@ -54,7 +54,7 @@ export default function InstitutionalProcessesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-on-surface tracking-tight">
