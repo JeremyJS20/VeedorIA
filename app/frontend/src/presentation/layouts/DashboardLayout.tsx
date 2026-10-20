@@ -327,66 +327,53 @@ export default function DashboardLayout() {
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-3 pl-3.5 pr-2.5 py-1.5 rounded-xl bg-surface-container border border-outline-variant/30 hover:border-primary/40 transition-all cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-surface-container border border-outline-variant/30 hover:border-primary/40 transition-all cursor-pointer"
             >
-              {user?.tenant && (
-                <div className="hidden lg:flex items-center gap-2 pr-3 border-r border-outline-variant/30 text-left">
-                  <Building2 className="w-4 h-4 text-primary shrink-0" />
-                  <div>
-                    <p className="text-xs font-semibold text-on-surface leading-tight max-w-[230px] truncate">
-                      {user.tenant.nombre}
-                    </p>
-                    <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">
-                      {formatPlanLabel(user.tenant.plan_tier)} · {scopeLabel}
-                    </p>
-                  </div>
+              <div className="relative shrink-0">
+                <div className="w-8 h-8 rounded-full border border-primary/25 bg-primary/15 flex items-center justify-center">
+                  <span className="text-primary font-bold text-xs">{initials}</span>
                 </div>
-              )}
-
-              <div className="flex items-center gap-2.5">
-                <div className="relative shrink-0">
-                  <div className="w-8 h-8 rounded-full border border-primary/25 bg-primary/15 flex items-center justify-center">
-                    <span className="text-primary font-bold text-xs">{initials}</span>
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full" />
-                </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-xs font-bold text-on-surface leading-tight max-w-[165px] truncate">
-                    {user?.nombre || "Usuario"}
-                  </p>
-                  <p className="text-[10px] font-medium text-primary leading-tight mt-0.5 max-w-[165px] truncate">
-                    {user?.rol?.nombre || "Rol"}
-                  </p>
-                </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-outline transition-transform duration-200 ${
-                    profileOpen ? "rotate-180 text-primary" : ""
-                  }`}
-                />
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full" />
               </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-on-surface leading-tight">
+                  {user?.nombre || "Usuario"}
+                </p>
+                <p className="text-[11px] font-medium text-on-surface-variant leading-tight mt-0.5">
+                  {user?.tenant?.codigo || user?.rol?.nombre || "Sesión activa"}
+                </p>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-outline transition-transform duration-200 ${
+                  profileOpen ? "rotate-180 text-primary" : ""
+                }`}
+              />
             </button>
 
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-[340px] bg-surface shadow-xl rounded-xl border border-outline-variant/35 overflow-hidden z-50">
-                {/* Resumen Unificado de Identidad, Organización y Plan */}
+                {/* Resumen Unificado de Identidad, Rol y Organización */}
                 <div className="p-4 bg-surface-container-low border-b border-outline-variant/20">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-on-surface truncate">{user?.nombre}</p>
-                      <p className="text-xs font-mono text-on-surface-variant truncate mt-0.5">
-                        {user?.correo}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/15 text-primary">
+                  <p className="text-sm font-bold text-on-surface leading-snug">
+                    {user?.nombre}
+                  </p>
+                  <p className="text-xs font-mono text-on-surface-variant mt-0.5">
+                    {user?.correo}
+                  </p>
+                  <div className="mt-2">
+                    <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-primary/15 text-primary">
                       {user?.rol?.nombre}
                     </span>
                   </div>
 
                   {user?.tenant && (
                     <div className="mt-3 pt-2.5 border-t border-outline-variant/20 space-y-1">
-                      <p className="text-xs font-semibold text-on-surface truncate">
-                        {user.tenant.nombre}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <p className="text-xs font-semibold text-on-surface truncate">
+                          {user.tenant.nombre}
+                        </p>
+                      </div>
                       <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
                         <span>{formatPlanLabel(user.tenant.plan_tier)}</span>
                         <span className="font-mono">{scopeLabel}</span>
