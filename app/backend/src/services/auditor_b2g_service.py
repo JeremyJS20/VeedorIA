@@ -780,19 +780,19 @@ class AuditorB2GService:
                 {
                     "name": "Flujo de Hallazgos Institucionales (JSON / OData)",
                     "method": "GET",
-                    "path": "/api/anomalies?page=1&limit=100",
+                    "path": "/api/integration/anomalies?page=1&limit=100",
                     "description": "Sincroniza alertas preventivas y puntuaciones de severidad hacia tableros Power BI, Tableau o sistemas de control interno.",
                 },
                 {
                     "name": "Resumen Ejecutivo de Cumplimiento Normativo",
                     "method": "GET",
-                    "path": "/api/auditor/reports/summary",
+                    "path": "/api/integration/reports/summary",
                     "description": "Entrega métricas consolidadas de procesos auditados, casos confirmados y tasa de resolución institucional.",
                 },
                 {
                     "name": "Historial de Dictámenes y Resoluciones",
                     "method": "GET",
-                    "path": "/api/auditor/resolutions",
+                    "path": "/api/integration/resolutions",
                     "description": "Exporta el registro auditable de hallazgos ratificados o desestimados con su fecha de dictamen.",
                 },
             ],
@@ -867,3 +867,74 @@ class AuditorB2GService:
         )
         await self.db.commit()
         return {"id": key_id, "status": "REVOKED"}
+
+
+    async def resolve_integration_caller(self, raw_token: str) -> dict | None:
+        clean = (raw_token or "").strip()
+        if not clean.startswith("vdia_b2g_"):
+            return None
+        parts = clean.split("_")
+        if len(parts) < 4:
+            return None
+        key_id = parts[2]
+        token_hash = hashlib.sha256(clean.encode("utf-8")).hexdigest()
+
+        logs = (
+            await self.db.execute(
+                select(AuditLog)
+                .where(
+                    AuditLog.entity_type == "integration_key",
+                    AuditLog.entity_id.like(f"%:{key_id}"),
+                )
+                .order_by(desc(AuditLog.timestamp))
+            )
+        ).scalars().all()
+
+        if any(l.action_type == "REVOKE_INTEGRATION_KEY" for l in logs):
+            return None
+
+        create_log = next((l for l in logs if l.action_type == "CREATE_INTEGRATION_KEY"), None)
+        if not create_log or not create_log.new_value:
+            return None
+
+        if create_log.new_value.get("key_hash") != token_hash:
+            return None
+
+        tenant_id_str = str(create_log.entity_id).split(":", 1)[0]
+        from src.models.auth import Tenant
+        tenant_row = None
+        if tenant_id_str.isdigit():
+            tenant_row = (
+                await self.db.execute(select(Tenant).where(Tenant.id == int(tenant_id_str)))
+            ).scalar_one_or_none()
+
+        if tenant_row:
+            return {
+                "id": 0,
+                "nombre": f"Conector ({create_log.new_value.get('name', 'Integraci?n')})",
+                "correo": "integracion@veedoria.gob.do",
+                "rol": {"codigo": "AUDITOR", "nombre": "Conector Institucional"},
+                "tenant": {
+                    "id": tenant_row.id,
+                    "codigo": tenant_row.codigo,
+                    "nombre": tenant_row.nombre,
+                    "tipo": tenant_row.tipo,
+                    "plan_tier": tenant_row.plan_tier,
+                    "institution_id": tenant_row.institution_id,
+                },
+            }
+
+        return {
+            "id": 0,
+            "nombre": f"Conector ({create_log.new_value.get('name', 'Integraci?n')})",
+            "correo": "integracion@veedoria.gob.do",
+            "rol": {"codigo": "PLATFORM_ADMIN", "nombre": "Conector Global"},
+            "tenant": {
+                "id": 0,
+                "codigo": "GLOBAL",
+                "nombre": "Cobertura Nacional Transversal",
+                "tipo": "PLATFORM",
+                "plan_tier": "PLATFORM_GLOBAL",
+                "institution_id": None,
+            },
+        }
