@@ -12,6 +12,20 @@ from src.services.auth_service import AuthDomainError, AuthService
 router = APIRouter(tags=["auth-rbac"])
 
 
+
+class RegisterAccountRequest(BaseModel):
+    modo: str = Field(default="INVITATION")
+    codigo_invitacion: str | None = None
+    nombre: str = Field(..., min_length=2)
+    correo: str = Field(..., min_length=3)
+    cargo: str | None = None
+    password: str = Field(..., min_length=8)
+    empresa_nombre: str | None = None
+    empresa_rpe: str | None = None
+    empresa_rnc: str | None = None
+    plan_tier: str | None = "B2B_PYME"
+
+
 class LoginRequest(BaseModel):
     correo: str = Field(..., min_length=3)
     password: str = Field(..., min_length=1)
@@ -267,3 +281,38 @@ async def get_roles_matrix_endpoint(
 ) -> ApiResponse[dict]:
     data = await service.get_roles_and_permissions_matrix()
     return ApiResponse(data=data)
+
+
+@router.get("/auth/invitation/{code}", response_model=ApiResponse[dict])
+async def get_invitation_info_endpoint(
+    code: str,
+    service: AuthService = Depends(get_auth_service),
+) -> ApiResponse[dict]:
+    try:
+        data = await service.get_invitation_info(code=code)
+        return ApiResponse(data=data)
+    except AuthDomainError as exc:
+        _raise_http(exc)
+
+
+@router.get("/auth/suppliers-search", response_model=ApiResponse[list[dict]])
+async def search_public_suppliers_endpoint(
+    q: str = "",
+    limit: int = 12,
+    service: AuthService = Depends(get_auth_service),
+) -> ApiResponse[list[dict]]:
+    data = await service.search_public_suppliers(q=q, limit=limit)
+    return ApiResponse(data=data)
+
+
+@router.post("/auth/register", response_model=ApiResponse[dict], status_code=201)
+async def register_account_endpoint(
+    body: RegisterAccountRequest,
+    service: AuthService = Depends(get_auth_service),
+) -> ApiResponse[dict]:
+    try:
+        data = await service.register_account(data=body.model_dump())
+        return ApiResponse(data=data)
+    except AuthDomainError as exc:
+        _raise_http(exc)
+

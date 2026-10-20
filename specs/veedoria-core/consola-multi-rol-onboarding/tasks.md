@@ -50,8 +50,8 @@ flowchart TD
   - `GET /api/auth/suppliers-search`: consulta pública acotada al catálogo de `4,462` proveedores (`supplier` y contratos adjudicados) por nombre, RPE o RNC para autocompletar el Paso 2 del Camino B en `/registro`.
   - `POST /api/auth/register`: soporta `modo = "INVITATION"` (vincula el nuevo usuario a la organización del `codigo_invitacion` con rol `AUDITOR` o `PROVEEDOR`) y `modo = "NEW_COMPANY"` (crea una nueva organización `B2B_SUPPLIER` con código único autogenerado, vincula el `supplier_rpe` existente o inserta el registro en `supplier` si es ingreso manual, asigna el plan elegido `B2B_PYME` o `B2B_CORPORATE`, crea el usuario `TENANT_ADMIN` con contraseña cifrada en `bcrypt` y devuelve inmediatamente `access_token` + `user`).
 - **Acceptance criteria:**
-  - [ ] `GET /api/auth/invitation/MOPC-B2G` retorna `200 OK` con los metadatos de la organización y un código inexistente retorna `404`.
-  - [ ] `POST /api/auth/register` permite tanto unirse por código (`INVITATION`) como registrar una empresa nueva o del catálogo DGCP (`NEW_COMPANY`) y emite un JWT válido.
+  - [x] `GET /api/auth/invitation/MOPC-B2G` retorna `200 OK` con los metadatos de la organización y un código inexistente retorna `404`.
+  - [x] `POST /api/auth/register` permite tanto unirse por código (`INVITATION`) como registrar una empresa nueva o del catálogo DGCP (`NEW_COMPANY`) y emite un JWT válido.
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/services/auth_service.py`, `app/backend/src/presentation/routers/auth_router.py`
 
@@ -63,8 +63,8 @@ flowchart TD
     - **Variante `ADMIN`**: calcula 4 KPIs operativos globales (*Usuarios y Organizaciones Activas*, *Trabajos de Sincronización*, *Total de Contratos / Hallazgos en Plataforma* y *Cobertura de Auditoría*) más las filas de *"Bitácora de Actividad Reciente del Sistema"*.
   - `GET /api/market/intelligence`: recibe `?unspsc_family=XXXX` (o toma por defecto la familia UNSPSC con mayor volumen de contratos reales en PostgreSQL) y devuelve las familias disponibles más los 4 bloques de la cuadrícula 2×2 (*Tendencia Histórica de Precios Unitarios*, *Distribución de Adjudicaciones por Proveedor*, *Rango de Precios con Mayor Éxito* P25/Mediana/P75 y *Principales Instituciones Compradoras*) y la lista lateral de *Procesos Recientes del Sector*, aplicando `locked: true` en cuota de competidores y rango ganador cuando `plan_tier == "B2B_PYME"`.
 - **Acceptance criteria:**
-  - [ ] `/api/dashboard/overview` retorna las 3 variantes con cifras reales de PostgreSQL en `< 500ms`.
-  - [ ] `/api/market/intelligence` retorna familias UNSPSC reales, serie histórica, competidores, cuartiles de precios, principales instituciones y procesos recientes del rubro en `< 500ms`.
+  - [x] `/api/dashboard/overview` retorna las 3 variantes con cifras reales de PostgreSQL en `< 500ms`.
+  - [x] `/api/market/intelligence` retorna familias UNSPSC reales, serie histórica, competidores, cuartiles de precios, principales instituciones y procesos recientes del rubro en `< 500ms`.
 - **Dependencies:** None
 - **Files to create/modify:** `app/backend/src/services/dashboard_service.py`, `app/backend/src/presentation/routers/dashboard_router.py`, `app/backend/src/presentation/main.py`
 

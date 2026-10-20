@@ -132,15 +132,34 @@ def _hash_reset_token(raw_token: str) -> str:
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
 
 
+PLAN_CLEAN_LABELS: dict[str, str] = {
+    "PLATFORM_GLOBAL": "Administración General",
+    "B2G_ENTERPRISE": "Plan Institucional Rector",
+    "B2G_PREMIUM": "Plan Institucional Avanzado",
+    "B2G_BASIC": "Plan Institucional Básico",
+    "B2B_CORPORATE": "Plan Proveedor Corporativo",
+    "B2B_PYME": "Plan Proveedor Pyme",
+}
+
+TENANT_TYPE_LABELS: dict[str, str] = {
+    "PLATFORM": "Administración General",
+    "GOV_OVERSIGHT": "Órgano Rector",
+    "GOV_INSTITUTION": "Institución Pública",
+    "B2B_SUPPLIER": "Empresa Proveedora del Estado",
+}
+
+
 def _is_permission_allowed_by_plan(perm_min_plan: str, tenant_plan: str) -> bool:
     if perm_min_plan == "ALL" or tenant_plan == "PLATFORM_GLOBAL":
         return True
-    if perm_min_plan.startswith("B2B_") and tenant_plan.startswith("B2B_"):
-        return PLAN_LEVELS.get(tenant_plan, 0) >= PLAN_LEVELS.get(perm_min_plan, 0)
-    if perm_min_plan.startswith("B2G_") and tenant_plan.startswith("B2G_"):
-        return PLAN_LEVELS.get(tenant_plan, 0) >= PLAN_LEVELS.get(perm_min_plan, 0)
-    if perm_min_plan.startswith("B2B_") and tenant_plan in ("B2G_ENTERPRISE",):
-        return True
+    if perm_min_plan.startswith("B2B_"):
+        if tenant_plan.startswith("B2B_"):
+            return PLAN_LEVELS.get(tenant_plan, 0) >= PLAN_LEVELS.get(perm_min_plan, 0)
+        return tenant_plan == "B2G_ENTERPRISE"
+    if perm_min_plan.startswith("B2G_"):
+        if tenant_plan.startswith("B2G_"):
+            return PLAN_LEVELS.get(tenant_plan, 0) >= PLAN_LEVELS.get(perm_min_plan, 0)
+        return False
     return PLAN_LEVELS.get(tenant_plan, 0) >= PLAN_LEVELS.get(perm_min_plan, 100)
 
 
@@ -201,6 +220,20 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
         for p in db_perms:
             if p.codigo in clean_perms and p.descripcion != clean_perms[p.codigo]:
                 p.descripcion = clean_perms[p.codigo]
+                changed = True
+        ta_role = next((r for r in db_roles if r.codigo == "TENANT_ADMIN"), None)
+        b2b_perm = next((p for p in db_perms if p.codigo == "B2B_ANALYTICS"), None)
+        if ta_role and b2b_perm and ta_role.id and b2b_perm.id:
+            existing_rp = (
+                await db.execute(
+                    select(RolePermission).where(
+                        RolePermission.role_id == ta_role.id,
+                        RolePermission.permission_id == b2b_perm.id,
+                    )
+                )
+            ).scalar_one_or_none()
+            if not existing_rp:
+                db.add(RolePermission(role_id=ta_role.id, permission_id=b2b_perm.id))
                 changed = True
         if changed:
             await db.commit()
@@ -275,6 +308,7 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
             "ANOMALY_REVIEW",
             "PROCESS_READ",
             "DETECTION_RUN",
+            "B2B_ANALYTICS",
             "USER_ADMIN",
             "ROLE_VIEW",
         ],
@@ -1211,4 +1245,263 @@ class AuthService:
                 for p in perms
             ],
             "planes_saas": SAA_PLANS_CATALOG,
+        }
+
+
+    async def get_invitation_info(self, code: str) -> dict:
+        clean_code = (code or "").strip().upper()
+        if not clean_code:
+            raise AuthDomainError(
+                "INVITATION_CODE_INVALID",
+                "El código de invitación ingresado no es válido o ha expirado.",
+                status_code=404,
+            )
+        stmt = select(Tenant).where(func.upper(Tenant.codigo) == clean_code)
+        tenant = (await self.db.execute(stmt)).scalar_one_or_none()
+        if not tenant or tenant.estado != "ACTIVO":
+            raise AuthDomainError(
+                "INVITATION_CODE_INVALID",
+                "El código de invitación ingresado no es válido o ha expirado.",
+                status_code=404,
+            )
+
+        if tenant.tipo in ("PLATFORM", "GOV_OVERSIGHT"):
+            alcance = "Alcance Nacional"
+        elif tenant.tipo == "B2B_SUPPLIER":
+            alcance = f"Proveedor RPE #{tenant.supplier_rpe}" if tenant.supplier_rpe else tenant.nombre
+        else:
+            alcance = tenant.nombre
+
+        rol_asignado = (
+            "Analista de Licitaciones"
+            if tenant.tipo == "B2B_SUPPLIER"
+            else "Auditor Institucional"
+        )
+
+        return {
+            "codigo": tenant.codigo,
+            "nombre": tenant.nombre,
+            "tipo": tenant.tipo,
+            "tipo_etiqueta": TENANT_TYPE_LABELS.get(tenant.tipo, "Organización Suscrita"),
+            "plan_tier": tenant.plan_tier,
+            "plan_etiqueta": PLAN_CLEAN_LABELS.get(tenant.plan_tier, tenant.plan_tier),
+            "alcance": alcance,
+            "rol_asignado": rol_asignado,
+            "estado": tenant.estado,
+        }
+
+    async def search_public_suppliers(self, q: str = "", limit: int = 12) -> list[dict]:
+        query_str = (q or "").strip()
+        safe_limit = max(1, min(int(limit or 12), 25))
+        stmt = (
+            select(
+                Contract.rpe,
+                func.max(Contract.supplier_name).label("supplier_name"),
+                func.count(Contract.id).label("total_contratos"),
+                func.coalesce(func.sum(Contract.amount_adjudicated), 0.0).label("monto_total"),
+            )
+            .where(Contract.rpe.is_not(None), Contract.supplier_name.is_not(None))
+        )
+        if query_str:
+            stmt = stmt.where(
+                (Contract.supplier_name.ilike(f"%{query_str}%"))
+                | (Contract.rpe.ilike(f"%{query_str}%"))
+            )
+        stmt = (
+            stmt.group_by(Contract.rpe)
+            .order_by(desc(func.count(Contract.id)), func.max(Contract.supplier_name).asc())
+            .limit(safe_limit)
+        )
+        rows = (await self.db.execute(stmt)).all()
+        results: list[dict] = []
+        for r in rows:
+            if not r.rpe or not r.supplier_name:
+                continue
+            results.append(
+                {
+                    "rpe": str(r.rpe),
+                    "nombre": str(r.supplier_name),
+                    "rnc": None,
+                    "clasificacion": "Proveedor del Estado (DGCP)",
+                    "total_contratos": int(r.total_contratos or 0),
+                    "monto_total": float(r.monto_total or 0.0),
+                }
+            )
+
+        if len(results) < safe_limit:
+            rem = safe_limit - len(results)
+            s_stmt = select(
+                Supplier.rnc,
+                Supplier.registered_name,
+                Supplier.classification,
+            ).where(Supplier.registered_name.is_not(None))
+            if query_str:
+                s_stmt = s_stmt.where(
+                    (Supplier.registered_name.ilike(f"%{query_str}%"))
+                    | (Supplier.rnc.ilike(f"%{query_str}%"))
+                )
+            s_stmt = s_stmt.order_by(Supplier.registered_name.asc()).limit(rem)
+            s_rows = (await self.db.execute(s_stmt)).all()
+            seen = {item["nombre"].upper() for item in results}
+            for sr in s_rows:
+                if sr.registered_name and sr.registered_name.upper() not in seen:
+                    results.append(
+                        {
+                            "rpe": str(sr.rnc),
+                            "nombre": str(sr.registered_name),
+                            "rnc": str(sr.rnc),
+                            "clasificacion": sr.classification or "Registro Mercantil / DGCP",
+                            "total_contratos": 0,
+                            "monto_total": 0.0,
+                        }
+                    )
+        return results
+
+    async def register_account(self, data: dict) -> dict:
+        modo = str(data.get("modo") or "INVITATION").strip().upper()
+        nombre = str(data.get("nombre") or "").strip()
+        correo = str(data.get("correo") or "").strip().lower()
+        password = str(data.get("password") or "")
+        cargo = str(data.get("cargo") or "").strip() or None
+
+        if not nombre or len(nombre) < 2:
+            raise AuthDomainError(
+                "VALIDATION_ERROR",
+                "El nombre completo es obligatorio.",
+                status_code=422,
+            )
+        if not correo or "@" not in correo:
+            raise AuthDomainError(
+                "VALIDATION_ERROR",
+                "Ingrese un correo institucional o corporativo válido.",
+                status_code=422,
+            )
+        if not validate_password_strength(password):
+            raise AuthDomainError(
+                "PASSWORD_POLICY_VIOLATION",
+                "La contraseña debe tener al menos 8 caracteres, una letra mayúscula y un número.",
+                status_code=422,
+            )
+
+        dup = (
+            await self.db.execute(select(AppUser).where(func.lower(AppUser.correo) == correo))
+        ).scalar_one_or_none()
+        if dup:
+            raise AuthDomainError(
+                "EMAIL_ALREADY_REGISTERED",
+                "El correo ingresado ya se encuentra registrado en la plataforma.",
+                status_code=409,
+            )
+
+        if modo == "INVITATION":
+            raw_code = str(data.get("codigo_invitacion") or "").strip().upper()
+            if not raw_code:
+                raise AuthDomainError(
+                    "INVITATION_CODE_INVALID",
+                    "Debe proporcionar un código de invitación válido.",
+                    status_code=404,
+                )
+            tenant = (
+                await self.db.execute(select(Tenant).where(func.upper(Tenant.codigo) == raw_code))
+            ).scalar_one_or_none()
+            if not tenant or tenant.estado != "ACTIVO":
+                raise AuthDomainError(
+                    "INVITATION_CODE_INVALID",
+                    "El código de invitación ingresado no es válido o ha expirado.",
+                    status_code=404,
+                )
+            target_role_code = "PROVEEDOR" if tenant.tipo == "B2B_SUPPLIER" else "AUDITOR"
+            role = (
+                await self.db.execute(select(Role).where(Role.codigo == target_role_code))
+            ).scalar_one_or_none()
+            if not role:
+                role = (await self.db.execute(select(Role).order_by(Role.id))).scalars().first()
+        elif modo == "NEW_COMPANY":
+            empresa_nombre = str(data.get("empresa_nombre") or "").strip()
+            if len(empresa_nombre) < 3:
+                raise AuthDomainError(
+                    "VALIDATION_ERROR",
+                    "El nombre de la empresa proveedora es obligatorio.",
+                    status_code=422,
+                )
+            plan_tier = str(data.get("plan_tier") or "B2B_PYME").strip().upper()
+            if plan_tier not in ("B2B_PYME", "B2B_CORPORATE"):
+                plan_tier = "B2B_PYME"
+
+            empresa_rpe = str(data.get("empresa_rpe") or "").strip() or None
+            empresa_rnc = str(data.get("empresa_rnc") or "").strip() or None
+            effective_rpe = empresa_rpe or empresa_rnc or f"RPE-{secrets.token_hex(3).upper()}"
+
+            if empresa_rnc:
+                existing_sup = (
+                    await self.db.execute(select(Supplier).where(Supplier.rnc == empresa_rnc))
+                ).scalar_one_or_none()
+                if not existing_sup:
+                    self.db.add(
+                        Supplier(
+                            rnc=empresa_rnc[:20],
+                            registered_name=empresa_nombre[:255],
+                            classification="Proveedor Registrado",
+                        )
+                    )
+
+            codigo = self._generate_tenant_code(empresa_nombre, "B2B_SUPPLIER")
+            dup_tenant = (
+                await self.db.execute(select(Tenant).where(Tenant.codigo == codigo))
+            ).scalar_one_or_none()
+            if dup_tenant:
+                codigo = f"{codigo}-{secrets.token_hex(2).upper()}"
+
+            tenant = Tenant(
+                codigo=codigo,
+                nombre=empresa_nombre,
+                tipo="B2B_SUPPLIER",
+                plan_tier=plan_tier,
+                institution_id=None,
+                supplier_rpe=effective_rpe,
+                max_categorias_unspsc=3 if plan_tier == "B2B_PYME" else 9999,
+                estado="ACTIVO",
+            )
+            self.db.add(tenant)
+            await self.db.flush()
+
+            role = (
+                await self.db.execute(select(Role).where(Role.codigo == "TENANT_ADMIN"))
+            ).scalar_one_or_none()
+            if not role:
+                role = (
+                    await self.db.execute(select(Role).where(Role.codigo == "PROVEEDOR"))
+                ).scalar_one_or_none()
+        else:
+            raise AuthDomainError(
+                "VALIDATION_ERROR",
+                "Modo de registro no soportado.",
+                status_code=422,
+            )
+
+        now = datetime.now(UTC)
+        new_user = AppUser(
+            tenant_id=int(tenant.id or 0),
+            role_id=int(role.id or 0),
+            nombre=nombre,
+            correo=correo,
+            password_hash=hash_password(password),
+            cargo=cargo or role.nombre,
+            estado="ACTIVO",
+            intentos_fallidos=0,
+            ultimo_acceso_at=now,
+        )
+        self.db.add(new_user)
+        await self.db.commit()
+        await self.db.refresh(new_user)
+        await self.db.refresh(tenant)
+
+        user_payload = await self._build_user_payload(new_user, role, tenant)
+        access_token = self._encode_jwt(user_payload)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": JWT_EXPIRATION_SECONDS,
+            "user": user_payload,
         }
