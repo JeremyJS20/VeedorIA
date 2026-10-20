@@ -216,3 +216,210 @@ export function useResetPassword() {
     },
   })
 }
+export interface InvitationInfo {
+  codigo: string
+  nombre: string
+  tipo: string
+  tipo_etiqueta: string
+  plan_tier: string
+  plan_etiqueta: string
+  alcance: string
+  rol_asignado: string
+  estado: string
+}
+
+export interface PublicSupplierItem {
+  rpe: string
+  nombre: string
+  rnc: string | null
+  clasificacion: string
+  total_contratos: number
+  monto_total: number
+}
+
+export interface RegisterAccountPayload {
+  modo: "INVITATION" | "NEW_COMPANY"
+  codigo_invitacion?: string | null
+  nombre: string
+  correo: string
+  cargo?: string
+  password: string
+  empresa_nombre?: string | null
+  empresa_rpe?: string | null
+  empresa_rnc?: string | null
+  plan_tier?: "B2B_PYME" | "B2B_CORPORATE"
+}
+
+export interface DashboardKpiItem {
+  id: string
+  label: string
+  value: string
+  sublabel: string
+  tone: "primary" | "warning" | "danger" | "neutral"
+  locked: boolean
+  required_plan_label?: string
+}
+
+export interface DashboardTableRow {
+  id: string
+  process_code: string
+  title: string
+  secondary_label: string
+  amount_dop: number
+  status_badge: string
+  status_tone: "critical" | "warning" | "low"
+  detail_badge: string
+  date_label: string
+  locked: boolean
+  required_plan_label?: string | null
+}
+
+export interface DashboardOverviewData {
+  variant: "B2G" | "B2B" | "ADMIN"
+  scope_label: string
+  plan_tier: string
+  plan_label: string
+  kpis: DashboardKpiItem[]
+  table_title: string
+  table_subtitle: string
+  rows: DashboardTableRow[]
+}
+
+export interface MarketFamilyItem {
+  code: string
+  label: string
+  total_contracts: number
+  total_items: number
+  total_amount_dop: number
+}
+
+export interface MarketPriceTrendPoint {
+  period: string
+  avg_unit_price: number
+  contracts_count: number
+}
+
+export interface MarketSupplierShareItem {
+  rpe: string
+  supplier_name: string
+  contracts_won: number
+  amount_dop: number
+  share_pct: number
+}
+
+export interface MarketWinningPriceRange {
+  locked: boolean
+  required_plan_label: string
+  min_price_dop: number
+  p25_price_dop: number
+  median_price_dop: number
+  p75_price_dop: number
+  max_price_dop: number
+  avg_price_dop: number
+  unit_label: string
+}
+
+export interface MarketTopInstitutionItem {
+  institution_id: number
+  institution_name: string
+  contracts_count: number
+  total_amount_dop: number
+}
+
+export interface MarketRecentProcessItem {
+  process_code: string
+  title: string
+  institution_name: string
+  amount_dop: number
+  signed_date: string
+  supplier_name: string
+}
+
+export interface MarketIntelligenceData {
+  selected_family: MarketFamilyItem
+  available_families: MarketFamilyItem[]
+  plan_tier: string
+  plan_label: string
+  history_months_limit: number
+  price_trend: MarketPriceTrendPoint[]
+  supplier_share: {
+    locked: boolean
+    required_plan_label: string
+    items: MarketSupplierShareItem[]
+  }
+  winning_price_range: MarketWinningPriceRange
+  top_institutions: MarketTopInstitutionItem[]
+  recent_processes: MarketRecentProcessItem[]
+}
+
+export function useInvitationInfo(code: string | null) {
+  const clean = (code || "").trim()
+  return useQuery({
+    queryKey: ["invitation-info", clean],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: InvitationInfo }>(
+        `/auth/invitation/${encodeURIComponent(clean)}`,
+      )
+      return data.data
+    },
+    enabled: clean.length >= 2,
+    retry: false,
+  })
+}
+
+export function usePublicSuppliersSearch(q: string, enabled = true) {
+  return useQuery({
+    queryKey: ["public-suppliers-search", q],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: PublicSupplierItem[] }>(
+        "/auth/suppliers-search",
+        { params: { q, limit: 12 } },
+      )
+      return data.data
+    },
+    enabled,
+  })
+}
+
+export function useRegisterAccount() {
+  return useMutation({
+    mutationFn: async (payload: RegisterAccountPayload) => {
+      const { data } = await apiClient.post<{
+        success: boolean
+        data: {
+          access_token: string
+          token_type: string
+          expires_in: number
+          user: AuthUser
+        }
+      }>("/auth/register", payload)
+      return data.data
+    },
+  })
+}
+
+export function useDashboardOverview(viewMode?: string) {
+  return useQuery({
+    queryKey: ["dashboard-overview", viewMode || "AUTO"],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: DashboardOverviewData }>(
+        "/dashboard/overview",
+        { params: viewMode ? { view_mode: viewMode } : undefined },
+      )
+      return data.data
+    },
+  })
+}
+
+export function useMarketIntelligence(unspscFamily?: string) {
+  return useQuery({
+    queryKey: ["market-intelligence", unspscFamily || "DEFAULT"],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ success: boolean; data: MarketIntelligenceData }>(
+        "/market/intelligence",
+        { params: unspscFamily ? { unspsc_family: unspscFamily } : undefined },
+      )
+      return data.data
+    },
+  })
+}

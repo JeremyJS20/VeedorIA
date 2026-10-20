@@ -36,7 +36,8 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/app/bandeja"
+  const invitationCode = searchParams.get("code")
+  const callbackUrl = searchParams.get("callbackUrl") || "/app/dashboard"
 
   const [correo, setCorreo] = useState("admin@veedoria.gob.do")
   const [contrasena, setContrasena] = useState("VeedorIA2026!")
@@ -108,6 +109,18 @@ export default function LoginPage() {
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {invitationCode && (
+          <div className="p-3.5 rounded-xl bg-primary-container/25 border border-primary/30 text-xs text-on-surface">
+            <p className="font-semibold text-primary">Código de invitación detectado: {invitationCode}</p>
+            <p className="text-on-surface-variant mt-0.5">
+              Inicia sesión con tu cuenta existente o{" "}
+              <Link to={`/registro?code=${encodeURIComponent(invitationCode)}`} className="font-semibold text-primary underline">
+                crea una cuenta nueva aquí
+              </Link>
+              .
+            </p>
+          </div>
+        )}
         {error && (
           <div
             role="alert"

@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next"
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useTheme } from "@heroui/react"
 import {
+  LayoutDashboard,
+  TrendingUp,
   Bell,
   Lock,
   Share2,
@@ -111,7 +113,9 @@ export default function DashboardLayout() {
     .toUpperCase()
 
   const pageTitleMap: Record<string, string> = {
-    "/app/bandeja": "Bandeja Forense de Anomalías",
+    "/app/dashboard": "Panorama Ejecutivo",
+    "/app/mercado": "Inteligencia de Mercado por Rubro",
+    "/app/bandeja": "Bandeja de Anomalías",
     "/app/usuarios": "Usuarios y Organizaciones",
     "/app/roles": "Roles y Planes de Servicio",
     "/app/perfil": "Mi Perfil Institucional",
@@ -170,6 +174,31 @@ export default function DashboardLayout() {
             )}
 
             <NavLink
+              to="/app/dashboard"
+              className={({ isActive }) =>
+                `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div
+                      className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                    />
+                  )}
+                  <LayoutDashboard className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                  {!collapsed && (
+                    <span className="text-[13px] flex-1 truncate">Panorama Ejecutivo</span>
+                  )}
+                </>
+              )}
+            </NavLink>
+
+            <NavLink
               to="/app/bandeja"
               className={({ isActive }) =>
                 `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
@@ -193,6 +222,35 @@ export default function DashboardLayout() {
                 </>
               )}
             </NavLink>
+
+            {(user?.tenant.tipo === "B2B_SUPPLIER" ||
+              hasPermission("B2B_ANALYTICS") ||
+              user?.rol.codigo === "PLATFORM_ADMIN") && (
+              <NavLink
+                to="/app/mercado"
+                className={({ isActive }) =>
+                  `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <div
+                        className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                      />
+                    )}
+                    <TrendingUp className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                    {!collapsed && (
+                      <span className="text-[13px] flex-1 truncate">Inteligencia de Mercado</span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            )}
 
             <NavLink
               to="/public"

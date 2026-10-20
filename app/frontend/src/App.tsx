@@ -27,6 +27,10 @@ const ResetPasswordPage = lazy(() => import("./presentation/pages/ResetPasswordP
 const UserProfilePage = lazy(() => import("./presentation/pages/UserProfilePage"))
 const UsersManagementPage = lazy(() => import("./presentation/pages/UsersManagementPage"))
 const RolesMatrixPage = lazy(() => import("./presentation/pages/RolesMatrixPage"))
+const InvitationGatewayPage = lazy(() => import("./presentation/pages/InvitationGatewayPage"))
+const RegisterPage = lazy(() => import("./presentation/pages/RegisterPage"))
+const OverviewDashboardPage = lazy(() => import("./presentation/pages/OverviewDashboardPage"))
+const MarketIntelligencePage = lazy(() => import("./presentation/pages/MarketIntelligencePage"))
 
 function LandingPage() {
   return (
@@ -61,6 +65,10 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/invitacion" element={<InvitationGatewayPage />} />
+          <Route path="/join" element={<InvitationGatewayPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
           <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
           <Route path="/public" element={<CivicPortalPage />} />
@@ -78,7 +86,9 @@ function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<Navigate to="bandeja" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<OverviewDashboardPage />} />
+            <Route path="mercado" element={<MarketIntelligencePage />} />
             <Route path="bandeja" element={<AuditorPage />} />
             <Route path="perfil" element={<UserProfilePage />} />
             <Route

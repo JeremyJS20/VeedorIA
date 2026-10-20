@@ -10,6 +10,7 @@ interface AuthContextValue {
   isLoading: boolean
   isAuthenticated: boolean
   login: (correo: string, password: string) => Promise<AuthUser>
+  setSession: (accessToken: string, authUser: AuthUser) => void
   logout: () => Promise<void>
   refreshUser: () => Promise<AuthUser | null>
   hasPermission: (permissionCode: string) => boolean
@@ -71,6 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const setSession = useCallback(
+    (accessToken: string, authUser: AuthUser) => {
+      localStorage.setItem(AUTH_TOKEN_KEY, accessToken)
+      setToken(accessToken)
+      setUser(authUser)
+      queryClient.clear()
+    },
+    [queryClient],
+  )
+
   const login = useCallback(
     async (correo: string, password: string): Promise<AuthUser> => {
       const { data } = await apiClient.post<{ success: boolean; data: LoginResponse }>("/auth/login", {
@@ -116,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: Boolean(user && token),
         login,
+        setSession,
         logout,
         refreshUser,
         hasPermission,

@@ -78,8 +78,8 @@ flowchart TD
   - `fetchDashboardOverview(viewMode?)` y `fetchMarketIntelligence(unspscFamily?)`.
   - Actualizar `App.tsx` y `DashboardLayout.tsx` para conectar las rutas públicas `/invitacion`, `/join`, `/registro`, `/register` y las rutas protegidas `/app/dashboard` (*Panorama Ejecutivo*) y `/app/mercado` (*Inteligencia de Mercado*), además de agregar en `/login` el enlace hacia `/registro` y soporte para `?code=XYZ` cuando un usuario con cuenta existente viene desde `/invitacion?code=XYZ`.
 - **Acceptance criteria:**
-  - [ ] Todas las funciones de API están tipadas en TypeScript sin uso de `any`.
-  - [ ] El menú lateral de `DashboardLayout.tsx` enlaza activamente a `/app/dashboard` y `/app/mercado` según el rol activo.
+  - [x] Todas las funciones de API están tipadas en TypeScript sin uso de `any`.
+  - [x] El menú lateral de `DashboardLayout.tsx` enlaza activamente a `/app/dashboard` y `/app/mercado` según el rol activo.
 - **Dependencies:** Task 1.1, Task 1.2
 - **Files to create/modify:** `app/frontend/src/infrastructure/api/anomalyApi.ts`, `app/frontend/src/presentation/hooks/useAuthManagement.ts`, `app/frontend/src/presentation/layouts/DashboardLayout.tsx`, `app/frontend/src/presentation/pages/LoginPage.tsx`, `app/frontend/src/App.tsx`
 
