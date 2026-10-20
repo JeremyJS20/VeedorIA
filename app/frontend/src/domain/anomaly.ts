@@ -88,6 +88,8 @@ export interface AnomalyContext {
   supplier_name: string | null
   institution_name: string | null
   market_prices: MarketPrice[]
+  fragmentation_threshold?: number
+  fragmentation_combined_amount?: number | null
   recent_contracts: TimelineEntry[]
   collusion_links: CollusionLink[]
 }

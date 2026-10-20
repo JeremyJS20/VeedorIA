@@ -109,7 +109,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
             </div>
             <div class="font-semibold text-on-surface line-clamp-2 mb-1">${e.title || "Contrato"}</div>
             <div class="font-mono font-bold text-sm ${e.is_alert ? "text-error" : "text-on-surface"}">RD$ ${d3.format(",.2f")(e.amount)}</div>
-            ${e.is_alert ? '<div class="text-error text-[10px] font-bold mt-1 uppercase tracking-wider">⚠ Contrato vinculado a fraccionamiento</div>' : ""}
+            ${e.is_alert ? `<div class="text-error text-[10px] font-bold mt-1 uppercase tracking-wider">⚠ Fraccionado (sumado supera RD$ ${d3.format(",.0f")(threshold)})</div>` : ""}
           `)
       })
       .on("mousemove", (event) => {

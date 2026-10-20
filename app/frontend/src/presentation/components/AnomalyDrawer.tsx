@@ -19,8 +19,6 @@ interface AnomalyDrawerProps {
   className?: string
 }
 
-const FRAGMENTATION_THRESHOLD = 8_000_000
-
 const SIGNAL_CONFIG: Record<string, { label: string; icon: string }> = {
   shared_phone: { label: "Teléfono", icon: "📞" },
   shared_address: { label: "Dirección", icon: "📍" },
@@ -280,20 +278,63 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <SectionErrorBoundary title="fragmentation">
             <div className="space-y-4">
               <div className="flex justify-between items-end">
-                <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
-                  Contratos recientes
-                </h4>
+                <div>
+                  <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
+                    Contratos recientes y umbral de fraccionamiento
+                  </h4>
+                  <p className="text-[11px] text-on-surface-variant mt-0.5">
+                    Las barras rojas representan contratos individuales que <strong>sumados entre sí</strong> superan el umbral legal.
+                  </p>
+                </div>
                 <button onClick={() => setFullscreenChart("fragmentation")} className="text-outline hover:text-on-surface transition-colors">
                   <Maximize2 className="w-4 h-4" />
                 </button>
               </div>
               {ctx?.recent_contracts && ctx.recent_contracts.length > 0 ? (
                 <>
-                  <FragmentationBarChart
-                    entries={ctx.recent_contracts}
-                    threshold={FRAGMENTATION_THRESHOLD}
-                  />
-                  <InstitutionTimeline entries={ctx.recent_contracts} />
+                  {(() => {
+                    const effectiveThreshold = ctx.fragmentation_threshold ?? 8_000_000
+                    const alertContracts = ctx.recent_contracts.filter((c) => c.is_alert)
+                    const combinedSum =
+                      ctx.fragmentation_combined_amount && ctx.fragmentation_combined_amount > 0
+                        ? ctx.fragmentation_combined_amount
+                        : alertContracts.reduce((acc, c) => acc + c.amount, 0)
+                    const excessPct = effectiveThreshold > 0 ? ((combinedSum / effectiveThreshold - 1) * 100) : 0
+                    return (
+                      <>
+                        {combinedSum > 0 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-xs">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-outline block">
+                                Suma Acumulada ({alertContracts.length || 2} contratos alertados)
+                              </span>
+                              <span className="font-mono font-bold text-sm text-error">
+                                RD$ {combinedSum.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
+                              </span>
+                              {excessPct > 0 && (
+                                <span className="ml-1.5 text-[10px] font-mono font-semibold text-error">
+                                  (+{excessPct.toFixed(0)}% sobre umbral)
+                                </span>
+                              )}
+                            </div>
+                            <div className="sm:text-right">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-outline block">
+                                Umbral de Licitación Evaluado (DGCP)
+                              </span>
+                              <span className="font-mono font-bold text-sm text-on-surface">
+                                RD$ {effectiveThreshold.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        <FragmentationBarChart
+                          entries={ctx.recent_contracts}
+                          threshold={effectiveThreshold}
+                        />
+                        <InstitutionTimeline entries={ctx.recent_contracts} />
+                      </>
+                    )
+                  })()}
                 </>
               ) : (
                 <p className="text-sm text-outline text-center py-8">No hay contratos recientes para esta institución</p>
@@ -408,7 +449,7 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <PriceScatter data={marketPrices} median={contextMedian} fullscreen />
         )}
         {fullscreenChart === "fragmentation" && ctx?.recent_contracts && ctx.recent_contracts.length > 0 && (
-          <FragmentationBarChart entries={ctx.recent_contracts} threshold={FRAGMENTATION_THRESHOLD} fullscreen />
+          <FragmentationBarChart entries={ctx.recent_contracts} threshold={ctx.fragmentation_threshold ?? 8_000_000} fullscreen />
         )}
         {fullscreenChart === "collusion" && ctx?.collusion_links && ctx.collusion_links.length > 0 && (
           <CollusionNetwork links={ctx.collusion_links} fullscreen />

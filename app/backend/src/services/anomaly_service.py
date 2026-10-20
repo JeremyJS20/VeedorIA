@@ -790,8 +790,18 @@ class AnomalyService:
         inst_name = anomaly.institution_name
         process_code = anomaly.process_code
 
+        await self._ensure_config()
         market_prices: list[dict] = []
         recent_contracts: list[dict] = []
+        frag_threshold = float(self._get_param("fragmentation_threshold_dop", FRAGMENTATION_THRESHOLD_DOP))
+        frag_combined: float | None = None
+        if anomaly.description and anomaly.anomaly_type == "FRAGMENTATION":
+            m_thresh = re.search(r"umbral de licitaci[oó]n\s*\(DOP \$([0-9,]+\.[0-9]{2})\)", anomaly.description)
+            if m_thresh:
+                frag_threshold = float(m_thresh.group(1).replace(",", ""))
+            m_sum = re.search(r"suman DOP \$([0-9,]+\.[0-9]{2})", anomaly.description)
+            if m_sum:
+                frag_combined = float(m_sum.group(1).replace(",", ""))
 
         if anomaly.anomaly_type == "PRICE_ANOMALY" and contract:
             unspsc_match = re.search(r"UNSPSC\s+(\d+)", anomaly.description or "")
@@ -987,6 +997,14 @@ class AnomalyService:
             "supplier_name": anomaly.supplier_name,
             "institution_name": inst_name,
             "market_prices": market_prices,
+            "fragmentation_threshold": frag_threshold,
+            "fragmentation_combined_amount": (
+                frag_combined
+                if frag_combined is not None
+                else sum(c["amount"] for c in recent_contracts if c.get("is_alert"))
+                if recent_contracts
+                else None
+            ),
             "recent_contracts": recent_contracts,
             "collusion_links": collusion_links,
         }

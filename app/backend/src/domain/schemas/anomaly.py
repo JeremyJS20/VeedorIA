@@ -84,5 +84,7 @@ class AnomalyContext(BaseModel):
     supplier_name: str | None = None
     institution_name: str | None = None
     market_prices: list[MarketPrice] = []
+    fragmentation_threshold: float = 8000000.0
+    fragmentation_combined_amount: float | None = None
     recent_contracts: list[TimelineEntry] = []
     collusion_links: list[CollusionLink] = []
