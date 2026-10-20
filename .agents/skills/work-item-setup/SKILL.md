@@ -1,6 +1,6 @@
 ---
-name: Work Item Setup
-description: creates work items in tracker and branches based on spec_prefix configuration
+name: "Work Item Setup"
+description: "creates work items in tracker and branches based on spec_prefix configuration"
 ---
 
 ## ⚠️ MANDATORY CHECKLIST — verify EVERY step

@@ -1,6 +1,6 @@
 ---
-name: Deployment Patterns
-description: Multi-platform deployment patterns, stack→deployment mapping, and promotion flows
+name: "Deployment Patterns"
+description: "Multi-platform deployment patterns, stack→deployment mapping, and promotion flows"
 ---
 
 # Deployment Patterns

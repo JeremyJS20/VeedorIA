@@ -1,6 +1,6 @@
 ---
-name: Sprint Planner
-description: Manages the full sprint lifecycle: planning, monitoring, scope changes, close-out, and velocity tracking. All selections require final Analyst approval.. Triggers: sprint, planning, velocity, capacity, sprint goal, backlog, burndown, close-out, carryover, scope, trend
+name: "Sprint Planner"
+description: "Manages the full sprint lifecycle: planning, monitoring, scope changes, close-out, and velocity tracking. All selections require final Analyst approval.. Triggers: sprint, planning, velocity, capacity, sprint goal, backlog, burndown, close-out, carryover, scope, trend"
 ---
 
 ## Role: Analyst

@@ -1,6 +1,6 @@
 ---
-name: Technology Stack — SDD
-description: approved tech stack, versions, and selection criteria
+name: "Technology Stack — SDD"
+description: "approved tech stack, versions, and selection criteria"
 ---
 
 # Technology Stack — SDD

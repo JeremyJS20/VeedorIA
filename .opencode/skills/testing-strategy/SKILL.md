@@ -1,6 +1,6 @@
 ---
-name: Testing Strategy
-description: test types, when to use each, coverage requirements
+name: "Testing Strategy"
+description: "test types, when to use each, coverage requirements"
 ---
 
 # Testing Strategy

@@ -1,6 +1,6 @@
 ---
-name: Design Themes
-description: UI theme files for the project design system. Use when selecting or applying a visual theme.
+name: "Design Themes"
+description: "UI theme files for the project design system. Use when selecting or applying a visual theme."
 ---
 
 # Design Themes

@@ -1,6 +1,6 @@
 ---
-name: IDE × SDD Integration
-description: Guide IDE spec/plan modes to use SDD Standard powers, paths, and workflow
+name: "IDE × SDD Integration"
+description: "Guide IDE spec/plan modes to use SDD Standard powers, paths, and workflow"
 ---
 
 # IDE × SDD Integration

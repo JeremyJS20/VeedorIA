@@ -1,6 +1,6 @@
 ---
-name: Design Anti-Patterns
-description: visual and UX anti-patterns that produce generic, repetitive, or low-quality designs
+name: "Design Anti-Patterns"
+description: "visual and UX anti-patterns that produce generic, repetitive, or low-quality designs"
 ---
 
 # Design Anti-Patterns

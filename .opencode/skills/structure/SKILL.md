@@ -1,6 +1,6 @@
 ---
-name: Structure Conventions — SDD
-description: project folder structure by project type, repo type, multi-IDE support, and deploy patterns
+name: "Structure Conventions — SDD"
+description: "project folder structure by project type, repo type, multi-IDE support, and deploy patterns"
 ---
 
 # Structure Conventions — SDD

@@ -1,6 +1,6 @@
 ---
-name: Workflow Router
-description: routes user requests to the correct power/role, output format, communication style
+name: "Workflow Router"
+description: "routes user requests to the correct power/role, output format, communication style"
 ---
 
 > ⛔ **FIRST MESSAGE OF THE CONVERSATION — do this before anything else:** execute `precheck.md` IN ORDER (memory → git → MCP health → readiness → router), EVEN IF the message is just a greeting ("Hola", "buenas"). A greeting is NOT an exception and does NOT mean "skip to showing context". Reading only `.sdd-config.json` + git and replying with capabilities = a precheck violation. Run the full precheck first, THEN show context and STOP.

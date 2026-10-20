@@ -1,6 +1,6 @@
 ---
-name: Security Standards
-description: OWASP, secrets management, auth patterns, input validation
+name: "Security Standards"
+description: "OWASP, secrets management, auth patterns, input validation"
 ---
 
 # Security Standards

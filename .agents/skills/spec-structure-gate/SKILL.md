@@ -1,6 +1,6 @@
 ---
-name: SPEC STRUCTURE GATE — Violation = BLOCK
-description: BLOCKS incorrect spec structure. Run BEFORE creating ANY file under specs/. Violation = STOP and fix.
+name: "SPEC STRUCTURE GATE — Violation = BLOCK"
+description: "BLOCKS incorrect spec structure. Run BEFORE creating ANY file under specs/. Violation = STOP and fix."
 ---
 
 # SPEC STRUCTURE GATE — Violation = BLOCK

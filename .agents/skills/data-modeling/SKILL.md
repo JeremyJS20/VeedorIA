@@ -1,6 +1,6 @@
 ---
-name: Data Modeling Standards
-description: data modeling standards, normalization rules, naming conventions, and schema patterns
+name: "Data Modeling Standards"
+description: "data modeling standards, normalization rules, naming conventions, and schema patterns"
 ---
 
 # Data Modeling Standards

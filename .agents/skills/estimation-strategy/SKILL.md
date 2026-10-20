@@ -1,6 +1,6 @@
 ---
-name: Estimation Strategy
-description: Centralized estimation rules for all SDD powers. Calibrated with real data.
+name: "Estimation Strategy"
+description: "Centralized estimation rules for all SDD powers. Calibrated with real data."
 ---
 
 # Estimation Strategy

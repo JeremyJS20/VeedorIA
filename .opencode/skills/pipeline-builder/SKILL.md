@@ -1,6 +1,6 @@
 ---
-name: Pipeline Builder
-description: Creates and maintains CI/CD pipelines for Azure Pipelines and GitHub Actions. Detects platform, generates YAML with stages, environment gates, security scanning, and rollback. Integrates with `environment-strategy.md` and `git-conventions.md`.. Triggers: pipeline, ci, cd, azure pipelines, github actions, deploy, yaml, build, test, security scan
+name: "Pipeline Builder"
+description: "Creates and maintains CI/CD pipelines for Azure Pipelines and GitHub Actions. Detects platform, generates YAML with stages, environment gates, security scanning, and rollback. Integrates with `environment-strategy.md` and `git-conventions.md`.. Triggers: pipeline, ci, cd, azure pipelines, github actions, deploy, yaml, build, test, security scan"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any building pipelines)

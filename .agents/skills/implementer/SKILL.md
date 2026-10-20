@@ -1,6 +1,6 @@
 ---
-name: Implementer
-description: Implements code task-by-task from approved design and tasks. Follows design patterns, runs lint and tests, commits per task.. Triggers: implement, code, build, develop, coding, task
+name: "Implementer"
+description: "Implements code task-by-task from approved design and tasks. Follows design patterns, runs lint and tests, commits per task.. Triggers: implement, code, build, develop, coding, task"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any implementing code)

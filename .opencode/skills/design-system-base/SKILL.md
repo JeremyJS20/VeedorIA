@@ -1,6 +1,6 @@
 ---
-name: Design System Base
-description: theme selection, design tokens, UI component patterns
+name: "Design System Base"
+description: "theme selection, design tokens, UI component patterns"
 ---
 
 # Design System Base

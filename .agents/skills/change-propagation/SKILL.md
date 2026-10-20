@@ -1,6 +1,6 @@
 ---
-name: Change Propagation
-description: update related artifacts when specs or code change
+name: "Change Propagation"
+description: "update related artifacts when specs or code change"
 ---
 
 # Change Propagation

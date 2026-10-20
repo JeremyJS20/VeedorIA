@@ -1,6 +1,6 @@
 ---
-name: A11y Standards — WCAG 2.1 AA
-description: WCAG accessibility rules for UI components
+name: "A11y Standards — WCAG 2.1 AA"
+description: "WCAG accessibility rules for UI components"
 ---
 
 # A11y Standards — WCAG 2.1 AA

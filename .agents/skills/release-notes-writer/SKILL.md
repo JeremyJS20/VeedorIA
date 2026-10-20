@@ -1,6 +1,6 @@
 ---
-name: Release Notes Writer
-description: Generates professional release notes and changelogs from completed work items in Azure DevOps. Groups changes by type, applies semantic versioning, and requires Analyst approval before publishing.. Triggers: release notes, changelog, release, version, semver
+name: "Release Notes Writer"
+description: "Generates professional release notes and changelogs from completed work items in Azure DevOps. Groups changes by type, applies semantic versioning, and requires Analyst approval before publishing.. Triggers: release notes, changelog, release, version, semver"
 ---
 
 ## Role: Analyst

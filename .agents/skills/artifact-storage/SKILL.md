@@ -1,6 +1,6 @@
 ---
-name: Artifact Storage
-description: where to save specs, tests, docs, and generated files
+name: "Artifact Storage"
+description: "where to save specs, tests, docs, and generated files"
 ---
 
 # Artifact Storage

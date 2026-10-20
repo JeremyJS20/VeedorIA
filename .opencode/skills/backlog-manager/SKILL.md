@@ -1,6 +1,6 @@
 ---
-name: Backlog Manager
-description: Manages and analyzes the backlog in Azure DevOps. Evaluates backlog health, identifies stale or blocked items, suggests prioritization using structured frameworks (MoSCoW, RICE), checks sprint readiness, maps dependencies, and generates actionable reports. All actions on items require Analyst approval.. Triggers: backlog, estimation, prioritization, grooming, refinement, RICE, MoSCoW, backlog health, dependencies, sprint ready, cleanup, filter
+name: "Backlog Manager"
+description: "Manages and analyzes the backlog in Azure DevOps. Evaluates backlog health, identifies stale or blocked items, suggests prioritization using structured frameworks (MoSCoW, RICE), checks sprint readiness, maps dependencies, and generates actionable reports. All actions on items require Analyst approval.. Triggers: backlog, estimation, prioritization, grooming, refinement, RICE, MoSCoW, backlog health, dependencies, sprint ready, cleanup, filter"
 ---
 
 > Follow standard interaction pattern. See workflow-router.md.

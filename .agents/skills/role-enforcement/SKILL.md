@@ -1,6 +1,6 @@
 ---
-name: Role Enforcement
-description: role validation, enforcement, blocked guidance, and handoff detection
+name: "Role Enforcement"
+description: "role validation, enforcement, blocked guidance, and handoff detection"
 ---
 
 ## Validate branch vs role

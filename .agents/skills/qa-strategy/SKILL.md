@@ -1,6 +1,6 @@
 ---
-name: QA Strategy
-description: quality gates, acceptance criteria, test coverage targets
+name: "QA Strategy"
+description: "quality gates, acceptance criteria, test coverage targets"
 ---
 
 # QA Strategy

@@ -1,6 +1,6 @@
 ---
-name: DB Migrator
-description: Manages database migrations: reads target schema from `design.md`, compares with current state, generates versioned scripts with rollback, and executes only with explicit developer approval.. Triggers: migration, database, schema, db, alter table, create table, index, constraint, rollback
+name: "DB Migrator"
+description: "Manages database migrations: reads target schema from `design.md`, compares with current state, generates versioned scripts with rollback, and executes only with explicit developer approval.. Triggers: migration, database, schema, db, alter table, create table, index, constraint, rollback"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any planning database migration)

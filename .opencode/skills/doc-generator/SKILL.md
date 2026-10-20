@@ -1,6 +1,6 @@
 ---
-name: Doc Generator
-description: Automatically generates technical documentation from source code. Produces API docs (OpenAPI 3.0), module READMEs, docstrings, ADRs, and Mermaid diagrams. All documentation requires Developer approval.. Triggers: documentation, api docs, swagger, readme, adr, openapi, mermaid, docstrings
+name: "Doc Generator"
+description: "Automatically generates technical documentation from source code. Produces API docs (OpenAPI 3.0), module READMEs, docstrings, ADRs, and Mermaid diagrams. All documentation requires Developer approval.. Triggers: documentation, api docs, swagger, readme, adr, openapi, mermaid, docstrings"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any generating documentation)

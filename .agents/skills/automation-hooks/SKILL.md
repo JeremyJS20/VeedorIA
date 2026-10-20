@@ -1,6 +1,6 @@
 ---
-name: Automation Hooks
-description: Quality gates, spec sync, and automated checks. Automated quality checks and triggers
+name: "Automation Hooks"
+description: "Quality gates, spec sync, and automated checks. Automated quality checks and triggers"
 ---
 
 # Automation Hooks

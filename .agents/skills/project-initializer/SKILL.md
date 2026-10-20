@@ -1,6 +1,6 @@
 ---
-name: Project Initializer
-description: Conversational guide for creating the product.md file in new projects through an interactive interview.. Triggers: init, new project, product.md, setup, project setup, new project
+name: "Project Initializer"
+description: "Conversational guide for creating the product.md file in new projects through an interactive interview.. Triggers: init, new project, product.md, setup, project setup, new project"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any initializing the project)

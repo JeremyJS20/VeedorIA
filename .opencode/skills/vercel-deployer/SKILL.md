@@ -1,6 +1,6 @@
 ---
-name: Vercel Deployer
-description: Manages Vercel project configuration, environment variables, custom domains, and rollback. Does NOT execute deploys — Vercel handles that automatically via Git integration.. Triggers: vercel, deploy, frontend, preview, production, domain, rollback
+name: "Vercel Deployer"
+description: "Manages Vercel project configuration, environment variables, custom domains, and rollback. Does NOT execute deploys — Vercel handles that automatically via Git integration.. Triggers: vercel, deploy, frontend, preview, production, domain, rollback"
 ---
 
 > Follow standard interaction pattern. See `workflow-router.md`.

@@ -1,6 +1,6 @@
 ---
-name: Project Scanner
-description: Scans an existing project and automatically generates the product.md file with all detected tech stack, structure, and configuration.. Triggers: scan, existing project, detect, product.md, stack detection, project scan
+name: "Project Scanner"
+description: "Scans an existing project and automatically generates the product.md file with all detected tech stack, structure, and configuration.. Triggers: scan, existing project, detect, product.md, stack detection, project scan"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any scanning)

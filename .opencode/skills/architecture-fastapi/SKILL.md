@@ -1,6 +1,6 @@
 ---
-name: Architecture: FastAPI + SQLAlchemy — Python
-description: FastAPI's `Depends()` is the backbone of modularity. Chain dependencies for auth, DB sessions, and shared resources.
+name: "Architecture: FastAPI + SQLAlchemy — Python"
+description: "FastAPI's `Depends()` is the backbone of modularity. Chain dependencies for auth, DB sessions, and shared resources."
 ---
 
 # Architecture: FastAPI + SQLAlchemy — Python

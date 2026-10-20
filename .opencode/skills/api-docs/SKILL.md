@@ -1,6 +1,6 @@
 ---
-name: API Documentation — Universal
-description: OpenAPI spec + interactive API docs for every backend
+name: "API Documentation — Universal"
+description: "OpenAPI spec + interactive API docs for every backend"
 ---
 
 # API Documentation — Universal

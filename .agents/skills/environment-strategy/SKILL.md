@@ -1,6 +1,6 @@
 ---
-name: Environment Strategy
-description: dev/cert/prod promotion rules and environment config
+name: "Environment Strategy"
+description: "dev/cert/prod promotion rules and environment config"
 ---
 
 # Environment Strategy

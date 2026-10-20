@@ -1,6 +1,6 @@
 ---
-name: Requirements Analyst
-description: Turns the agent into an analysis assistant that generates requirements using EARS notation.. Triggers: requirement, EARS, acceptance criteria, feature, analysis
+name: "Requirements Analyst"
+description: "Turns the agent into an analysis assistant that generates requirements using EARS notation.. Triggers: requirement, EARS, acceptance criteria, feature, analysis"
 ---
 
 ## Role: Analyst

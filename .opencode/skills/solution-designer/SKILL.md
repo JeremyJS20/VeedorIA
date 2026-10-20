@@ -1,6 +1,6 @@
 ---
-name: Solution Designer
-description: Creates design docs and tasks from approved requirements.. Triggers: design, architecture, task, data model, api contract, ui prompt, ui design
+name: "Solution Designer"
+description: "Creates design docs and tasks from approved requirements.. Triggers: design, architecture, task, data model, api contract, ui prompt, ui design"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any designing architecture)

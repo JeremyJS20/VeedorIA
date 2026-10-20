@@ -1,6 +1,6 @@
 ---
-name: AWS Deployer
-description: Deploys and manages AWS infrastructure with CDK/CloudFormation. Reads requirements from `design.md`, generates/updates CDK stacks, performs diff analysis, and deploys with approval gates per environment. Includes smoke tests, monitoring, and rollback.. Triggers: deploy, aws, lambda, cdk, cloudformation, s3, infrastructure, rollback, rds, cognito, api gateway
+name: "AWS Deployer"
+description: "Deploys and manages AWS infrastructure with CDK/CloudFormation. Reads requirements from `design.md`, generates/updates CDK stacks, performs diff analysis, and deploys with approval gates per environment. Includes smoke tests, monitoring, and rollback.. Triggers: deploy, aws, lambda, cdk, cloudformation, s3, infrastructure, rollback, rds, cognito, api gateway"
 ---
 
 > Follow standard interaction pattern. See workflow-router.md.

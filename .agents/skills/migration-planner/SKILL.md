@@ -1,6 +1,6 @@
 ---
-name: Migration Planner
-description: Plans and guides technology migrations in a safe and structured way. Supports migrations of: frameworks, databases, infrastructure, and architecture.. Triggers: migration, migrate, convert, upgrade, modernize, legacy, refactor, strangler, replatform
+name: "Migration Planner"
+description: "Plans and guides technology migrations in a safe and structured way. Supports migrations of: frameworks, databases, infrastructure, and architecture.. Triggers: migration, migrate, convert, upgrade, modernize, legacy, refactor, strangler, replatform"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any migration planning)

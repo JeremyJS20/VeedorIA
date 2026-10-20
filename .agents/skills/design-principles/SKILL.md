@@ -1,6 +1,6 @@
 ---
-name: Design Principles
-description: design principles for distinctive, non-generic UI grounded in domain and theme
+name: "Design Principles"
+description: "design principles for distinctive, non-generic UI grounded in domain and theme"
 ---
 
 # Design Principles

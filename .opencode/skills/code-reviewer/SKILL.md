@@ -1,6 +1,6 @@
 ---
-name: Code Reviewer
-description: Automated code review following project standards. Identifies changed files, evaluates against checklist, generates report with findings classified by severity with references to specific lines.. Triggers: review, code review, pr, pull request, security, quality, standards
+name: "Code Reviewer"
+description: "Automated code review following project standards. Identifies changed files, evaluates against checklist, generates report with findings classified by severity with references to specific lines.. Triggers: review, code review, pr, pull request, security, quality, standards"
 ---
 
 ## ⚠️ Step 0 — MCP Pre-flight (BEFORE any reviewing code)
