@@ -29,7 +29,8 @@
 | Motor de Detección de Anomalías (`deteccion-anomalias`) | Detección híbrida de sobreprecios (*Isolation Forest* + *Z-Score* > 70% sobre mediana UNSPSC), fraccionamiento (ventana `<= 30 días` por institución y familia UNSPSC de 4 dígitos) y redes de colusión (`NetworkX` + similitud difusa `rapidfuzz` + concentración IHH), con bucle de retroalimentación cerrado (`DetectionConfig` / `tune_detection`) | 🟢 active |
 | Consola y Bandeja de Auditoría (`consola-auditoria`) | Interfaz para auditores (`AuditorPage`, `AnomalyCard`, `AnomalyDrawer`, `AnomalyFilters`) con revisión de hallazgos (`CONFIRMED` / `DISMISSED`), grafos interactivos D3 (`CollusionNetwork`), barras de fraccionamiento (`FragmentationBarChart`), dispersión de precios y línea de tiempo institucional (`InstitutionTimeline`) | 🟢 active |
 | Portal Cívico y Landing Page (`portal-civico-landing`) | Portal público bilingüe (ES/EN con `i18next`), verificador público de precios (`PriceCheckerSection`), secciones informativas de portales B2C/B2B/B2G y diseño institucional con soporte claro/oscuro | 🟢 active |
-| Autenticación, Onboarding y RBAC Multi-Tenant | Modelos base (`User`, `UserRole`, `AuditLog`) y diseños conceptuales (`docs-backup-2/pages_concept/`) para Login (`/login`), Registro multi-paso (`/register`), Pasarela de Invitaciones (`/join`) y Recuperación de Contraseña (`/forgot-password`) | 🟡 in dev |
+| Buscador Ciudadano y Portal Cívico (`buscador-ciudadano`) | Buscador en lenguaje natural (`/public`), diagrama Sankey presupuestario, mapa provincial, comparador de precios, expediente público de licitación, radiografías de proveedor/institución y ranking de transparencia | 🟢 active |
+| Autenticación y Control de Acceso Multi-Organización (`autenticacion-rbac`) | Autenticación JWT (`/login`), recuperación de contraseña, aislamiento de datos por organización (`B2G`, `B2B`, `Global`), matriz de roles y permisos (`/app/roles`), gestión de usuarios (`/app/usuarios`) y perfil (`/app/perfil`) | 🟢 active |
 | Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral (`docs-backup-2/internal/complete_screen_map.md`) incluyendo Dashboard Multi-Rol (`/dashboard`), Inteligencia de Mercado B2B (`/dashboard/market-intelligence`), Ajustes de Organización (`/settings/organization`), Sankey de Gasto, Simulador de Precios y Consola Admin (`/admin`) | ⚪ planned |
 
 ## Tech Stack
@@ -103,6 +104,7 @@ veedoria-monorepo/
 │   ├── _templates/                # Plantillas oficiales del estándar SDD
 │   └── veedoria-core/             # Epic As-Built y subcarpetas de los 4 features implementados
 ├── .sdd-config.json
+├── design-system-theme.md
 └── product.md
 ```
 

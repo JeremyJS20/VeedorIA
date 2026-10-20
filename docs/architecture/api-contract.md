@@ -21,7 +21,30 @@
 | `GET` | `/api/anomalies/stats` | Public | Estadísticas agregadas de anomalías por tipo, estado y severidad | anomalies |
 | `GET` | `/api/anomalies/{anomaly_id}` | Public | Obtiene el detalle de una anomalía específica por su UUID | anomalies |
 | `GET` | `/api/anomalies/{anomaly_id}/context` | Public | Obtiene el contexto enriquecido de la anomalía (precios de mercado, línea de tiempo institucional, enlaces de colusión) | anomalies |
-| `PATCH` | `/api/anomalies/{anomaly_id}` | `[VERIFY]` Auditor | Registra la revisión de un auditor (`CONFIRMED` / `DISMISSED`), motivo de descarte y actualiza pesos en `DetectionConfig` | anomalies |
+| `PATCH` | `/api/anomalies/{anomaly_id}` | `anomalies:review` | Registra la revisión de un auditor (`CONFIRMED` / `DISMISSED`), motivo de descarte y actualiza pesos en `DetectionConfig` | anomalies |
+| `GET` | `/api/public/tenders` | Public | Buscador ciudadano multi-token `AND` con ranking de relevancia y filtros | buscador-ciudadano |
+| `GET` | `/api/public/tenders/{id}` | Public | Expediente público de contratación, ítems UNSPSC y hallazgos traducidos | buscador-ciudadano |
+| `GET` | `/api/public/institutions` | Public | Catálogo de instituciones con conteo de contratos | buscador-ciudadano |
+| `GET` | `/api/public/institutions/{id}` | Public | Radiografía pública de una institución del Estado | buscador-ciudadano |
+| `GET` | `/api/public/suppliers/{rpe}` | Public | Radiografía pública de un proveedor del Estado | buscador-ciudadano |
+| `GET` | `/api/public/budget-overview` | Public | Flujos presupuestarios agregados para el diagrama Sankey | buscador-ciudadano |
+| `GET` | `/api/public/provincial-spend` | Public | Gasto adjudicado y alertas agregadas por provincia | buscador-ciudadano |
+| `GET` | `/api/public/rankings` | Public | Ranking de instituciones y proveedores por concentración de hallazgos | buscador-ciudadano |
+| `GET` | `/api/public/price-comparisons` | Public | Casos destacados de variación de precios frente a la mediana del mercado | buscador-ciudadano |
+| `POST` | `/api/auth/login` | Public | Autenticación institucional y emisión de sesión JWT con organización, rol y permisos | autenticacion-rbac |
+| `POST` | `/api/auth/logout` | JWT | Cierre de sesión con registro en bitácora | autenticacion-rbac |
+| `GET` | `/api/auth/me` | JWT | Perfil del usuario autenticado, organización suscriptora y permisos efectivos | autenticacion-rbac |
+| `POST` | `/api/auth/forgot-password` | Public | Emisión de token efímero de recuperación (respuesta uniforme anti-enumeración) | autenticacion-rbac |
+| `POST` | `/api/auth/reset-password` | Public | Restablecimiento de contraseña mediante token de un solo uso | autenticacion-rbac |
+| `GET` | `/api/auth/roles` | `ROLE_VIEW` | Catálogo de roles y matriz de 13 permisos | autenticacion-rbac |
+| `PUT` | `/api/auth/roles/{role_id}/permissions` | `ROLE_ADMIN` | Actualización de permisos asignados a un rol | autenticacion-rbac |
+| `GET` | `/api/auth/tenants` | `USER_ADMIN` | Listado de organizaciones suscriptoras (`B2G`, `B2B`, `Global`) | autenticacion-rbac |
+| `GET` | `/api/auth/users` | `USER_ADMIN` | Listado de usuarios con filtros por organización, rol, estado y búsqueda | autenticacion-rbac |
+| `POST` | `/api/auth/users` | `USER_ADMIN` | Creación de nuevo usuario institucional o empresarial | autenticacion-rbac |
+| `PATCH` | `/api/auth/users/{user_id}` | `USER_ADMIN` | Edición de rol, organización o estado (`ACTIVE`/`SUSPENDED`) de un usuario | autenticacion-rbac |
+| `PATCH` | `/api/auth/me/profile` | JWT | Autoservicio de actualización de nombre y unidad administrativa | autenticacion-rbac |
+| `POST` | `/api/auth/me/password` | JWT | Cambio de contraseña propia validando contraseña actual | autenticacion-rbac |
+| `POST` | `/api/auth/demo-switch` | Public (Demo) | Conmutador instantáneo de cuentas multi-organización para demostración | autenticacion-rbac |
 
 ### `PATCH /api/anomalies/{anomaly_id}`
 - **Request (`AnomalyReviewPayload`)**:
@@ -122,4 +145,4 @@ curl -X POST http://localhost:3001/api/anomalies/detect
 | 2026-10-18 | `project-scanner` | Contrato inicial extraído de `main.py`, `routers/anomaly.py` y `routers/sync.py` |
 
 ---
-_Last updated: 2026-10-18 by project-scanner_
+_Last updated: 2026-10-19 by solution-designer (added /api/public/* and /api/auth/*)_

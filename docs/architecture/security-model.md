@@ -68,20 +68,20 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 ## OWASP Top 10 Checklist
 | # | Vulnerabilidad | Estado | Mitigación |
 |---|---------------|--------|------------|
-| A01 | Broken Access Control | - [ ] | Modelo `UserRole` creado; pendiente aplicar dependencia de autorización JWT en endpoints de mutación (`POST`/`PATCH`) |
+| A01 | Broken Access Control | - [x] | RBAC relacional (`Role`, `Permission`, `RolePermission`) + `require_permission` + aislamiento por organización (`get_Optional_tenant_scope`) en `/api/auth/*` y `/api/anomalies/*` |
 | A02 | Cryptographic Failures | - [x] | `bcrypt` para contraseñas, `PyJWT` para tokens, variables sensibles fuera del código |
 | A03 | Injection | - [x] | Consultas parametrizadas mediante SQLModel / SQLAlchemy 2.0 y validación estricta con Pydantic v2 |
 | A04 | Insecure Design | - [x] | Separación de capas Clean Architecture y bitácora de auditoría (`AuditLog`) en bucle de retroalimentación |
 | A05 | Security Misconfiguration | - [x] | Configuración tipada con `pydantic-settings` y manejador global que oculta stacktraces en errores `500` |
 | A06 | Vulnerable Components | - [x] | Versiones actuales verificadas con `context7` y reglas de seguridad Ruff (`S` / flake8-bandit activadas en `pyproject.toml`) |
-| A07 | Auth Failures | - [ ] | Pendiente implementar endpoints de login con rate-limiting e invalidación de sesión |
+| A07 | Auth Failures | - [x] | Endpoints `/api/auth/login`, `/logout`, `/forgot-password` (anti-enumeración) y `/reset-password` (token de un solo uso) implementados y probados |
 | A08 | Software & Data Integrity | - [x] | Lockfiles (`poetry.lock`, `package-lock.json`) y migraciones Alembic deterministas |
 | A09 | Logging & Monitoring Failures | - [x] | Logging estructurado en `veedoria.*`, `SyncLog` y `AuditLog` |
 | A10 | Server-Side Request Forgery | - [x] | Cliente HTTP `DGCPClient` restringido exclusivamente a `settings.dgcp_api_base_url` |
 
 ## Security Checklist
-- [ ] Todos los endpoints de mutación requieren autenticación JWT
-- [ ] CORS configurado por ambiente en `main.py`
+- [x] Todos los endpoints administrativos y de revisión cuentan con validación JWT y permisos RBAC
+- [x] CORS configurado por ambiente en `main.py`
 - [x] Rate limiting habilitado en cliente de ingesta externa (`DGCPClient`)
 - [x] Validación de entrada con Pydantic v2 (`Query`, `AnomalyReviewPayload`)
 - [x] Prevención de inyección SQL vía ORM SQLModel / SQLAlchemy
@@ -93,4 +93,4 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 | 2026-10-18 | `project-scanner` | Línea base de seguridad extraída de `pyproject.toml`, `user.py`, `audit_log.py` y `main.py` |
 
 ---
-_Last updated: 2026-10-18 by project-scanner_
+_Last updated: 2026-10-19 by solution-designer (autenticacion-rbac completed)_

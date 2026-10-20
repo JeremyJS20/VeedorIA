@@ -233,5 +233,23 @@ erDiagram
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Línea base inicial extraída de los 10 modelos SQLModel y 14 migraciones Alembic |
 
+### `tenants` (`app/backend/src/models/auth.py`)
+| Column | Type | Nullable | Default | Index | Description |
+|--------|------|----------|---------|-------|-------------|
+| `id` | `varchar(36)` | NO | UUID | PK | Identificador de la organización suscriptora |
+| `code` | `varchar(50)` | NO | — | UNIQUE, IDX | Código corto de organización (`NEXODIGITAL`, `MOPC-B2G`, `CONSTRUCTORA-B2B`) |
+| `name` | `varchar(255)` | NO | — | — | Nombre oficial de la institución o proveedor suscrito |
+| `tenant_type` | `varchar(50)` | NO | — | — | Tipo (`PLATFORM`, `GOV_INSTITUTION`, `B2B_SUPPLIER`) |
+| `plan_tier` | `varchar(50)` | NO | — | — | Plan (`PLATFORM_GLOBAL`, `B2G_BASIC`, `B2G_PREMIUM`, `B2G_ENTERPRISE`, `B2B_PYME`, `B2B_CORPORATE`) |
+| `institution_id` | `int` | YES | `NULL` | IDX | Vínculo con `institution.id` para aislamiento de datos B2G |
+| `supplier_rpe` | `varchar(50)` | YES | `NULL` | IDX | Vínculo con `contract.rpe` para aislamiento de datos B2B |
+| `status` | `varchar(30)` | NO | `'ACTIVE'` | — | Estado de la suscripción (`ACTIVE`, `SUSPENDED`) |
+
+### `roles`, `permissions`, `role_permissions`, `password_reset_tokens` (`app/backend/src/models/auth.py`)
+- **`roles`**: Catálogo de roles (`SYSTEM_ADMIN`, `LEAD_AUDITOR`, `INSTITUTIONAL_AUDITOR`, `SUPPLIER_EXECUTIVE`).
+- **`permissions`**: Catálogo de 13 permisos granulares agrupados por módulo funcional.
+- **`role_permissions`**: Tabla puente `N:M` entre `roles` y `permissions`.
+- **`password_reset_tokens`**: Tokens efímeros (`token_hash` SHA-256, `expires_at`, `used_at`) para restablecimiento seguro de contraseña.
+
 ---
-_Last updated: 2026-10-18 by project-scanner_
+_Last updated: 2026-10-19 by solution-designer (added Multi-Tenant & RBAC tables)_
