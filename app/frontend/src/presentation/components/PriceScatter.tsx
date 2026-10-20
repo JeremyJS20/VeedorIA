@@ -19,7 +19,7 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
     svg.selectAll("*").remove()
 
     const tooltip = d3.select("body").append("div")
-      .attr("class", "fixed pointer-events-none z-[60] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
+      .attr("class", "fixed pointer-events-none z-[120] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
       .style("display", "none")
 
     const width = svgRef.current.clientWidth
@@ -139,10 +139,14 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
       })
 
     g.selectAll("text.anomaly-label")
-      .data(data.filter((d) => d.is_anomaly))
+      .data(data.filter((d) => d.is_anomaly).slice(0, 1))
       .join("text")
       .attr("class", "text-[8px] fill-error font-bold anomaly-label pointer-events-none")
-      .attr("x", (d) => (xScale(data.indexOf(d)) || 0) + 10)
+      .attr("text-anchor", (d) => ((xScale(data.indexOf(d)) || 0) > innerWidth * 0.65 ? "end" : "start"))
+      .attr("x", (d) => {
+        const cx = xScale(data.indexOf(d)) || 0
+        return cx > innerWidth * 0.65 ? cx - 10 : cx + 10
+      })
       .attr("y", (d) => yScale(d.unit_price) + 3)
       .text((d) => d.supplier_name ? (d.supplier_name.length > 20 ? d.supplier_name.slice(0, 18) + "…" : d.supplier_name) : "")
 

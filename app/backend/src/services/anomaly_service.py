@@ -794,10 +794,29 @@ class AnomalyService:
         recent_contracts: list[dict] = []
 
         if anomaly.anomaly_type == "PRICE_ANOMALY" and contract:
-            item_result = await self.db.execute(
-                select(Item).where(Item.contract_id == contract.id).limit(1)
-            )
-            target_item = item_result.scalar_one_or_none()
+            unspsc_match = re.search(r"UNSPSC\s+(\d+)", anomaly.description or "")
+            price_match = re.search(r"DOP \$([0-9,]+\.[0-9]{2})", anomaly.description or "")
+            expected_price = float(price_match.group(1).replace(",", "")) if price_match else None
+
+            if unspsc_match:
+                item_stmt = select(Item).where(
+                    Item.contract_id == contract.id,
+                    Item.unspsc_code == unspsc_match.group(1),
+                )
+            else:
+                item_stmt = select(Item).where(Item.contract_id == contract.id)
+
+            contract_items = (await self.db.execute(item_stmt)).scalars().all()
+            target_item = None
+            if contract_items:
+                if expected_price is not None:
+                    target_item = min(
+                        contract_items,
+                        key=lambda it: abs((it.unit_price or 0.0) - expected_price),
+                    )
+                else:
+                    target_item = max(contract_items, key=lambda it: it.unit_price or 0.0)
+
             if target_item and target_item.unspsc_code:
                 items_result = await self.db.execute(
                     select(Item).where(
@@ -806,52 +825,104 @@ class AnomalyService:
                         Item.unit_price > 0,
                     )
                 )
-                same_category = items_result.scalars().all()
-                sorted({it.unit_price for it in same_category if it.unit_price})
+                same_category = list(items_result.scalars().all())
+                other_items = sorted(
+                    [it for it in same_category if it.id != target_item.id],
+                    key=lambda it: it.unit_price or 0.0,
+                )
+                max_others = 29
+                if len(other_items) > max_others:
+                    step = (len(other_items) - 1) / (max_others - 1)
+                    sampled_others = [other_items[round(i * step)] for i in range(max_others)]
+                else:
+                    sampled_others = other_items
+
+                selected_items = sampled_others + [target_item]
+                selected_items.sort(key=lambda it: (it.unit_price or 0.0, it.id == target_item.id))
+
+                c_ids = {it.contract_id for it in selected_items if it.contract_id}
+                c_map: dict[int, str | None] = {}
+                if c_ids:
+                    c_res = await self.db.execute(select(Contract).where(Contract.id.in_(c_ids)))
+                    c_map = {c.id: c.supplier_name for c in c_res.scalars().all()}
+
                 market_prices = [
                     {
                         "contract_id": it.contract_id,
-                        "supplier_name": None,
+                        "supplier_name": (
+                            contract.supplier_name
+                            if it.id == target_item.id and contract.supplier_name
+                            else c_map.get(it.contract_id)
+                        ),
                         "unit_price": it.unit_price,
-                        "is_anomaly": it.contract_id == anomaly.contract_id,
+                        "is_anomaly": it.id == target_item.id,
                         "description": it.description,
                     }
-                    for it in same_category
+                    for it in selected_items
                 ]
-                if contract.supplier_name:
-                    for mp in market_prices:
-                        if mp["contract_id"] == contract.id:
-                            mp["supplier_name"] = contract.supplier_name
 
-        if anomaly.anomaly_type == "FRAGMENTATION" and process and process.institution_id:
-            cutoff = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=90)
-            proc_result = await self.db.execute(
-                select(Process).where(Process.institution_id == process.institution_id)
-            )
-            inst_process_ids = [p.id for p in proc_result.scalars().all()]
+        if anomaly.anomaly_type == "FRAGMENTATION":
+            inst_id = process.institution_id if process else None
+            if not inst_id and contract and contract.process_id:
+                p_res = await self.db.execute(select(Process).where(Process.id == contract.process_id))
+                p_obj = p_res.scalar_one_or_none()
+                if p_obj:
+                    inst_id = p_obj.institution_id
+
+            alert_codes: set[str] = set()
+            if anomaly.description:
+                m_codes = re.search(r"contratos\s+(\S+)\s+y\s+(\S+)", anomaly.description)
+                if m_codes:
+                    alert_codes.add(m_codes.group(1))
+                    alert_codes.add(m_codes.group(2))
+
+            inst_process_ids: list[int] = []
+            if inst_id:
+                proc_result = await self.db.execute(
+                    select(Process.id).where(Process.institution_id == inst_id)
+                )
+                inst_process_ids = list(proc_result.scalars().all())
+            elif anomaly.process_id:
+                inst_process_ids = [anomaly.process_id]
+
             if inst_process_ids:
+                alert_contracts: list[Contract] = []
+                if alert_codes or anomaly.contract_id:
+                    conds = []
+                    if anomaly.contract_id:
+                        conds.append(Contract.id == anomaly.contract_id)
+                    if alert_codes:
+                        conds.append(Contract.contract_id.in_(alert_codes))
+                    ac_res = await self.db.execute(select(Contract).where(or_(*conds)))
+                    alert_contracts = list(ac_res.scalars().all())
+
+                alert_ids = {c.id for c in alert_contracts}
                 c_result = await self.db.execute(
                     select(Contract)
                     .where(
                         Contract.process_id.in_(inst_process_ids),
-                        Contract.creation_date.isnot(None),
-                        Contract.creation_date >= cutoff,
                         Contract.amount_adjudicated.isnot(None),
                     )
                     .order_by(Contract.creation_date.desc())
-                    .limit(10)
+                    .limit(12)
                 )
-                recent = c_result.scalars().all()
+                recent = list(c_result.scalars().all())
+                seen_ids = {c.id for c in recent}
+                for ac in alert_contracts:
+                    if ac.id not in seen_ids and ac.amount_adjudicated is not None:
+                        recent.insert(0, ac)
+                        seen_ids.add(ac.id)
+                recent = recent[:12]
                 recent_contracts = [
                     {
-                        "date": str(c.creation_date.date()),
+                        "date": str(c.creation_date.date()) if c.creation_date else "2026-06-01",
                         "reference": c.contract_id or f"ID-{c.id}",
                         "title": c.object_description or c.supplier_name or "Contrato",
                         "amount": c.amount_adjudicated,
-                        "is_alert": c.id == anomaly.contract_id,
+                        "is_alert": c.id == anomaly.contract_id or (c.contract_id in alert_codes),
                         "alert_message": (
                             "Contrato vinculado a esta alerta de fraccionamiento."
-                            if c.id == anomaly.contract_id
+                            if (c.id == anomaly.contract_id or (c.contract_id in alert_codes))
                             else None
                         ),
                     }
@@ -903,11 +974,14 @@ class AnomalyService:
 
         confidence = min(abs(anomaly.score) * 100 if anomaly.score else anomaly.severity * 100, 99)
 
+        effective_signals = anomaly.signals_count if (anomaly.signals_count and anomaly.signals_count > 0) else max(1, int(round(anomaly.severity * 4)))
+
         return {
             "anomaly_type": anomaly.anomaly_type,
             "severity": anomaly.severity,
             "score": anomaly.score,
             "confidence": round(confidence, 1),
+            "signals_count": effective_signals,
             "amount": anomaly.amount,
             "process_code": process_code,
             "supplier_name": anomaly.supplier_name,

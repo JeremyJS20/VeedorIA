@@ -18,7 +18,7 @@ export default function SeverityGauge({ value, confidence, signalsCount, classNa
   const riskLabel =
     normalized >= 70 ? "drawer.risk_critical" : normalized >= 50 ? "drawer.risk_high" : normalized >= 30 ? "drawer.risk_medium" : "drawer.risk_low"
 
-  const factors = signalsCount ?? Math.max(1, Math.floor(normalized / 25))
+  const factors = signalsCount && signalsCount > 0 ? signalsCount : Math.max(1, Math.floor(normalized / 25))
   const conf = confidence ?? 94
 
   return (
