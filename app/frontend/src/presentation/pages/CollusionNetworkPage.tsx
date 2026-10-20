@@ -1,4 +1,5 @@
-﻿import { useNavigate } from "react-router-dom"
+﻿import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   Lock,
   ArrowLeftRight,
@@ -6,6 +7,7 @@ import {
   Building2,
 } from "lucide-react"
 import { useCollusionNetwork } from "../hooks/useAuditorB2G"
+import { SupplierInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -17,6 +19,7 @@ function formatCompactDop(amount: number): string {
 
 export default function CollusionNetworkPage() {
   const navigate = useNavigate()
+  const [selectedRpe, setSelectedRpe] = useState<string | null>(null)
   const { data, isLoading } = useCollusionNetwork()
 
   if (isLoading) {
@@ -107,8 +110,10 @@ export default function CollusionNetworkPage() {
   const maxSupplierAmount = Math.max(...recurrent.map((r) => r.total_amount), 1)
 
   return (
-    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-on-surface">
             Red de Colusión y Concurrencia Relacional
@@ -348,7 +353,7 @@ export default function CollusionNetworkPage() {
                     {sup.rpe && sup.rpe !== "S/R" ? (
                       <button
                         type="button"
-                        onClick={() => navigate(`/public/supplier/${encodeURIComponent(sup.rpe)}`)}
+                        onClick={() => setSelectedRpe(sup.rpe)}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <span>Ver Perfil</span>
@@ -364,6 +369,15 @@ export default function CollusionNetworkPage() {
           </table>
         </div>
       </div>
+        </div>
+      </div>
+
+      {selectedRpe && (
+        <SupplierInspectorDrawer
+          rpe={selectedRpe}
+          onClose={() => setSelectedRpe(null)}
+        />
+      )}
     </div>
   )
 }

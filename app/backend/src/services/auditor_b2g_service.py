@@ -938,3 +938,94 @@ class AuditorB2GService:
                 "institution_id": None,
             },
         }
+
+
+    async def get_process_dossier(self, current_user: dict, process_id: int) -> dict | None:
+        inst_id, inst_name = await self._resolve_institution_scope(current_user)
+        proc_stmt = (
+            select(
+                Process.id,
+                Process.dgcp_code,
+                Process.title,
+                Process.institution_id,
+                func.coalesce(Institution.name, "Entidad P?blica").label("institution_name"),
+            )
+            .outerjoin(Institution, Process.institution_id == Institution.id)
+            .where(Process.id == int(process_id))
+        )
+        if inst_id is not None:
+            proc_stmt = proc_stmt.where(Process.institution_id == inst_id)
+
+        proc_row = (await self.db.execute(proc_stmt)).first()
+        if not proc_row:
+            return None
+
+        contracts_rows = (
+            await self.db.execute(
+                select(Contract)
+                .where(Contract.process_id == int(process_id))
+                .order_by(desc(Contract.amount_adjudicated))
+            )
+        ).scalars().all()
+
+        anomalies_rows = (
+            await self.db.execute(
+                select(Anomaly)
+                .where(Anomaly.process_id == int(process_id))
+                .order_by(desc(Anomaly.severity))
+            )
+        ).scalars().all()
+
+        contracts_list = [
+            {
+                "id": int(c.id),
+                "contract_code": str(c.contract_id or f"CTR-{c.id}"),
+                "supplier_name": str(c.supplier_name or "Proveedor Adjudicatario"),
+                "rpe": str(c.rpe or "S/R"),
+                "status": str(c.status or "Adjudicado"),
+                "signed_date": (
+                    c.signed_date.strftime("%Y-%m-%d")
+                    if getattr(c, "signed_date", None) and hasattr(c.signed_date, "strftime")
+                    else str(c.signed_date)[:10]
+                    if getattr(c, "signed_date", None)
+                    else "?"
+                ),
+                "amount": float(c.amount_adjudicated or 0.0),
+            }
+            for c in contracts_rows
+        ]
+
+        anomalies_list = [
+            {
+                "id": str(a.id),
+                "process_id": a.process_id,
+                "contract_id": a.contract_id,
+                "anomaly_type": str(a.anomaly_type),
+                "anomaly_type_label": ANOMALY_TYPE_LABELS.get(str(a.anomaly_type), str(a.anomaly_type)),
+                "severity": round(float(a.severity or 0.0), 2),
+                "confidence": a.confidence,
+                "signals_count": a.signals_count,
+                "status": str(a.status),
+                "description": str(a.description or ""),
+                "amount": float(a.amount or 0.0),
+                "process_code": str(a.process_code or proc_row.dgcp_code),
+                "supplier_name": str(a.supplier_name or ""),
+                "institution_name": str(a.institution_name or proc_row.institution_name),
+                "created_at": (
+                    a.created_at.isoformat()
+                    if getattr(a, "created_at", None) and hasattr(a.created_at, "isoformat")
+                    else None
+                ),
+            }
+            for a in anomalies_rows
+        ]
+
+        return {
+            "id": int(proc_row.id),
+            "process_code": str(proc_row.dgcp_code),
+            "title": str(proc_row.title or "Proceso de Contrataci?n P?blica"),
+            "institution_name": str(proc_row.institution_name),
+            "total_amount": sum(c["amount"] for c in contracts_list),
+            "contracts": contracts_list,
+            "anomalies": anomalies_list,
+        }

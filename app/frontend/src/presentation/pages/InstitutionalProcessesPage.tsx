@@ -10,6 +10,9 @@ import {
   RotateCcw,
 } from "lucide-react"
 import { useInstitutionalProcesses } from "../hooks/useAuditorB2G"
+import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import AnomalyDrawer from "../components/AnomalyDrawer"
+import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -26,6 +29,8 @@ export default function InstitutionalProcessesPage() {
   const [statusFilter, setStatusFilter] = useState("")
   const [onlyWithAnomalies, setOnlyWithAnomalies] = useState(false)
   const [page, setPage] = useState(1)
+  const [selectedProcessId, setSelectedProcessId] = useState<number | null>(null)
+  const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
   const limit = 15
 
   const { data, isLoading } = useInstitutionalProcesses({
@@ -60,7 +65,9 @@ export default function InstitutionalProcessesPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
+    <div className="flex h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
       {/* Clean Header matching OverviewDashboardPage & MarketIntelligencePage */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -299,7 +306,10 @@ export default function InstitutionalProcessesPage() {
                     <td className="py-3.5 px-5 align-top text-right">
                       <button
                         type="button"
-                        onClick={() => navigate(`/public/process/${proc.id}`)}
+                        onClick={() => {
+                          setSelectedAnomaly(null)
+                          setSelectedProcessId(proc.id)
+                        }}
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
                       >
                         <span>Ver Ficha</span>
@@ -343,6 +353,21 @@ export default function InstitutionalProcessesPage() {
           </div>
         </div>
       </div>
+        </div>
+      </div>
+
+      {selectedAnomaly ? (
+        <AnomalyDrawer
+          anomaly={selectedAnomaly}
+          onClose={() => setSelectedAnomaly(null)}
+        />
+      ) : selectedProcessId !== null ? (
+        <ProcessInspectorDrawer
+          processId={selectedProcessId}
+          onClose={() => setSelectedProcessId(null)}
+          onSelectAnomaly={(anom) => setSelectedAnomaly(anom)}
+        />
+      ) : null}
     </div>
   )
 }

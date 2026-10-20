@@ -350,3 +350,56 @@ export function useRevokeIntegrationKey() {
     },
   })
 }
+
+
+export interface ProcessDossierContractItem {
+  id: number
+  contract_code: string
+  supplier_name: string
+  rpe: string
+  status: string
+  signed_date: string
+  amount: number
+}
+
+export interface ProcessDossierAnomalyItem {
+  id: string
+  process_id: number | null
+  contract_id: number | null
+  anomaly_type: "PRICE_ANOMALY" | "FRAGMENTATION" | "COLLUSION"
+  anomaly_type_label: string
+  severity: number
+  confidence: "ALTA" | "MEDIA" | "BAJA" | "INFO" | null
+  signals_count: number | null
+  status: "PENDING" | "CONFIRMED" | "DISMISSED"
+  description: string
+  amount: number
+  process_code: string
+  supplier_name: string
+  institution_name: string
+  created_at: string | null
+}
+
+export interface ProcessDossierResponse {
+  id: number
+  process_code: string
+  title: string
+  institution_name: string
+  total_amount: number
+  contracts: ProcessDossierContractItem[]
+  anomalies: ProcessDossierAnomalyItem[]
+}
+
+export function useProcessDossier(processId: number | null) {
+  return useQuery({
+    queryKey: ["auditor-process-dossier", processId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{
+        success: boolean
+        data: ProcessDossierResponse
+      }>(`/auditor/processes/${processId}`)
+      return data.data
+    },
+    enabled: processId !== null && processId > 0,
+  })
+}

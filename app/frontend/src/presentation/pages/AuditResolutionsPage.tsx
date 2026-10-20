@@ -9,7 +9,9 @@ import {
   ArrowUpRight,
   RotateCcw,
 } from "lucide-react"
-import { useAuditResolutions } from "../hooks/useAuditorB2G"
+import { useAuditResolutions, type AuditResolutionItem } from "../hooks/useAuditorB2G"
+import AnomalyDrawer from "../components/AnomalyDrawer"
+import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -25,6 +27,26 @@ export default function AuditResolutionsPage() {
   const [appliedQuery, setAppliedQuery] = useState("")
   const [decisionFilter, setDecisionFilter] = useState("")
   const [page, setPage] = useState(1)
+  const [selectedAnomaly, setSelectedAnomaly] = useState<Anomaly | null>(null)
+
+  const handleInspectResolution = (item: AuditResolutionItem) => {
+    setSelectedAnomaly({
+      id: item.id,
+      process_id: null,
+      contract_id: null,
+      anomaly_type: (item.anomaly_type as Anomaly["anomaly_type"]) || "PRICE_ANOMALY",
+      severity: item.severity,
+      confidence: null,
+      signals_count: null,
+      status: (item.status as Anomaly["status"]) || "CONFIRMED",
+      description: item.resolution_summary,
+      amount: item.amount,
+      process_code: item.process_code,
+      supplier_name: item.supplier_name,
+      institution_name: item.institution_name,
+      created_at: item.resolved_at,
+    })
+  }
   const limit = 15
 
   const { data, isLoading } = useAuditResolutions({
@@ -50,7 +72,9 @@ export default function AuditResolutionsPage() {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
+    <div className="flex h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-on-surface">
@@ -223,18 +247,19 @@ export default function AuditResolutionsPage() {
                 <th className="py-3 px-5">Dictamen</th>
                 <th className="py-3 px-5">Fundamento de Resolución</th>
                 <th className="py-3 px-5 text-right">Monto Auditado</th>
+                <th className="py-3 px-5 text-right">Expediente</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20 text-xs">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center font-mono text-on-surface-variant">
+                  <td colSpan={7} className="py-12 text-center font-mono text-on-surface-variant">
                     Consultando historial de dictámenes...
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-on-surface-variant">
+                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
                     Aún no se registran dictámenes que coincidan con el filtro seleccionado. Puede confirmar o desestimar alertas desde la Bandeja de Anomalías.
                   </td>
                 </tr>
@@ -287,6 +312,16 @@ export default function AuditResolutionsPage() {
                     <td className="py-3.5 px-5 align-top text-right font-mono font-bold text-on-surface">
                       RD$ {item.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
                     </td>
+                    <td className="py-3.5 px-5 align-top text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleInspectResolution(item)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        <span>Ver Caso</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -322,6 +357,15 @@ export default function AuditResolutionsPage() {
           </div>
         </div>
       </div>
+        </div>
+      </div>
+
+      {selectedAnomaly && (
+        <AnomalyDrawer
+          anomaly={selectedAnomaly}
+          onClose={() => setSelectedAnomaly(null)}
+        />
+      )}
     </div>
   )
 }

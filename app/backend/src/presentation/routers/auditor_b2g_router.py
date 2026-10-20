@@ -52,6 +52,23 @@ async def get_institutional_processes(
     return ApiResponse(success=True, data=data)
 
 
+
+@router.get("/processes/{process_id}")
+async def get_institutional_process_dossier(
+    process_id: int,
+    current_user: dict = Depends(get_current_user),
+    service: AuditorB2GService = Depends(get_auditor_b2g_service),
+):
+    _assert_b2g_or_platform_access(current_user)
+    data = await service.get_process_dossier(current_user=current_user, process_id=process_id)
+    if not data:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "PROCESS_NOT_FOUND", "message": "Expediente de proceso no encontrado en su alcance."},
+        )
+    return ApiResponse(success=True, data=data)
+
+
 @router.get("/collusion-network")
 async def get_collusion_network(
     current_user: dict = Depends(get_current_user),
