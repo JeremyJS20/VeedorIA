@@ -37,21 +37,26 @@ FRAGMENTATION_WINDOW_DAYS = 30
 FRAGMENTATION_THRESHOLD_DOP = 8_000_000
 
 
-def _resolve_dgcp_modality_threshold(process_code: str | None, fallback_dop: float = 8_000_000.0) -> tuple[float, str]:
+def _resolve_dgcp_modality_threshold(
+    process_code: str | None,
+    config_map: dict[str, float] | None = None,
+) -> tuple[float, str]:
+    cfg = config_map or {}
     code = (process_code or "").upper()
     if "-CD-" in code:
-        return 250_000.0, "Compra por Debajo del Umbral (CD)"
+        return float(cfg.get("THRESHOLD_CD_DOP", 250_000.0)), "Compra por Debajo del Umbral (CD)"
     if "-CM-" in code or "-DAF-CM-" in code:
-        return 1_650_000.0, "Compra Menor (CM)"
+        return float(cfg.get("THRESHOLD_CM_DOP", 1_650_000.0)), "Compra Menor (CM)"
     if "-CP-" in code:
-        return 6_500_000.0, "Comparación de Precios (CP)"
+        return float(cfg.get("THRESHOLD_CP_DOP", 6_500_000.0)), "Comparación de Precios (CP)"
     if "-PEIN-" in code or "-PEPU-" in code:
-        return 8_000_000.0, "Procedimiento de Excepción / Arrendamiento (PEIN/PEPU)"
+        return float(cfg.get("THRESHOLD_PEIN_DOP", 8_000_000.0)), "Procedimiento de Excepción / Arrendamiento (PEIN/PEPU)"
     if "-LPN-" in code or "-LPI-" in code:
-        return 15_000_000.0, "Licitación Pública (LPN)"
+        return float(cfg.get("THRESHOLD_LPN_DOP", 15_000_000.0)), "Licitación Pública (LPN)"
     if "-PEEN-" in code or "-PEEX-" in code or "-PEUR-" in code:
-        return 25_000_000.0, "Excepción por Emergencia / Urgencia (PEEN/PEUR)"
-    return float(fallback_dop), "Umbral General de Licitación (DGCP)"
+        return float(cfg.get("THRESHOLD_PEEN_DOP", 25_000_000.0)), "Excepción por Emergencia / Urgencia (PEEN/PEUR)"
+    fallback = cfg.get("FRAGMENTATION_THRESHOLD_DOP", cfg.get("fragmentation_threshold_dop", 6_500_000.0))
+    return float(fallback), "Umbral General de Licitación (DGCP)"
 IF_MIN_ITEMS = 30
 IF_CONTAMINATION = 0.02
 IF_N_ESTIMATORS = 100
@@ -810,8 +815,7 @@ class AnomalyService:
         await self._ensure_config()
         market_prices: list[dict] = []
         recent_contracts: list[dict] = []
-        base_cfg_thresh = float(self._get_param("fragmentation_threshold_dop", self._get_param("FRAGMENTATION_THRESHOLD_DOP", FRAGMENTATION_THRESHOLD_DOP)))
-        frag_threshold, _modality_label = _resolve_dgcp_modality_threshold(process_code, base_cfg_thresh)
+        frag_threshold, _modality_label = _resolve_dgcp_modality_threshold(process_code, self._config)
         frag_combined: float | None = None
         if anomaly.description and anomaly.anomaly_type == "FRAGMENTATION":
             m_sum = re.search(r"suman DOP \$([0-9,]+\.[0-9]{2})", anomaly.description)
