@@ -11,22 +11,22 @@ interface PriceScatterProps {
 
 export default function PriceScatter({ data, median, fullscreen, className = "" }: PriceScatterProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!svgRef.current || data.length === 0) return
+    if (!svgRef.current || !tooltipRef.current || data.length === 0) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
 
-    const tooltip = d3.select("body").append("div")
-      .attr("class", "fixed pointer-events-none z-[200] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
-      .style("display", "none")
+    const tooltip = d3.select(tooltipRef.current)
+    tooltip.style("display", "none")
 
-    const width = svgRef.current.clientWidth
-    const height = fullscreen ? svgRef.current.clientHeight : 160
-    const margin = { top: 16, right: 16, bottom: 24, left: 64 }
-    const innerWidth = width - margin.left - margin.right
-    const innerHeight = height - margin.top - margin.bottom
+    const width = svgRef.current.clientWidth || 480
+    const height = fullscreen ? (svgRef.current.clientHeight || 520) : 180
+    const margin = { top: 20, right: 20, bottom: 28, left: 68 }
+    const innerWidth = Math.max(100, width - margin.left - margin.right)
+    const innerHeight = Math.max(80, height - margin.top - margin.bottom)
 
     const zoomG = svg.append("g")
     const g = zoomG.append("g").attr("transform", `translate(${margin.left},${margin.top})`)
@@ -73,82 +73,94 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
       .attr("class", "text-[9px] font-bold fill-primary")
       .text(`Mediana: RD$ ${d3.format(",.0f")(median)}`)
 
-    g.selectAll("circle")
+    const baseR = fullscreen ? 6 : 4.5
+    const anomR = fullscreen ? 9 : 7
+
+    g.selectAll("circle.point")
       .data(data)
       .join("circle")
+      .attr("class", "point")
       .attr("cx", (_, i) => xScale(i)!)
       .attr("cy", (d) => yScale(d.unit_price))
-      .attr("r", (d) => (d.is_anomaly ? 7 : 4))
+      .attr("r", (d) => (d.is_anomaly ? anomR : baseR))
       .attr("fill", (d) => (d.is_anomaly ? "var(--color-error)" : "var(--color-primary)"))
-      .attr("fill-opacity", (d) => (d.is_anomaly ? 1 : 0.25))
-      .attr("stroke", (d) => (d.is_anomaly ? "var(--color-error)" : "none"))
-      .attr("stroke-width", (d) => (d.is_anomaly ? 2 : 0))
+      .attr("fill-opacity", (d) => (d.is_anomaly ? 1 : 0.35))
+      .attr("stroke", (d) => (d.is_anomaly ? "var(--color-error)" : "var(--color-primary)"))
+      .attr("stroke-opacity", (d) => (d.is_anomaly ? 1 : 0.5))
+      .attr("stroke-width", (d) => (d.is_anomaly ? 2 : 1))
       .attr("data-anomaly", (d) => (d.is_anomaly ? "true" : null))
       .attr("cursor", "pointer")
       .on("mouseover", function (event, d) {
         const p = d as MarketPrice
+        const idx = data.indexOf(p)
         d3.select(this)
-          .transition().duration(150)
-          .attr("r", p.is_anomaly ? 11 : 7)
+          .transition().duration(120)
+          .attr("r", p.is_anomaly ? anomR + 4 : baseR + 3.5)
           .attr("fill-opacity", 1)
+          .attr("stroke-opacity", 1)
           .attr("stroke-width", 3)
 
-        g.selectAll("circle").filter(function () { return this !== event.currentTarget })
-          .transition().duration(150)
-          .attr("fill-opacity", 0.08)
-          .attr("stroke-opacity", 0.08)
+        g.selectAll("circle.point").filter(function () { return this !== event.currentTarget })
+          .transition().duration(120)
+          .attr("fill-opacity", 0.12)
+          .attr("stroke-opacity", 0.12)
+
+        const diffPct = median > 0 ? ((p.unit_price / median - 1) * 100) : 0
+        const diffSign = diffPct >= 0 ? "+" : ""
 
         tooltip
           .style("display", "block")
           .html(`
-            <div class="font-semibold text-on-surface">${p.supplier_name || "Proveedor"}</div>
-            <div class="text-outline mt-0.5">RD$ ${d3.format(",.2f")(p.unit_price)}</div>
-            ${p.is_anomaly ? '<div class="text-error font-bold mt-0.5">⚠ ANOMALÍA</div>' : ""}
-            <div class="text-outline/60 mt-0.5">vs mediana: ${((p.unit_price / median - 1) * 100).toFixed(0)}%</div>
+            <div class="flex items-center justify-between gap-3 border-b border-outline-variant/25 pb-1.5 mb-1.5">
+              <span class="font-bold text-on-surface truncate">${p.supplier_name || `Muestra #${idx + 1}`}</span>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">ID #${p.contract_id}</span>
+            </div>
+            ${p.description ? `<div class="text-[11px] text-on-surface-variant line-clamp-2 mb-1.5">${p.description}</div>` : ""}
+            <div class="flex items-baseline justify-between gap-4">
+              <span class="text-[10px] uppercase tracking-wider text-outline font-bold">Precio Unitario:</span>
+              <span class="font-mono font-bold text-sm ${p.is_anomaly ? "text-error" : "text-primary"}">RD$ ${d3.format(",.2f")(p.unit_price)}</span>
+            </div>
+            <div class="flex items-baseline justify-between gap-4 mt-0.5">
+              <span class="text-[10px] uppercase tracking-wider text-outline font-bold">Desviación vs Mediana:</span>
+              <span class="font-mono font-semibold text-[11px] ${diffPct > 50 ? "text-error" : "text-on-surface"}">${diffSign}${diffPct.toFixed(0)}%</span>
+            </div>
+            ${p.is_anomaly ? '<div class="mt-2 pt-1.5 border-t border-error/20 text-[10px] font-bold text-error uppercase tracking-wider">⚠ Renglón Auditado (Sobreprecio Detectado)</div>' : ""}
           `)
       })
       .on("mousemove", (event) => {
+        const x = Math.min(window.innerWidth - 290, event.clientX + 16)
+        const y = Math.max(16, event.clientY - 24)
         tooltip
-          .style("left", `${event.pageX + 12}px`)
-          .style("top", `${event.pageY - 10}px`)
+          .style("left", `${x}px`)
+          .style("top", `${y}px`)
       })
       .on("mouseout", function () {
         d3.select(this)
-          .transition().duration(150)
-          .attr("r", (d: unknown) => ((d as MarketPrice).is_anomaly ? 7 : 4))
-          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.25))
-          .attr("stroke-width", (d: unknown) => ((d as MarketPrice).is_anomaly ? 2 : 0))
+          .transition().duration(120)
+          .attr("r", (d: unknown) => ((d as MarketPrice).is_anomaly ? anomR : baseR))
+          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.35))
+          .attr("stroke-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.5))
+          .attr("stroke-width", (d: unknown) => ((d as MarketPrice).is_anomaly ? 2 : 1))
 
-        g.selectAll("circle")
-          .transition().duration(150)
-          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.25))
-          .attr("stroke-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0))
+        g.selectAll("circle.point")
+          .transition().duration(120)
+          .attr("fill-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.35))
+          .attr("stroke-opacity", (d: unknown) => ((d as MarketPrice).is_anomaly ? 1 : 0.5))
 
         tooltip.style("display", "none")
-      })
-      .each(function (d: unknown) {
-        const p = d as MarketPrice
-        if (p.is_anomaly) {
-          d3.select(this)
-            .append("animate")
-            .attr("attributeName", "r")
-            .attr("values", "7;9;7")
-            .attr("dur", "1.5s")
-            .attr("repeatCount", "indefinite")
-        }
       })
 
     g.selectAll("text.anomaly-label")
       .data(data.filter((d) => d.is_anomaly).slice(0, 1))
       .join("text")
-      .attr("class", "text-[8px] fill-error font-bold anomaly-label pointer-events-none")
+      .attr("class", "text-[9px] fill-error font-bold anomaly-label pointer-events-none")
       .attr("text-anchor", (d) => ((xScale(data.indexOf(d)) || 0) > innerWidth * 0.65 ? "end" : "start"))
       .attr("x", (d) => {
         const cx = xScale(data.indexOf(d)) || 0
-        return cx > innerWidth * 0.65 ? cx - 10 : cx + 10
+        return cx > innerWidth * 0.65 ? cx - 12 : cx + 12
       })
       .attr("y", (d) => yScale(d.unit_price) + 3)
-      .text((d) => d.supplier_name ? (d.supplier_name.length > 20 ? d.supplier_name.slice(0, 18) + "…" : d.supplier_name) : "")
+      .text((d) => d.supplier_name ? (d.supplier_name.length > 22 ? d.supplier_name.slice(0, 20) + "…" : d.supplier_name) : "")
 
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
@@ -159,17 +171,18 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
     svg.on("dblclick", () => {
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
     })
-
-    return () => {
-      tooltip.remove()
-    }
   }, [data, median, fullscreen])
 
   if (data.length === 0) return null
 
   return (
-    <div className={`bg-background rounded-2xl p-4 border border-outline-variant/20 ${fullscreen ? "h-full" : ""} ${className}`}>
-      <svg ref={svgRef} className={`w-full ${fullscreen ? "h-full" : ""}`} style={fullscreen ? undefined : { height: 160 }} />
+    <div className={`relative bg-background rounded-2xl p-4 border border-outline-variant/20 ${fullscreen ? "h-full" : ""} ${className}`}>
+      <svg ref={svgRef} className={`w-full ${fullscreen ? "h-full" : ""}`} style={fullscreen ? undefined : { height: 180 }} />
+      <div
+        ref={tooltipRef}
+        style={{ display: "none", zIndex: 9999 }}
+        className="fixed pointer-events-none bg-surface-container-lowest dark:bg-surface-container-high text-on-surface text-xs rounded-xl shadow-2xl border border-outline-variant/40 px-3.5 py-2.5 w-68 leading-relaxed"
+      />
     </div>
   )
 }

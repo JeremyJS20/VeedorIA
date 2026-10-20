@@ -46,7 +46,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
     svg.selectAll("*").remove()
 
     const tooltip = d3.select("body").append("div")
-      .attr("class", "fixed pointer-events-none z-[200] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-80 leading-relaxed")
+      .attr("class", "fixed pointer-events-none bg-surface-container-lowest dark:bg-surface-container-high text-on-surface text-xs rounded-xl shadow-2xl border border-outline-variant/40 px-3.5 py-2.5 max-w-80 leading-relaxed").style("z-index", "9999")
       .style("display", "none")
 
     const width = svgRef.current.clientWidth
@@ -143,7 +143,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
           `)
       })
       .on("mousemove", (event) => {
-        tooltip.style("left", `${event.pageX + 12}px`).style("top", `${event.pageY - 10}px`)
+        tooltip.style("left", `${Math.min(window.innerWidth - 300, event.clientX + 16)}px`).style("top", `${Math.max(16, event.clientY - 24)}px`)
       })
       .on("mouseout", function (_, d) {
         d3.select(this).attr("stroke-opacity", 0.3 + (d.weight / maxWeight) * 0.5).attr("stroke-width", Math.max(1, d.weight * 3))
@@ -240,8 +240,8 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       })
       .on("mousemove", (event) => {
         tooltip
-          .style("left", `${event.pageX + 12}px`)
-          .style("top", `${event.pageY - 10}px`)
+          .style("left", `${Math.min(window.innerWidth - 300, event.clientX + 16)}px`)
+          .style("top", `${Math.max(16, event.clientY - 24)}px`)
       })
       .on("mouseout", function () {
         restoreAll()

@@ -19,7 +19,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
     svg.selectAll("*").remove()
 
     const tooltip = d3.select("body").append("div")
-      .attr("class", "fixed pointer-events-none z-[200] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
+      .attr("class", "fixed pointer-events-none bg-surface-container-lowest dark:bg-surface-container-high text-on-surface text-xs rounded-xl shadow-2xl border border-outline-variant/40 px-3.5 py-2.5 max-w-72 leading-relaxed").style("z-index", "9999")
       .style("display", "none")
 
     const width = svgRef.current.clientWidth
@@ -103,15 +103,19 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
         tooltip
           .style("display", "block")
           .html(`
-            <div class="font-semibold text-on-surface">${e.title || "Contrato"}</div>
-            <div class="text-outline mt-0.5">${e.date} · RD$ ${d3.format(",.2f")(e.amount)}</div>
-            ${e.is_alert ? '<div class="text-error font-bold mt-0.5">⚠ SUPERÓ UMBRAL</div>' : ""}
+            <div class="flex items-center justify-between gap-2 border-b border-outline-variant/25 pb-1 mb-1">
+              <span class="font-mono font-bold text-[11px] text-primary">${e.reference}</span>
+              <span class="font-mono text-[10px] text-outline">${e.date}</span>
+            </div>
+            <div class="font-semibold text-on-surface line-clamp-2 mb-1">${e.title || "Contrato"}</div>
+            <div class="font-mono font-bold text-sm ${e.is_alert ? "text-error" : "text-on-surface"}">RD$ ${d3.format(",.2f")(e.amount)}</div>
+            ${e.is_alert ? '<div class="text-error text-[10px] font-bold mt-1 uppercase tracking-wider">⚠ Contrato vinculado a fraccionamiento</div>' : ""}
           `)
       })
       .on("mousemove", (event) => {
         tooltip
-          .style("left", `${event.pageX + 12}px`)
-          .style("top", `${event.pageY - 10}px`)
+          .style("left", `${Math.min(window.innerWidth - 280, event.clientX + 16)}px`)
+          .style("top", `${Math.max(16, event.clientY - 24)}px`)
       })
       .on("mouseout", function () {
         d3.select(this)
