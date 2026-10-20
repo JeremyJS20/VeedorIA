@@ -531,7 +531,7 @@ export default function RegisterPage() {
                   htmlFor="reg-correo"
                   className="block label-md text-on-surface-variant mb-1.5"
                 >
-                  Correo Institucional o Corporativo
+                  Correo Institucional
                 </label>
                 <input
                   id="reg-correo"
