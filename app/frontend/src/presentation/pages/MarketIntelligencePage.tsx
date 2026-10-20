@@ -20,7 +20,7 @@ function formatCompactDop(amount: number): string {
 }
 
 export default function MarketIntelligencePage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const activeSection = (searchParams.get("seccion") || "precios") as
     | "precios"
     | "competidores"
@@ -89,31 +89,6 @@ export default function MarketIntelligencePage() {
             ))}
           </select>
         </div>
-      </div>
-
-      {/* Subsection Quick Navigation Pills */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-outline-variant/25 pb-3">
-        {[
-          { id: "precios", label: "Precios e Histórico" },
-          { id: "competidores", label: "Competidores y Compradores" },
-          { id: "procesos", label: "Adjudicaciones del Sector" },
-        ].map((tab) => {
-          const isCurrent = activeSection === tab.id
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setSearchParams({ seccion: tab.id })}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                isCurrent
-                  ? "bg-primary text-on-primary shadow-xs"
-                  : "bg-surface-container-lowest dark:bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/35"
-              }`}
-            >
-              {tab.label}
-            </button>
-          )
-        })}
       </div>
 
       {/* Selected Family 3 Summary KPI Cards */}
