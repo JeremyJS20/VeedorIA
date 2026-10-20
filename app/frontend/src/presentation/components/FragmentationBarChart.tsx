@@ -19,7 +19,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
     svg.selectAll("*").remove()
 
     const tooltip = d3.select("body").append("div")
-      .attr("class", "fixed pointer-events-none z-[60] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
+      .attr("class", "fixed pointer-events-none z-[200] bg-surface text-xs rounded-xl shadow-xl border border-outline-variant/20 px-3 py-2 max-w-64 leading-relaxed")
       .style("display", "none")
 
     const width = svgRef.current.clientWidth
