@@ -184,17 +184,34 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
             </div>
           )}
           {isFragmentation && (
-            <div className="space-y-1.5 text-xs text-on-surface-variant leading-relaxed">
+            <div className="space-y-2 text-xs text-on-surface-variant leading-relaxed">
               <p>
                 <strong className="text-on-surface">Prohibición de Fraccionamiento:</strong> Tipificado en los{" "}
                 <span className="font-semibold text-on-surface">Arts. 16 y 17 Párrafo I de la Ley 340-06</span> y{" "}
                 <span className="font-semibold text-on-surface">Art. 62 del Reglamento 416-23</span> (presunción de subdivisión de compras de la misma familia UNSPSC para eludir umbrales del PACC), sujeto al régimen sancionador de los{" "}
                 <span className="font-semibold text-on-surface">Arts. 65 y 66</span>.
               </p>
+              {((ctx?.process_code && (ctx.process_code.includes("-PEEN-") || ctx.process_code.includes("-PEEX-") || ctx.process_code.includes("-PEUR-"))) ||
+                (ctx?.recent_contracts && ctx.recent_contracts.filter((c) => c.is_alert).length >= 2)) && (
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    {ctx?.process_code && (ctx.process_code.includes("-PEEN-") || ctx.process_code.includes("-PEEX-") || ctx.process_code.includes("-PEUR-")) ? (
+                      <>
+                        <strong className="font-bold">Verificación de Procedimiento de Excepción (`PEEN` / `PEEX` / `PEUR`):</strong> El código del expediente indica una modalidad de excepción (<strong>Art. 6 Párrafo Único Ley 340-06</strong> y <strong>Arts. 38–45 Reg. 416-23</strong>). Si las órdenes responden a entregas parciales bajo una misma resolución motivada o urgencia certificada, descarte como falso positivo; si carece de acto administrativo motivado, confirme por fraccionamiento.
+                      </>
+                    ) : (
+                      <>
+                        <strong className="font-bold">Verificación de Planificación Anual PACC (Art. 62 Reg. 416-23):</strong> Se detectaron múltiples contratos adjudicados en el mismo período institucional. Verifique si responden a entregas programadas en el PACC o a una subdivisión para evitar licitación pública.
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {isCollusion && (
-            <div className="space-y-1.5 text-xs text-on-surface-variant leading-relaxed">
+            <div className="space-y-2 text-xs text-on-surface-variant leading-relaxed">
               <p>
                 <strong className="text-on-surface">Colusión y Libre Competencia:</strong> Tipificado en el{" "}
                 <span className="font-semibold text-on-surface">Art. 3 nums. 2 y 6</span>,{" "}
@@ -202,6 +219,22 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
                 <span className="font-semibold text-on-surface">Art. 66 Párrafo II de la Ley 340-06</span> (inhabilitación del RPE de 1 a 5 años), en concordancia con el{" "}
                 <span className="font-semibold text-on-surface">Art. 5 de la Ley 42-08 (Defensa de la Competencia)</span>.
               </p>
+              {anomaly.detection_metadata && Object.keys(anomaly.detection_metadata).length > 0 && (
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div>
+                    {(anomaly.detection_metadata.shared_phone || anomaly.detection_metadata.shared_address || anomaly.detection_metadata.shared_domain) ? (
+                      <>
+                        <strong className="font-bold">Indicio Directo de Vinculación Societaria (Ley 155-17 / RPE):</strong> Se detectó coincidencia de datos de contacto físico o corporativo entre oferentes. Solicite la <strong>Declaración Jurada de Beneficiario Final</strong> ante la DGCP para verificar control común (<strong>Art. 14 Ley 340-06</strong>).
+                      </>
+                    ) : (
+                      <>
+                        <strong className="font-bold">Coincidencia Nominal o de Secuencia RNC (Señal débil):</strong> El vínculo se basa únicamente en similitud de razón social o prefijo RNC sin compartir teléfono ni domicilio. Verifique en el RPE si se trata de empresas independientes antes de confirmar colusión.
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -267,37 +267,65 @@ export default function ComplianceReportsPage() {
         </div>
       </div>
 
-      {/* Matriz de Tipificación Legal (Ley 340-06 y Reglamento 416-23) */}
-      <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 space-y-4 shadow-xs">
-        <div>
-          <h2 className="font-display text-base font-bold text-on-surface">
-            Sustento Normativo y Tipificación Legal (Ley 340-06 · Decreto 416-23)
-          </h2>
-          <p className="text-xs text-on-surface-variant mt-0.5">
-            Base jurídica aplicable a los hallazgos preventivos y faltas administrativas de catalogación incluidos en el presente informe
-          </p>
+      {/* Matriz Condicional de Tipificación Legal (Ley 340-06 y Reglamento 416-23) */}
+      {breakdown.some((b) => b.count > 0) && (
+        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 className="font-display text-base font-bold text-on-surface">
+                Sustento Normativo Aplicable a los Hallazgos del Período (Ley 340-06 · Decreto 416-23)
+              </h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Artículos e hipótesis de auditoría activados dinámicamente según las tipologías con incidencia en este informe
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-xs font-mono font-semibold shrink-0">
+              {breakdown.filter((b) => b.count > 0).length} tipología(s) con incidencia
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            {breakdown.some((b) => b.anomaly_type === "PRICE_ANOMALY" && b.count > 0) && (
+              <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-2.5 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <p className="font-bold text-on-surface">Sobreprecio y Razonabilidad (PRICE_ANOMALY)</p>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    <strong>Art. 3 (Eficiencia y Economía — Ley 340-06)</strong> y <strong>Arts. 96–97 del Reg. 416-23</strong> sobre estudio previo de precios de mercado en el SECP.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  <strong>⚠️ Observación CBS/UNSPSC (Art. 3 num. 3):</strong> Cuando un contrato agrupa artículos heterogéneos bajo el mismo código UNSPSC genérico, se tipifica como <strong>falta administrativa de catalogación</strong> ante la DGCP.
+                </div>
+              </div>
+            )}
+            {breakdown.some((b) => b.anomaly_type === "FRAGMENTATION" && b.count > 0) && (
+              <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-2.5 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <p className="font-bold text-on-surface">Fraccionamiento de Compras (FRAGMENTATION)</p>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    <strong>Arts. 16 y 17 Párrafo I de la Ley 340-06</strong> y <strong>Art. 62 del Reg. 416-23</strong> (presunción de subdivisión para eludir umbrales del PACC), sancionable según <strong>Arts. 65 y 66</strong>.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  <strong>⚠️ Observación de Modalidad (Arts. 38–45 Reg. 416-23):</strong> En procesos de excepción (`PEEN`/`PEEX`/`PEUR`), verifique que exista resolución motivada y certificación presupuestaria que justifique contrataciones sucesivas.
+                </div>
+              </div>
+            )}
+            {breakdown.some((b) => b.anomaly_type === "COLLUSION" && b.count > 0) && (
+              <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-2.5 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <p className="font-bold text-on-surface">Colusión y Competencia (COLLUSION)</p>
+                  <p className="text-on-surface-variant leading-relaxed">
+                    <strong>Art. 3 nums. 2 y 6</strong>, <strong>Arts. 11 y 14</strong> y <strong>Art. 66 Párrafo II de la Ley 340-06</strong> (inhabilitación del RPE de 1 a 5 años), junto al <strong>Art. 5 de la Ley 42-08</strong>.
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  <strong>⚠️ Observación Beneficiario Final (Ley 155-17):</strong> Cruce las coincidencias de teléfono, domicilio o dominio con la <strong>Declaración Jurada de Beneficiario Final</strong> en el RPE para acreditar control societario común.
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
-            <p className="font-bold text-on-surface">1. Sobreprecio y Catalogación CBS/UNSPSC</p>
-            <p className="text-on-surface-variant leading-relaxed">
-              <strong>Art. 3 (Eficiencia y Transparencia — Ley 340-06)</strong> y <strong>Arts. 96–97 del Reg. 416-23</strong>. Incluye tanto desviaciones de precio unitario frente a la mediana del SECP como el agrupamiento indebido de artículos heterogéneos bajo un mismo código UNSPSC genérico.
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
-            <p className="font-bold text-on-surface">2. Fraccionamiento de Contrataciones</p>
-            <p className="text-on-surface-variant leading-relaxed">
-              <strong>Arts. 16 y 17 Párrafo I de la Ley 340-06</strong> y <strong>Art. 62 del Reg. 416-23</strong>. Prohibición expresa de subdividir adquisiciones de bienes o servicios similares para eludir los umbrales de selección del PACC, sancionable conforme a los <strong>Arts. 65 y 66</strong>.
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 space-y-1.5">
-            <p className="font-bold text-on-surface">3. Colusión y Prácticas Concertadas</p>
-            <p className="text-on-surface-variant leading-relaxed">
-              <strong>Art. 3 nums. 2 y 6</strong>, <strong>Arts. 11 y 14</strong> y <strong>Art. 66 Párrafo II de la Ley 340-06</strong> (inhabilitación del RPE de 1 a 5 años), en concordancia con el <strong>Art. 5 de la Ley 42-08</strong> sobre coordinación de posturas entre oferentes vinculados.
-            </p>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Central Table Section */}
       <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 rounded-2xl shadow-xs overflow-hidden">
