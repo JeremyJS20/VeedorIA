@@ -235,6 +235,22 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
             if not existing_rp:
                 db.add(RolePermission(role_id=ta_role.id, permission_id=b2b_perm.id))
                 changed = True
+        role_view_perm = next((p for p in db_perms if p.codigo == "ROLE_VIEW"), None)
+        non_admin_role_ids = [
+            r.id for r in db_roles if r.codigo in ("AUDITOR", "PROVEEDOR") and r.id is not None
+        ]
+        if role_view_perm and role_view_perm.id and non_admin_role_ids:
+            stale_rps = (
+                await db.execute(
+                    select(RolePermission).where(
+                        RolePermission.permission_id == role_view_perm.id,
+                        RolePermission.role_id.in_(non_admin_role_ids),
+                    )
+                )
+            ).scalars().all()
+            for srp in stale_rps:
+                await db.delete(srp)
+                changed = True
         if changed:
             await db.commit()
         return
@@ -320,13 +336,11 @@ async def ensure_auth_seed(db: AsyncSession) -> None:
             "ANOMALY_REVIEW",
             "PROCESS_READ",
             "DETECTION_RUN",
-            "ROLE_VIEW",
         ],
         "PROVEEDOR": [
             "ANOMALY_READ",
             "PROCESS_READ",
             "B2B_ANALYTICS",
-            "ROLE_VIEW",
         ],
     }
 
@@ -1410,7 +1424,15 @@ class AuthService:
                     "El código de invitación ingresado no es válido o ha expirado.",
                     status_code=404,
                 )
-            target_role_code = "PROVEEDOR" if tenant.tipo == "B2B_SUPPLIER" else "AUDITOR"
+            existing_tenant_users = (
+                await self.db.execute(
+                    select(func.count(AppUser.id)).where(AppUser.tenant_id == tenant.id)
+                )
+            ).scalar() or 0
+            if existing_tenant_users == 0:
+                target_role_code = "TENANT_ADMIN"
+            else:
+                target_role_code = "PROVEEDOR" if tenant.tipo == "B2B_SUPPLIER" else "AUDITOR"
             role = (
                 await self.db.execute(select(Role).where(Role.codigo == target_role_code))
             ).scalar_one_or_none()

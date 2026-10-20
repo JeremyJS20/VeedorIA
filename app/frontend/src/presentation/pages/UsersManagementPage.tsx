@@ -23,9 +23,12 @@ import {
   useUpdateTenant,
   useDirectorySearch,
 } from "../hooks/useAuthManagement"
+import { useAuth } from "../context/AuthContext"
 import { formatPlanLabel, formatTenantTypeLabel } from "../../domain/auth"
 
 export default function UsersManagementPage() {
+  const { user: currentUser } = useAuth()
+  const isPlatformAdmin = currentUser?.rol?.codigo === "PLATFORM_ADMIN"
   const [buscar, setBuscar] = useState("")
   const [rolFilter, setRolFilter] = useState("")
   const [tenantFilter, setTenantFilter] = useState("")
@@ -268,32 +271,34 @@ export default function UsersManagementPage() {
         </div>
       )}
 
-      <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab("usuarios")}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-            activeTab === "usuarios"
-              ? "bg-primary text-on-primary"
-              : "text-on-surface-variant hover:bg-surface-container"
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          Usuarios Registrados ({users.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("tenants")}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-            activeTab === "tenants"
-              ? "bg-primary text-on-primary"
-              : "text-on-surface-variant hover:bg-surface-container"
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          Organizaciones Suscriptoras ({tenants.length})
-        </button>
-      </div>
+      {isPlatformAdmin && (
+        <div className="flex items-center gap-2 border-b border-outline-variant/20 pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("usuarios")}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+              activeTab === "usuarios"
+                ? "bg-primary text-on-primary"
+                : "text-on-surface-variant hover:bg-surface-container"
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Usuarios Registrados ({users.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("tenants")}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+              activeTab === "tenants"
+                ? "bg-primary text-on-primary"
+                : "text-on-surface-variant hover:bg-surface-container"
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            Organizaciones Suscriptoras ({tenants.length})
+          </button>
+        </div>
+      )}
 
       {activeTab === "usuarios" ? (
         <div className="space-y-4">
@@ -330,7 +335,7 @@ export default function UsersManagementPage() {
               aria-label="Filtrar por Rol"
             >
               <option value="">Todos los Roles</option>
-              {rolesData?.roles.map((r) => (
+              {rolesData?.roles.filter((r) => isPlatformAdmin || r.codigo !== "PLATFORM_ADMIN").map((r) => (
                 <option key={r.id} value={String(r.id)}>
                   {r.nombre}
                 </option>
@@ -393,7 +398,7 @@ export default function UsersManagementPage() {
                             aria-label={`Cambiar rol de ${u.nombre}`}
                             className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-semibold text-on-surface"
                           >
-                            {rolesData?.roles.map((r) => (
+                            {rolesData?.roles.filter((r) => isPlatformAdmin || r.codigo !== "PLATFORM_ADMIN").map((r) => (
                               <option key={r.id} value={r.id}>
                                 {r.nombre}
                               </option>
@@ -588,7 +593,7 @@ export default function UsersManagementPage() {
                     onChange={(e) => setNewUser({ ...newUser, role_id: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40"
                   >
-                    {rolesData?.roles.map((r) => (
+                    {rolesData?.roles.filter((r) => isPlatformAdmin || r.codigo !== "PLATFORM_ADMIN").map((r) => (
                       <option key={r.id} value={String(r.id)}>
                         {r.nombre}
                       </option>

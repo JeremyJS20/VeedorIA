@@ -101,7 +101,7 @@ export default function DashboardLayout() {
     "/app/dashboard": "Panorama Ejecutivo",
     "/app/mercado": "Inteligencia de Mercado por Rubro",
     "/app/bandeja": "Bandeja de Anomalías",
-    "/app/usuarios": "Usuarios y Organizaciones",
+    "/app/usuarios": user?.rol?.codigo === "PLATFORM_ADMIN" ? "Usuarios y Organizaciones" : "Usuarios y Equipo",
     "/app/roles": "Roles y Planes de Servicio",
     "/app/perfil": "Mi Perfil Institucional",
   }
@@ -321,12 +321,14 @@ export default function DashboardLayout() {
             ))}
           </div>
 
-          {/* Gobernanza y Seguridad */}
-          {(hasPermission("USER_ADMIN") || hasPermission("ROLE_VIEW")) && (
+          {/* Gobernanza y Seguridad (Solo Administradores) */}
+          {(hasPermission("USER_ADMIN") || user?.rol?.codigo === "PLATFORM_ADMIN") && (
             <div className="space-y-1">
               {!collapsed && (
                 <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
-                  Gobernanza y Seguridad
+                  {user?.rol?.codigo === "PLATFORM_ADMIN"
+                    ? "Gobernanza y Seguridad"
+                    : "Administraci?n"}
                 </p>
               )}
 
@@ -350,14 +352,18 @@ export default function DashboardLayout() {
                       )}
                       <Users className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
                       {!collapsed && (
-                        <span className="text-[13px] flex-1 truncate">Usuarios y Organizaciones</span>
+                        <span className="text-[13px] flex-1 truncate">
+                          {user?.rol?.codigo === "PLATFORM_ADMIN"
+                            ? "Usuarios y Organizaciones"
+                            : "Usuarios y Equipo"}
+                        </span>
                       )}
                     </>
                   )}
                 </NavLink>
               )}
 
-              {hasPermission("ROLE_VIEW") && (
+              {user?.rol?.codigo === "PLATFORM_ADMIN" && (
                 <NavLink
                   to="/app/roles"
                   className={({ isActive }) =>
