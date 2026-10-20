@@ -145,4 +145,4 @@ curl -X POST http://localhost:3001/api/anomalies/detect
 | 2026-10-18 | `project-scanner` | Contrato inicial extraído de `main.py`, `routers/anomaly.py` y `routers/sync.py` |
 
 ---
-_Last updated: 2026-10-19 by solution-designer (added /api/public/* and /api/auth/*)_
+_Last updated: 2026-10-20 by implementer (added consola-multi-rol-onboarding endpoints)_

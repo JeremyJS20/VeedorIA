@@ -97,4 +97,4 @@ graph TB
 - **Doble Motor de Base de Datos Asíncrono**: Soporte transparente para `sqlite+aiosqlite` en desarrollo ligero y `postgresql+asyncpg` en contenedores y producción.
 
 ---
-_Last updated: 2026-10-19 by solution-designer (added infrastructure.py/.png, buscador-ciudadano, autenticacion-rbac)_
+_Last updated: 2026-10-20 by implementer (added consola-multi-rol-onboarding)_
