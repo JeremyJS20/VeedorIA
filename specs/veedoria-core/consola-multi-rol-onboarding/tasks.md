@@ -95,8 +95,8 @@ flowchart TD
     - **Paso 2 (`max-w-[560px]`)**: datos de cuenta (nombre completo, correo, cargo, contraseña segura). En Camino B incluye además el buscador en vivo contra los `4,462` proveedores de la DGCP (por nombre, RPE o RNC) con opción *"Mi empresa aún no figura en el catálogo — Ingresar datos manualmente"* y el selector interactivo de tarjetas de suscripción (*Plan Proveedor Pyme* vs. *Plan Proveedor Corporativo*).
     - **Paso 3 (`max-w-[560px]`)**: resumen de confirmación de la organización y plan seleccionado (con formulario de suscripción en modo demostración para Camino B), botón de activación inmediata que invoca `POST /api/auth/register`, guarda la sesión JWT y redirige a `/app/dashboard`.
 - **Acceptance criteria:**
-  - [ ] `/invitacion?code=MOPC-B2G` y `/invitacion?code=INVALIDO` renderizan ambos estados con ancho explícito `max-w-[450px]` y `0` términos técnicos prohibidos.
-  - [ ] `/registro` permite completar tanto el Camino A como el Camino B de principio a fin e inicia sesión automáticamente.
+  - [x] `/invitacion?code=MOPC-B2G` y `/invitacion?code=INVALIDO` renderizan ambos estados con ancho explícito `max-w-[450px]` y `0` términos técnicos prohibidos.
+  - [x] `/registro` permite completar tanto el Camino A como el Camino B de principio a fin e inicia sesión automáticamente.
 - **Dependencies:** Task 2.1
 - **Files to create/modify:** `app/frontend/src/presentation/pages/InvitationGatewayPage.tsx`, `app/frontend/src/presentation/pages/RegisterPage.tsx`
 
@@ -106,7 +106,7 @@ flowchart TD
   - **Variante Proveedor del Estado (`B2B`)**: 4 tarjetas KPI + tabla *"Oportunidades y Procesos Recientes del Sector"* con insignia de competencia (*Alta*, *Media*, *Baja*), enlace hacia `/app/mercado` y candado en el 2.º KPI para `B2B_PYME`.
   - **Variante Administración General (`ADMIN`)**: 4 tarjetas KPI globales + tabla *"Bitácora de Actividad Reciente del Sistema"* + selector superior de previsualización (`Vista Administración`, `Vista Auditor Institucional`, `Vista Proveedor del Estado`) para alternar en vivo entre las 3 variantes.
 - **Acceptance criteria:**
-  - [ ] Cada rol visualiza su variante correspondiente con datos reales y los candados de suscripción se activan según el `plan_tier`.
+  - [x] Cada rol visualiza su variante correspondiente con datos reales y los candados de suscripción se activan según el `plan_tier`.
 - **Dependencies:** Task 2.1
 - **Files to create/modify:** `app/frontend/src/presentation/pages/OverviewDashboardPage.tsx`
 
@@ -120,8 +120,8 @@ flowchart TD
     4. *Principales Instituciones Compradoras del Rubro* (ranking de instituciones con monto adjudicado y número de contratos).
   - Columna lateral derecha de `w-[320px]` con *"Procesos Recientes del Sector"*.
 - **Acceptance criteria:**
-  - [ ] Cambiar el rubro UNSPSC actualiza en vivo los 4 paneles analíticos y la columna lateral de procesos recientes.
-  - [ ] Cuentas en `B2B_PYME` ven los candados de actualización a *Plan Proveedor Corporativo* en los paneles 2 y 3; cuentas en `B2B_CORPORATE` y `PLATFORM_ADMIN` ven los 4 paneles desbloqueados.
+  - [x] Cambiar el rubro UNSPSC actualiza en vivo los 4 paneles analíticos y la columna lateral de procesos recientes.
+  - [x] Cuentas en `B2B_PYME` ven los candados de actualización a *Plan Proveedor Corporativo* en los paneles 2 y 3; cuentas en `B2B_CORPORATE` y `PLATFORM_ADMIN` ven los 4 paneles desbloqueados.
 - **Dependencies:** Task 2.1
 - **Files to create/modify:** `app/frontend/src/presentation/pages/MarketIntelligencePage.tsx`
 
