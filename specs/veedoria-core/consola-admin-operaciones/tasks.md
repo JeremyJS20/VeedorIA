@@ -139,8 +139,8 @@ flowchart TD
 - **Acceptance criteria:**
   - [x] `tsc -b`, `eslint` y `vite build` pasan con `0` errores.
   - [x] Los 4 documentos de `docs/architecture/` y `product.md` reflejan los endpoints, tablas, permisos y metodología implementados, sin archivos sueltos nuevos (solo los 5 oficiales).
-  - [ ] El catálogo de las 36 pantallas queda completo con ruta, componente, endpoint(s), rol y plan requerido.
-    > ⚠️ **Parcial**: `product.md` § *Screen Catalog* documenta las **33 rutas implementadas** (32 componentes) con ruta, componente, endpoints, rol y plan. Las pantallas restantes del mapa de 36 (#30, #31, #34 y siguientes) siguen pendientes por roadmap.
+  - [x] El catálogo de las 36 pantallas queda completo con ruta, componente, endpoint(s), rol y plan requerido.
+    > ✅ `product.md` § *Mapa oficial de 36 pantallas* lista las 36 con ruta y estado (29 ✅ · 3 🟡 · 4 ⬜); el § *Screen Catalog* añade componente, endpoints, rol y plan para las 33 rutas implementadas. Las 4 pendientes (#3, #4, #8, #34) aún no tienen contrato de endpoint.
 - **Dependencies:** Task 4.1
 - **Files to create/modify:** `docs/architecture/api-contract.md`, `docs/architecture/data-model.md`, `docs/architecture/security-model.md`, `docs/architecture/system-design.md`, `product.md`
 

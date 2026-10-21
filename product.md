@@ -89,7 +89,51 @@
 | `/app/usuarios` | `UsersManagementPage` | `/api/auth/users`, `/api/auth/tenants` | `USER_ADMIN` + `PLATFORM_ADMIN`/`TENANT_ADMIN` |
 | `/app/roles` | `RolesMatrixPage` | `/api/auth/roles*`, `/api/auth/permissions` | `ROLE_VIEW` + `PLATFORM_ADMIN` |
 
-**Pantallas pendientes del mapa de 36** (#30, #31, #34 y siguientes): no implementadas; ver `docs-backup-2/internal/complete_screen_map.md`.
+### Mapa oficial de 36 pantallas — estado real
+
+Fuente: `docs-backup-2/internal/complete_screen_map.md`. ✅ implementada · 🟡 parcial · ⬜ pendiente.
+
+| # | Pantalla | Ruta oficial | Estado | Implementación actual |
+|---|---|---|---|---|
+| 1 | Landing Page | `/` | ✅ | `LandingPage` |
+| 2 | Buscador Ciudadano | `/public` | ✅ | `CivicPortalPage` |
+| 3 | Sankey de Gasto | `/public/budget-flow` | ⬜ | — |
+| 4 | Comparador Comunitario de Precios | `/public/price-checker` | ⬜ | — |
+| 5 | Detalle de Proceso Público | `/public/process/:id` | ✅ | `TenderDetailPage` |
+| 6 | Perfil Público de Proveedor | `/public/supplier/:rnc` | ✅ | `SupplierProfilePage` |
+| 7 | Perfil Público de Institución | `/public/institution/:id` | ✅ | `InstitutionProfilePage` |
+| 8 | Portal de Descarga de Datos Abiertos | `/public/data-downloads` | ⬜ | — |
+| 9 | Inicio de Sesión | `/login` | ✅ | `LoginPage` |
+| 10 | Registro de Cuentas | `/register` | ✅ | `RegisterPage` |
+| 11 | Pasarela de Invitaciones | `/join` | ✅ | `InvitationGatewayPage` |
+| 12 | Recuperación de Contraseña | `/forgot-password`, `/reset-password` | ✅ | `ForgotPasswordPage`, `ResetPasswordPage` |
+| 13 | Dashboard del Auditor | `/dashboard` | ✅ | `OverviewDashboardPage` (variante B2G) |
+| 14 | Bandeja de Anomalías | `/dashboard/anomalies` | ✅ | `AuditorPage` (`/app/bandeja`) |
+| 15 | Explorador de Licitaciones | `/dashboard/procurement` | ✅ | `InstitutionalProcessesPage` |
+| 16 | Redes de Colusión | `/dashboard/collusion-network` | ✅ | `CollusionNetworkPage` |
+| 17 | Configuración de IA y Parámetros | `/dashboard/ia-config` | ✅ | `DetectionConfigPage` |
+| 18 | Historial de Resoluciones | `/dashboard/audit-decisions` | ✅ | `AuditResolutionsPage` |
+| 19 | Reportes de Cumplimiento | `/dashboard/reports` | ✅ | `ComplianceReportsPage` |
+| 20 | Integraciones API B2G | `/dashboard/api-integrations` | ✅ | `B2GIntegrationsPage` |
+| 21 | Dashboard del Oferente | `/dashboard` | ✅ | `OverviewDashboardPage` (variante B2B) |
+| 22 | Inteligencia de Mercado | `/dashboard/market-intelligence` | ✅ | `MarketIntelligencePage` |
+| 23 | Oportunidades Recomendadas | `/dashboard/opportunities` | ✅ | `OpportunitiesRadarPage` |
+| 24 | Seguimiento de Licitaciones Propias | `/dashboard/my-bids` | ✅ | `MyBidsPipelinePage` |
+| 25 | Ficha de Competidor | `/dashboard/competitor/:rnc` | ✅ | `CompetitorProfilePage` |
+| 26 | Simulador de Precio | `/dashboard/price-simulator` | ✅ | `PriceSimulatorPage` |
+| 27 | Sectores UNSPSC | `/dashboard/sectors` | ✅ | `SectorsExplorerPage` |
+| 28 | Ajustes de Organización y Equipo | `/settings/organization` | 🟡 | `UsersManagementPage` cubre usuarios/roles; no hay ajustes de organización propios |
+| 29 | Suscripción y Facturación | `/settings/billing` | ✅ | `SubscriptionBillingPage` |
+| 30 | Perfil de Usuario | `/settings/profile` | ✅ | `UserProfilePage` |
+| 31 | Dashboard de Salud del Sistema | `/admin` | 🟡 | Salud vive dentro de `SupportCenterPage` (#36); no hay dashboard dedicado |
+| 32 | Consola de Ingestión ETL | `/admin/etl` | ✅ | `SyncOperationsPage` (#32 del roadmap SDD) |
+| 33 | Control de Modelos ML Globales | `/admin/ml-models` | 🟡 | `CalibrationConsolePage` cubre umbrales y re-ejecución; falta reentrenamiento de *Isolation Forest* |
+| 34 | Administración de Clientes y Licencias | `/admin/organizations` | ⬜ | Fuera de alcance del Paquete 4 |
+| 35 | Bitácora de Auditoría del Servidor | `/admin/logs` | ✅ | `AuditLogPage` (#35 del roadmap SDD) |
+| 36 | Centro de Soporte Técnico | `/admin/support` | ✅ | `SupportCenterPage` (#36 del roadmap SDD) |
+
+**Resumen**: ✅ 29 implementadas · 🟡 3 parciales · ⬜ 4 pendientes = **36**.
+Rutas extra fuera del mapa oficial: `/ranking` (`RankingPage`), `/app/roles` (`RolesMatrixPage`) y `/app/usuarios` (`UsersManagementPage`).
 
 ## Tech Stack
 
