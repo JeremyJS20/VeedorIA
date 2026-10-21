@@ -63,7 +63,11 @@ sequenceDiagram
 | `/app/auditor` (`GET/PATCH /api/anomalies/*`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
 | `/app/procesos` (`GET /api/auditor/processes`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
 | `/app/red-colusion` (`GET /api/auditor/collusion-network`) | ✅ Grafo completo | ✅ Grafo completo | 🔒 Vista bloqueada (`locked: true`) | 🚫 `403` | 🚫 `403` |
-| `/app/configuracion-deteccion` (`GET/PUT /api/auditor/detection-config`) | ✅ Lectura y Edición | ✅ Lectura y Edición (`CONTRALOR`) | 👁️ Solo lectura (`can_edit: false`) | 🚫 `403` | 🚫 `403` |
+| `/app/configuracion-deteccion` (`GET/PUT /api/auditor/detection-config`) | ✅ Lectura y Edición (única superficie de escritura junto a `/app/calibracion`) | 👁️ Solo lectura (`can_edit: false`) | 👁️ Solo lectura (`can_edit: false`) | 🚫 `403` | 🚫 `403` |
+| `/app/sincronizacion` (`/api/admin/sync/*`, `/api/admin/queue/status`) | ✅ Disparo, relanzamiento y salud de la cola | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |
+| `/app/calibracion` (`/api/admin/detection-config*`, `/api/admin/calibration/*`, `/api/admin/detection/run`) | ✅ Edición global, reset, apply y re-ejecución | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |
+| `/app/bitacora` (`GET /api/admin/audit-logs*`) | ✅ Consulta y exportación CSV/JSON (append-only) | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |
+| `/app/soporte` (`/api/admin/support/*`, `/api/support/tickets`) | ✅ Bandeja completa + tickets propios | ✅ Solo tickets propios | ✅ Solo tickets propios | ✅ Solo tickets propios | ✅ Solo tickets propios |
 | `/app/resoluciones` (`GET /api/auditor/resolutions`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
 | `/app/reportes` (`GET /api/auditor/reports/summary`) | ✅ Nacional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | 🚫 `403` | 🚫 `403` |
 | `/app/integraciones` (`GET/POST/DELETE /api/auditor/integrations/*`) | ✅ Emisión y Revocación | ✅ Emisión y Revocación | 🔒 Emisión bloqueada por plan | 🚫 `403` | 🚫 `403` |
@@ -75,6 +79,20 @@ sequenceDiagram
 | `/app/sectores` (`GET/PUT /api/b2b/sectors`) | ✅ Nacional | ✅ Supervisión (consulta) | ✅ Supervisión (consulta) | ✅ Monitoreo de rubros ilimitado | 🔒 Máx. 3 rubros UNSPSC (`403 PLAN_QUOTA_EXCEEDED`) |
 | `/app/suscripcion` (`GET/PUT /api/b2b/subscription`) | ✅ Nacional + cambio de plan (`PLATFORM_ADMIN`) | 👁️ Según rol del usuario b2g (p. ej. `CONTRALOR` no puede cambiar el plan) | 👁️ Según rol del usuario b2g (p. ej. `CONTRALOR` no puede cambiar el plan) | ✅ Consulta + cambio de plan (rol `PROVEEDOR`) | ✅ Consulta + cambio de plan (rol `PROVEEDOR`) |
 | `/app/usuarios` y `/app/roles` (`/api/auth/users`, `/api/auth/roles`) | ✅ Global | ✅ Usuarios de su institución | 👁️ Según permiso `USER_READ` | ✅ Usuarios de su empresa | 👁️ Según permiso `USER_READ` |
+
+### 3. Vista Previa de Roles (`Ver la consola como`)
+
+| Aspecto | Implementación |
+|---------|----------------|
+| Alcance | **Solo UI**. El token JWT y los datos siguen siendo del `PLATFORM_ADMIN`; no existe impersonación real ni emisión de tokens de otro usuario |
+| Disponibilidad | Exclusiva del `PLATFORM_ADMIN` autenticado (`realUser.rol.codigo`) |
+| Perfiles | `TENANT_ADMIN` (`GOV_INSTITUTION` · B2G Premium), `AUDITOR` (`GOV_OVERSIGHT` · B2G Enterprise), `PROVEEDOR` (`B2B_SUPPLIER` · B2B Corporativo) |
+| Efecto | Recalcula sidebar, `RequireAuth` y `hasPermission` con el rol simulado; las páginas muestran el estado de "Acceso Restringido" donde corresponda |
+| Persistencia | `localStorage["veedoria_preview_role"]`; se limpia al hacer login o logout |
+| Reglas derivadas del backend | Los flags calculados en servidor (p. ej. `can_edit` de parámetros) se combinan con el rol efectivo para que la vista previa sea de solo lectura |
+| Auditoría | Sin entradas en `audit_log`: no hay cambio de identidad ni operación de escritura |
+
+⚠️ La vista previa **no otorga ni revoca permisos reales**: el backend sigue autorizando con el rol del token.
 
 ## Secrets Management
 | Secret | Storage | Path / Variable |
@@ -125,6 +143,7 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Línea base de seguridad extraída de `pyproject.toml`, `user.py`, `audit_log.py` y `main.py` |
 | 2026-10-21 | `implementer` (Paquete 3) | Añadidos los 6 endpoints/pantallas de `suite-licitaciones-b2b` a la matriz por ruta; guard de segmento B2B (`/api/b2b/*` para `B2B_SUPPLIER`, `GOV_OVERSIGHT`, `PLATFORM` o permiso `B2B_ANALYTICS`); candados de cuota `B2B_PYME` (3 rubros / 10 pizarras — `403 PLAN_QUOTA_EXCEEDED`), ficha forense `locked` en PyME y cambio de plan restringido a roles de administración (`TENANT_ADMIN`/`PLATFORM_ADMIN`/`PROVEEDOR`); trazabilidad `B2B_BID_UPSERT` / `B2B_BID_DELETE` / `B2B_SECTORS_UPDATE` / `B2B_PLAN_CHANGE` en `audit_log` |
+| 2026-10-21 | `implementer` (Paquete 4) | Añadidas las 4 rutas de la consola de administración con guard exclusivo `PLATFORM_ADMIN`; `PUT /api/auditor/detection-config` restringido a `PLATFORM_ADMIN` (`can_edit: false` para `TENANT_ADMIN`/`CONTRALOR`); documentada la vista previa de roles como funcionalidad **solo UI** sin impersonación; `/api/support/tickets` aislado por `reporter_id` |
 
 ---
-_Last updated: 2026-10-21 by implementer (added Multi-Tenant Plans, Locks, B2G/B2B Route Matrix & suite-licitaciones-b2b guards)_
+_Last updated: 2026-10-21 by implementer (added consola-admin-operaciones guards, detection-config scope & role preview model)_

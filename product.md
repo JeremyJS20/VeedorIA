@@ -31,7 +31,65 @@
 | Portal Cívico y Landing Page (`portal-civico-landing`) | Portal público bilingüe (ES/EN con `i18next`), verificador público de precios (`PriceCheckerSection`), secciones informativas de portales B2C/B2B/B2G y diseño institucional con soporte claro/oscuro | 🟢 active |
 | Buscador Ciudadano y Portal Cívico (`buscador-ciudadano`) | Buscador en lenguaje natural (`/public`), diagrama Sankey presupuestario, mapa provincial, comparador de precios, expediente público de licitación, radiografías de proveedor/institución y ranking de transparencia | 🟢 active |
 | Autenticación y Control de Acceso Multi-Organización (`autenticacion-rbac`) | Autenticación JWT (`/login`), recuperación de contraseña, aislamiento de datos por organización (`B2G`, `B2B`, `Global`), matriz de roles y permisos (`/app/roles`), gestión de usuarios (`/app/usuarios`) y perfil (`/app/perfil`) | 🟢 active |
-| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral (`docs-backup-2/internal/complete_screen_map.md`) incluyendo Dashboard Multi-Rol (`/dashboard`), Inteligencia de Mercado B2B (`/dashboard/market-intelligence`), Ajustes de Organización (`/settings/organization`), Sankey de Gasto, Simulador de Precios y Consola Admin (`/admin`) | ⚪ planned |
+| Herramientas de Auditoría B2G (`herramientas-auditoria-b2g`) | Explorador de procesos institucionales, red de colusión, parámetros de detección, historial de resoluciones, reportes de cumplimiento con matriz legal e interoperabilidad institucional vía llaves API (`vdia_b2g_...`) | 🟢 active |
+| Suite de Inteligencia Comercial B2B (`suite-licitaciones-b2b`) | Radar de oportunidades, pipeline de mis licitaciones, ficha forense de competidor, simulador de precios de oferta, explorador de sectores y gestión de plan, con candados de cuota `B2B_PYME` vs `B2B_CORPORATE` | 🟢 active |
+| Consola de Administración Global (`consola-admin-operaciones`) | Sincronización DGCP y cola asíncrona (#32), calibración global del motor (#33), bitácora inmutable con exportación checksummed (#35) y centro de soporte/salud de servicios (#36). Guard exclusivo `PLATFORM_ADMIN`, vista previa de roles (solo UI) y 18 endpoints `/api/admin/*` + `/api/support/*` | 🟢 active |
+| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral (`docs-backup-2/internal/complete_screen_map.md`). **Implementadas 32 vistas** en 4 paquetes (core + auditoría B2G + licitaciones B2B + consola admin); pendientes las pantallas restantes del mapa (#30, #31, #34 y siguientes) | 🟡 partial |
+
+## Screen Catalog (implemented)
+
+> 33 rutas / 32 componentes de página. Las rutas con alias comparten componente. Estados: 🟢 implementada · 🟡 parcial en el mapa de 36.
+
+### Portal público y autenticación
+| Ruta | Componente | Endpoints principales | Acceso |
+|------|------------|----------------------|--------|
+| `/` | `LandingPage` | — | Público |
+| `/login` | `LoginPage` | `POST /api/auth/login` | Público |
+| `/invitacion`, `/join` | `InvitationGatewayPage` | `POST /api/auth/register` (invitación) | Público |
+| `/registro`, `/register` | `RegisterPage` | `POST /api/auth/register` | Público |
+| `/recuperar-contrasena` | `ForgotPasswordPage` | `POST /api/auth/forgot-password` | Público |
+| `/restablecer-contrasena` | `ResetPasswordPage` | `POST /api/auth/reset-password` | Público |
+| `/public`, `/explore` | `CivicPortalPage` | `GET /api/public/*` | Público |
+| `/public/process/:id`, `/tender/:id` | `TenderDetailPage` | `GET /api/public/process/{id}` | Público |
+| `/public/supplier/:rnc` | `SupplierProfilePage` | `GET /api/public/supplier/{rnc}` | Público |
+| `/public/institution/:id` | `InstitutionProfilePage` | `GET /api/public/institution/{id}` | Público |
+| `/ranking` | `RankingPage` | `GET /api/public/ranking` | Público |
+
+### Consola B2G (auditoría y oversight)
+| Ruta | Componente | Endpoints principales | Acceso |
+|------|------------|----------------------|--------|
+| `/app/dashboard` | `OverviewDashboardPage` | `GET /api/dashboard/overview` | Todos los roles autenticados (variante por segmento) |
+| `/app/bandeja` | `AuditorPage` | `GET/PATCH /api/anomalies/*` | `ANOMALY_READ` + `GOV_INSTITUTION`/`GOV_OVERSIGHT`/`PLATFORM` |
+| `/app/procesos` | `InstitutionalProcessesPage` | `GET /api/auditor/processes[/{id}]` | `ANOMALY_READ` (B2G/PLATFORM) |
+| `/app/red-colusion` | `CollusionNetworkPage` | `GET /api/auditor/collusion-network` | `ANOMALY_READ` (candado `B2G_BASIC`) |
+| `/app/configuracion-deteccion` | `DetectionConfigPage` | `GET/PUT /api/auditor/detection-config` | Lectura B2G/PLATFORM · **edición solo `PLATFORM_ADMIN`** |
+| `/app/resoluciones` | `AuditResolutionsPage` | `GET /api/auditor/resolutions` | `ANOMALY_READ` (B2G/PLATFORM) |
+| `/app/reportes` | `ComplianceReportsPage` | `GET /api/auditor/reports/summary` | `ANOMALY_READ` (B2G/PLATFORM) |
+| `/app/integraciones` | `B2GIntegrationsPage` | `GET/POST/DELETE /api/auditor/integrations*` | `ANOMALY_READ` · emisión de llaves según rol |
+
+### Consola B2B (inteligencia comercial)
+| Ruta | Componente | Endpoints principales | Acceso |
+|------|------------|----------------------|--------|
+| `/app/mercado` | `MarketIntelligencePage` | `GET /api/b2b/*` | `B2B_ANALYTICS` + segmento B2B/oversight/PLATFORM |
+| `/app/oportunidades` | `OpportunitiesRadarPage` | `GET /api/b2b/opportunities` | Ídem |
+| `/app/mis-licitaciones` | `MyBidsPipelinePage` | `GET/POST/PUT/DELETE /api/b2b/bids*` | Ídem · cuota 10 pizarras en `B2B_PYME` |
+| `/app/competidor`, `/app/competidor/:rnc` | `CompetitorProfilePage` | `GET /api/b2b/competitors[/{rnc}]` | Ídem · ficha forense `locked` en `B2B_PYME` |
+| `/app/simulador-precios` | `PriceSimulatorPage` | `POST /api/b2b/price-simulator` | Ídem |
+| `/app/sectores` | `SectorsExplorerPage` | `GET/PUT /api/b2b/sectors` | Ídem · cuota 3 rubros en `B2B_PYME` |
+| `/app/suscripcion` | `SubscriptionBillingPage` | `GET/PUT /api/b2b/subscription` | Segmento B2B/oversight/PLATFORM · cambio de plan `PROVEEDOR`/`TENANT_ADMIN`/`PLATFORM_ADMIN` |
+
+### Consola de administración y ajustes
+| Ruta | Componente | Endpoints principales | Acceso |
+|------|------------|----------------------|--------|
+| `/app/sincronizacion` | `SyncOperationsPage` | `/api/admin/sync/*`, `/api/admin/queue/status` | **Solo `PLATFORM_ADMIN`** |
+| `/app/calibracion` | `CalibrationConsolePage` | `/api/admin/detection-config*`, `/api/admin/calibration/*`, `/api/admin/detection/run` | **Solo `PLATFORM_ADMIN`** |
+| `/app/bitacora` | `AuditLogPage` | `/api/admin/audit-logs*` | **Solo `PLATFORM_ADMIN`** |
+| `/app/soporte` | `SupportCenterPage` | `/api/admin/support/*`, `/api/support/tickets` | Bandeja: **`PLATFORM_ADMIN`** · tickets propios: cualquier rol |
+| `/app/perfil` | `UserProfilePage` | `GET/PATCH /api/auth/me/profile`, `POST /api/auth/me/password` | Cualquier rol autenticado |
+| `/app/usuarios` | `UsersManagementPage` | `/api/auth/users`, `/api/auth/tenants` | `USER_ADMIN` + `PLATFORM_ADMIN`/`TENANT_ADMIN` |
+| `/app/roles` | `RolesMatrixPage` | `/api/auth/roles*`, `/api/auth/permissions` | `ROLE_VIEW` + `PLATFORM_ADMIN` |
+
+**Pantallas pendientes del mapa de 36** (#30, #31, #34 y siguientes): no implementadas; ver `docs-backup-2/internal/complete_screen_map.md`.
 
 ## Tech Stack
 
@@ -147,9 +205,14 @@ veedoria-monorepo/
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
 
 ## Sprint / Roadmap
-- **Current sprint**: Consolidación de especificaciones *As-Built* (`veedoria-core`) bajo SDD Standard v4.11.0.
-- **Objective**: Completar la línea base documental de los 4 módulos implementados y preparar los módulos incrementales del mapa de 36 pantallas (Autenticación JWT/RBAC, Consola B2G, Consola B2B de Inteligencia de Mercado y Consola Admin).
+- **Current sprint**: Cierre del **Paquete 4 — Consola de Administración Global** (`consola-admin-operaciones`) y preparación de la fase de polish de frontend.
+- **Objective**: Completar la línea base documental de los 4 paquetes implementados (core, auditoría B2G, licitaciones B2B y consola admin) y abordar las mejoras de UX/consistencia antes de las pantallas restantes del mapa de 36.
 - **Date**: Mayo – Octubre 2026
+- **Paquetes completados**:
+  1. `veedoria-core` — ingesta, motor de detección, consola de auditoría, portal cívico y RBAC.
+  2. `herramientas-auditoria-b2g` — procesos, colusión, resoluciones, reportes e interoperabilidad.
+  3. `suite-licitaciones-b2b` — inteligencia comercial y plan locks.
+  4. `consola-admin-operaciones` — sincronización/cola, calibración, bitácora y soporte.
 
 ## Notes
 - El proyecto opera bajo **Clean Architecture** tanto en `app/backend/src` (`domain`, `infrastructure`, `models`, `services`, `presentation`) como en `app/frontend/src` (`domain`, `infrastructure`, `presentation`, `validation`).

@@ -152,11 +152,55 @@ graph TB
 - La ficha forense de competidor (`/app/competidor/:rnc` — precios compartidos por rubro UNSPSC + flags de anomalías) queda `locked` para `B2B_PYME` con nota del plan requerido (`Plan Proveedor Corporativo`).
 - El cambio de plan (`/app/suscripcion`) es auto-servicio exclusivo de administradores de organización y recalcula `max_categorias_unspsc` del tenant con traza `B2B_PLAN_CHANGE`.
 
+## Consola de Administración Global (Paquete 4 — `consola-admin-operaciones`)
+
+### 1. Cola Asíncrona y Runbook (`/app/sincronizacion`)
+
+- **Topología**: la API encola trabajos en Redis DB `0` bajo la cola `arq:queue`; el proceso `arq` (`python -m arq src.cli.arq_worker.WorkerSettings`) consume `sync_job` y `detection_job`. Ambos comparten `DATABASE_URL` y `REDIS_URL`; un worker con distinta `DATABASE_URL` procesa contra otra base.
+- **Mutex de unicidad**: `POST /api/admin/sync/trigger` y `POST /api/admin/detection/run` rechazan la operación con `409 SYNC_ALREADY_RUNNING` / `409 DETECTION_ALREADY_RUNNING` si ya existe un `sync_log` en estado `running` del mismo `process_type`.
+- **Detección de salud**: el worker publica el latido con `psetex` sobre `arq:queue:health-check` (TTL = `health_check_interval + 1`). `GET /api/admin/queue/status` reporta:
+  - `redis: "OK" | "OFFLINE"` según `PING`.
+  - `worker: "OK" | "DOWN"` según la existencia de la clave de latido.
+  - `queue_depth` (`ZCARD arq:queue`) y `failed_jobs_24h`.
+- **Diagnóstico rápido**:
+  | Síntoma | Causa | Acción |
+  |---------|-------|--------|
+  | `redis: OFFLINE` | Contenedor/instancia caída o `REDIS_URL` inválida | Levantar `veedoria-redis` / revisar la variable |
+  | `redis: OK` + `worker: DOWN` | No hay proceso `arq` activo; los jobs quedarían encolados sin procesar | `docker compose up -d worker` o `poetry run python -m arq src.cli.arq_worker.WorkerSettings` |
+  | Corrida atascada en `running` tras un reinicio | El worker murió a mitad del job | Marcar la corrida como `failed` y relanzar desde la consola |
+- **Degradación**: con Redis o worker caídos el histórico sigue consultable y los disparos se deshabilitan; la API no devuelve `500`.
+
+### 2. Metodología de Calibración (`/app/calibracion`)
+
+- **Superficie única de escritura**: los 13 parámetros de `detection_config` se editan solo desde esta consola (`PLATFORM_ADMIN`), con clamp al rango `[min, max]` y reporte de `adjusted`. `/app/configuracion-deteccion` queda como consulta para el resto de roles.
+- **Análisis de calidad (`GET /api/admin/calibration/analysis`)**: se toman las anomalías con dictamen humano (`CONFIRMED` = positivo, `DISMISSED` = negativo) y se calcula, por tipo:
+  - Matriz `TP/FP/FN` sobre el umbral vigente.
+  - `precision`, `recall` y `F1`.
+  - Rejilla de umbrales candidatos (`grid`) y el `recommended_threshold` que maximiza F1.
+  - Para colusión, tasa de confirmación por nivel de severidad (no hay umbral numérico único).
+- **Umbrales calibrables** (`CALIBRATION_RANGES`): `price_zscore_threshold` (2.0–4.0), `price_min_deviation_pct` (10–40) y `fragmentation_threshold_dop` (3 000 000–8 000 000).
+- **Aplicación (`POST /api/admin/calibration/apply`)**: valida claves permitidas, hace clamp, persiste y audita `CALIBRATION_APPLY` con el diff. Requiere confirmación explícita en la UI.
+- **Re-ejecución**: `POST /api/admin/detection/run` respeta el mutex y **no borra** dictámenes existentes.
+
+### 3. Bitácora Inmutable (`/app/bitacora`)
+
+- `audit_log` es **append-only**: la API no expone `PUT`/`DELETE`. Filtros por `action_type`, `user_id`, `entity_type`, `entity_id` y rango de fechas.
+- **Exportación**: `GET /api/admin/audit-logs/export?format=csv|json` (máx. 10 000 filas) con cabecera `X-Checksum-SHA256` calculada sobre el cuerpo, y auditoría `AUDIT_LOG_EXPORT` con el formato solicitado.
+- **Timestamps**: todas las columnas nuevas usan `utcnow_naive()` (`TIMESTAMP WITHOUT TIME ZONE`) para ser coherentes con la cadena existente.
+
+### 4. Soporte y Salud (`/app/soporte`)
+
+- `GET /api/admin/health/services` consolida 6 componentes (`api`, `database`, `redis_worker`, `last_sync`, `last_detection`, `scheduler`) con estado `OK`/`DEGRADED`/`DOWN`, detalle y latencia.
+- Ciclo de vida del ticket: `ABIERTO → EN_PROGRESO → RESUELTO → CERRADO`, con reapertura auditada como `TICKET_REOPENED` (limpia `closed_at`). Las respuestas sobre un ticket `CERRADO` se rechazan con `409 TICKET_CLOSED`.
+- `/api/support/tickets` es autoservicio aislado por `reporter_id`; la bandeja `/api/admin/support/tickets` es exclusiva de `PLATFORM_ADMIN`.
+
 ## Key Decisions
 - **Arquitectura Limpia en Monorepo**: Separación estricta de `domain`, `infrastructure`, `models`, `services` y `presentation` en `app/backend` y `app/frontend`.
 - **Bucle de Retroalimentación Cerrado (`DetectionConfig`)**: Las confirmaciones y descartes de los auditores ajustan dinámicamente los pesos y umbrales de detección sin requerir redespliegue de código.
 - **Doble Motor de Base de Datos Asíncrono**: Soporte transparente para `sqlite+aiosqlite` en desarrollo ligero y `postgresql+asyncpg` en contenedores y producción.
 - **Watchlist y Suscripción B2B Sin Tablas Nuevas**: El seguimiento de pizarras, la selección de rubros y el historial de plan aprovechan el log inmutable `audit_log` con `entity_type` con prefijo de tenant (`B2B_WATCHLIST:{tenant}`), evitando migraciones y garantizando reversión lógica sin pérdida de trazabilidad.
+- **Operaciones de Plataforma con Degradación Explícita**: la consola de administración distingue `redis: OFFLINE` de `worker: DOWN` y deshabilita los disparos sin romper las consultas; el histórico y la bitácora siguen disponibles cuando la cola asíncrona no responde.
+- **Calibración Basada en Dictámenes Humanos**: el umbral recomendado no se fija a mano: se elige maximizando F1 sobre las anomalías ya confirmadas/descartadas, y toda aplicación queda auditada con el diff.
 
 ---
-_Last updated: 2026-10-21 by implementer (added suite-licitaciones-b2b: Radar de Oportunidades, Simulador de Precios & plan locks)_
+_Last updated: 2026-10-21 by implementer (added consola-admin-operaciones: arq runbook, calibration methodology, immutable audit log & support lifecycle)_

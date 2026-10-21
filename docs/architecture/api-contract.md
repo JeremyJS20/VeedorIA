@@ -49,7 +49,7 @@
 | `GET` | `/api/auditor/processes/{process_id}` | JWT (`ANOMALY_READ`) | Detalle interno de expediente (contratos adjudicados y anomalías) para `ProcessInspectorDrawer` | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/collusion-network` | JWT (`ANOMALY_READ`) | Red relacional de proveedores vinculados y co-adjudicaciones (con candado `B2G_BASIC`) | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/detection-config` | JWT (`ANOMALY_READ`) | Lectura de los 13 parámetros en BD (pesos, sensibilidad y 7 topes de modalidad DGCP) | herramientas-auditoria-b2g |
-| `PUT` | `/api/auditor/detection-config` | JWT (`PLATFORM_ADMIN`/`TENANT_ADMIN`/`CONTRALOR`) | Actualización en PostgreSQL de pesos y topes de modalidad DGCP con traza en `AuditLog` | herramientas-auditoria-b2g |
+| `PUT` | `/api/auditor/detection-config` | JWT (**solo `PLATFORM_ADMIN`**; `can_edit: false` para el resto) | Actualización en PostgreSQL de pesos y topes de modalidad DGCP con traza en `AuditLog`. La edición global quedó restringida al administrador de plataforma | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/resolutions` | JWT (`ANOMALY_READ`) | Historial paginado de dictámenes emitidos (`CONFIRMED` / `DISMISSED`) con auditor y motivo | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/reports/summary` | JWT (`ANOMALY_READ`) | Consolidado ejecutivo de cumplimiento con matriz legal condicional Ley 340-06 | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/integrations` | JWT (`ANOMALY_READ`) | Listado de llaves de interoperabilidad institucional y endpoints disponibles | herramientas-auditoria-b2g |
@@ -68,6 +68,32 @@
 | `GET` / `PUT` | `/api/b2b/sectors` | JWT (ídem) | Explorador de Sectores e Instituciones Compradoras (#27) + actualización de rubros monitoreados (cuota de 3 rubros en `B2B_PYME`) | suite-licitaciones-b2b |
 | `GET` | `/api/b2b/subscription` | JWT | Gestión de Plan y Suscripción (#29): uso actual vs. cuotas, catálogo de planes e historial de cambios | suite-licitaciones-b2b |
 | `PUT` | `/api/b2b/subscription` | JWT (`TENANT_ADMIN`/`PLATFORM_ADMIN`/`PROVEEDOR`) | Cambio de plan (`B2B_PYME` ↔ `B2B_CORPORATE`) con traza de auditoría `B2B_PLAN_CHANGE` | suite-licitaciones-b2b |
+| `GET` | `/api/admin/sync/overview` | JWT (`PLATFORM_ADMIN`) | KPIs de la última corrida, historial de sincronizaciones y de detecciones (#32) | consola-admin-operaciones |
+| `POST` | `/api/admin/sync/trigger` | JWT (`PLATFORM_ADMIN`) | Encola una sincronización DGCP aplicando el mutex de unicidad (`202 Accepted`, `409 SYNC_ALREADY_RUNNING`) | consola-admin-operaciones |
+| `GET` | `/api/admin/queue/status` | JWT (`PLATFORM_ADMIN`) | Salud degradable de Redis, latido del worker `arq` y profundidad de cola | consola-admin-operaciones |
+| `GET` | `/api/admin/detection-config` | JWT (`PLATFORM_ADMIN`) | Lectura de los 13 parámetros del motor con rango, default y `updated_at` (#33) | consola-admin-operaciones |
+| `PUT` | `/api/admin/detection-config` | JWT (`PLATFORM_ADMIN`) | Actualización parcial con clamp al rango permitido, reporte de `adjusted` y auditoría `UPDATE_DETECTION_CONFIG` | consola-admin-operaciones |
+| `POST` | `/api/admin/detection-config/reset` | JWT (`PLATFORM_ADMIN`) | Restauración de valores por defecto (todas las claves o una lista) con auditoría `DETECTION_CONFIG_RESET` | consola-admin-operaciones |
+| `GET` | `/api/admin/calibration/analysis` | JWT (`PLATFORM_ADMIN`) | Calidad del motor sobre dictámenes humanos: TP/FP/FN, precision/recall/F1, rejilla evaluada y umbral recomendado por tipo de anomalía | consola-admin-operaciones |
+| `POST` | `/api/admin/calibration/apply` | JWT (`PLATFORM_ADMIN`) | Persiste umbrales de calibración (`price_zscore_threshold`, `price_min_deviation_pct`, `fragmentation_threshold_dop`) con auditoría `CALIBRATION_APPLY` | consola-admin-operaciones |
+| `POST` | `/api/admin/detection/run` | JWT (`PLATFORM_ADMIN`) | Re-ejecuta el motor en background (`202 Accepted`, `409 DETECTION_ALREADY_RUNNING`) | consola-admin-operaciones |
+| `GET` | `/api/admin/audit-logs` | JWT (`PLATFORM_ADMIN`) | Bitácora paginada con filtros por acción, actor, entidad y rango de fechas (#35) | consola-admin-operaciones |
+| `GET` | `/api/admin/audit-logs/export` | JWT (`PLATFORM_ADMIN`) | Exportación `csv`/`json` (máx. 10 000 filas) con cabecera `X-Checksum-SHA256` y auditoría `AUDIT_LOG_EXPORT` | consola-admin-operaciones |
+| `GET` | `/api/admin/health/services` | JWT (`PLATFORM_ADMIN`) | Estado de los 6 componentes (API, BD, Redis/worker, última sync, última detección, scheduler) (#36) | consola-admin-operaciones |
+| `GET` | `/api/admin/support/tickets` | JWT (`PLATFORM_ADMIN`) | Bandeja de soporte paginada con filtros por estado, categoría y texto | consola-admin-operaciones |
+| `GET` | `/api/admin/support/tickets/{ticket_id}` | JWT (`PLATFORM_ADMIN`) | Detalle del ticket con su hilo de mensajes | consola-admin-operaciones |
+| `PATCH` | `/api/admin/support/tickets/{ticket_id}` | JWT (`PLATFORM_ADMIN`) | Cambio de estado, asignación y respuesta; reapertura de `CERRADO` auditada como `TICKET_REOPENED` | consola-admin-operaciones |
+| `POST` | `/api/support/tickets` | JWT | Autoservicio: alta de ticket por cualquier usuario autenticado (`201 Created`) | consola-admin-operaciones |
+| `GET` | `/api/support/tickets` | JWT | Autoservicio: tickets propios del usuario (aislados por `reporter_id`) | consola-admin-operaciones |
+| `GET` | `/api/support/tickets/{ticket_id}` | JWT | Autoservicio: detalle de un ticket propio (`403` si pertenece a otro usuario) | consola-admin-operaciones |
+
+### Consola de Administración Global (`/api/admin/*` y `/api/support/*`)
+
+- **Guard**: todos los endpoints `/api/admin/*` exigen `rol.codigo == PLATFORM_ADMIN`; cualquier otro rol recibe `403 FORBIDDEN_*`.
+- **Mutex de operaciones**: solo puede existir una sincronización y una detección en estado `running` a la vez.
+- **Degradación**: si Redis o el worker `arq` no responden, `GET /api/admin/queue/status` devuelve `redis: "OFFLINE"` / `worker: "DOWN"` y los disparos se rechazan con `503 QUEUE_UNAVAILABLE` sin romper el resto de la consola.
+- **Códigos de error propios**: `VALIDATION_ERROR` (422), `SYNC_ALREADY_RUNNING` / `DETECTION_ALREADY_RUNNING` / `TICKET_CLOSED` (409), `FORBIDDEN_*` (403), `QUEUE_UNAVAILABLE` (503).
+- **Trazabilidad**: toda acción sensible (sync, detección, calibración, reset, export, tickets) escribe un `AuditLog` con `timestamp` naive-UTC.
 
 ### `PATCH /api/anomalies/{anomaly_id}`
 - **Request (`AnomalyReviewPayload`)**:
@@ -190,6 +216,7 @@ curl -X POST http://localhost:3001/api/anomalies/detect
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Contrato inicial extraído de `main.py`, `routers/anomaly.py` y `routers/sync.py` |
 | 2026-10-21 | `implementer` (Paquete 3) | Añadidos los 11 endpoints de la Suite de Licitaciones B2B (`/api/b2b/*`, REQ-001..REQ-006), bandas del Simulador de Precios y candados de plan `B2B_PYME`/`B2B_CORPORATE` |
+| 2026-10-21 | `implementer` (Paquete 4) | Añadidos los 15 endpoints `/api/admin/*` y los 3 de autoservicio `/api/support/tickets`; `PUT /api/auditor/detection-config` pasa a ser exclusivo de `PLATFORM_ADMIN` |
 
 ---
-_Last updated: 2026-10-21 by implementer (added suite-licitaciones-b2b /api/b2b/* endpoints)_
+_Last updated: 2026-10-21 by implementer (added consola-admin-operaciones /api/admin/* + /api/support/* endpoints)_

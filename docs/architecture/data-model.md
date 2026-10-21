@@ -218,6 +218,32 @@ erDiagram
     - `THRESHOLD_PEEN_DOP` (`25,000,000` — Emergencia Nacional / Urgencia `-PEEN-`/`-PEUR-`).
     - `FRAGMENTATION_THRESHOLD_DOP` (`5,000,000` — Umbral general de respaldo cuando la referencia no incluye sigla estándar).
 
+### `support_ticket` (`app/backend/src/models/support_ticket.py`)
+| Column | Type | Nullable | Default | Index | Description |
+|--------|------|----------|---------|-------|-------------|
+| `id` | `int` | NO | Auto-increment | PK | Identificador interno del ticket |
+| `code` | `varchar(20)` | NO | — | UNIQUE, IDX | Código legible (`SUP-YYYY-NNNN`) usado en la bandeja |
+| `subject` | `varchar(200)` | NO | — | — | Asunto reportado por el solicitante |
+| `category` | `varchar(30)` | NO | `SOPORTE_FUNCIONAL` | — | `SOPORTE_FUNCIONAL`, `ERROR_TECNICO`, `SOLICITUD_DATOS`, `FACTURACION` |
+| `module` | `varchar(40)` | NO | `OTRO` | — | Módulo afectado (`SINCRONIZACION`, `CALIBRACION`, `BITACORA`, `DETECCION`, `ACCESOS`, `OTRO`) |
+| `priority` | `varchar(10)` | NO | `MEDIA` | — | `ALTA`, `MEDIA`, `BAJA` |
+| `description` | `text` | NO | — | — | Relato del problema o solicitud |
+| `status` | `varchar(20)` | NO | `ABIERTO` | IDX | `ABIERTO`, `EN_PROGRESO`, `RESUELTO`, `CERRADO` |
+| `reporter_id` | `int` | NO | — | FK (`app_user.id`), IDX | Usuario que abrió el ticket |
+| `reporter_tenant_id` | `int` | NO | — | FK (`tenant.id`), IDX | Organización del solicitante (aislamiento de autoservicio) |
+| `assigned_to_id` | `int` | YES | `NULL` | FK (`app_user.id`), IDX | Administrador de plataforma asignado |
+| `created_at` / `updated_at` | `datetime` | NO | `utcnow_naive()` | — | Marcas naive-UTC de creación y última modificación |
+| `closed_at` | `datetime` | YES | `NULL` | — | Se limpia al reabrir el ticket (`TICKET_REOPENED`) |
+
+### `support_ticket_message` (`app/backend/src/models/support_ticket.py`)
+| Column | Type | Nullable | Default | Index | Description |
+|--------|------|----------|---------|-------|-------------|
+| `id` | `int` | NO | Auto-increment | PK | Identificador del mensaje |
+| `ticket_id` | `int` | NO | — | FK (`support_ticket.id`), IDX, CASCADE | Ticket al que pertenece la respuesta |
+| `author_id` | `int` | NO | — | FK (`app_user.id`), IDX | Autor del mensaje (solicitante o soporte) |
+| `body` | `text` | NO | — | — | Contenido de la respuesta |
+| `created_at` | `datetime` | NO | `utcnow_naive()` | — | Fecha naive-UTC del mensaje |
+
 ## Relationships
 | From | To | Type | FK | ON DELETE |
 |------|----|------|----|-----------|
@@ -228,12 +254,17 @@ erDiagram
 | `anomaly` | `contract` | Many-to-One | `anomaly.contract_id → contract.id` | SET NULL |
 | `anomaly` | `user` | Many-to-One | `anomaly.reviewer_id → user.id` | SET NULL |
 | `audit_log` | `user` | Many-to-One | `audit_log.user_id → user.id` | SET NULL |
+| `support_ticket` | `app_user` | Many-to-One | `support_ticket.reporter_id → app_user.id` | — |
+| `support_ticket` | `tenant` | Many-to-One | `support_ticket.reporter_tenant_id → tenant.id` | — |
+| `support_ticket` | `app_user` | Many-to-One | `support_ticket.assigned_to_id → app_user.id` | SET NULL |
+| `support_ticket_message` | `support_ticket` | Many-to-One | `support_ticket_message.ticket_id → support_ticket.id` | CASCADE |
 
 ## Migraciones
 - **Herramienta**: **Alembic** (`app/backend/alembic.ini`, `app/backend/migrations/versions/`).
 - **Ejecución**:
   - CLI / Local: `poetry run alembic upgrade head` o `poetry run python -m src.cli.run_migrations`.
   - Regla: Toda modificación a modelos en `app/backend/src/models/` debe ir acompañada de su revisión Alembic reversible (`upgrade` / `downgrade`).
+- **Revisión `4ceda77036aa`** (Paquete 4): crea `support_ticket` y `support_ticket_message` con sus índices. ⚠️ La cadena Alembic no contiene `app_user` ni `tenant` (viven en el seed de RBAC), por lo que la migración **no declara FKs a nivel DDL**; las relaciones se declaran en los modelos SQLModel y se validan en runtime. Deuda registrada: alinear la cadena cuando `app_user`/`tenant` se incorporen como revisiones.
 
 ## Seeds
 - Los datos se pueblan mediante la sincronización directa con la API de Datos Abiertos de la DGCP (`poetry run python -m src.cli.sync_dgcp` o `POST /api/sync/dgcp`).
@@ -244,6 +275,7 @@ erDiagram
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Línea base inicial extraída de los 10 modelos SQLModel y 14 migraciones Alembic |
 | 2026-10-21 | `implementer` (Paquete 3) | `suite-licitaciones-b2b` no agrega tablas: reutiliza `tenant` (`plan_tier`, `supplier_rpe`, `max_categorias_unspsc`) y `audit_log` como store inmutable con `entity_type = B2B_WATCHLIST:{tenant}` / `B2B_SECTORS:{tenant}` / `B2B_SUBSCRIPTION:{tenant}` (UPSERT/DELETE de pizarras, familias monitoreadas e historial de cambio de plan) |
+| 2026-10-21 | `implementer` (Paquete 4) | `consola-admin-operaciones` agrega `support_ticket` + `support_ticket_message` (revisión `4ceda77036aa`) y reutiliza `audit_log` para `SYNC_TRIGGERED`, `DETECTION_TRIGGERED`, `UPDATE_DETECTION_CONFIG`, `DETECTION_CONFIG_RESET`, `CALIBRATION_APPLY`, `AUDIT_LOG_EXPORT` y el ciclo de vida de tickets |
 
 ### `tenants` (`app/backend/src/models/auth.py`)
 | Column | Type | Nullable | Default | Index | Description |
