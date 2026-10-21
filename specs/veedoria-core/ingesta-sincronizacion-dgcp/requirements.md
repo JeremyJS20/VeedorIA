@@ -108,7 +108,9 @@ El módulo de **Ingesta y Sincronización DGCP** constituye el canal ETL automat
 
 ### NFR-001: Tiempo de respuesta no bloqueante en disparo de sincronización
 **Category:** Performance
-**Rule:** The system SHALL responder a la solicitud de inicio de sincronización (`POST /api/sync/dgcp`) sin bloquear el hilo HTTP principal, delegando la ejecución al worker `arq` (`job_timeout = 3600s`, `keep_result = 86400s`).
+**Rule:** The system SHALL responder a la solicitud de inicio de sincronización (`POST /api/sync/dgcp`) sin bloquear el hilo HTTP principal, delegando la ejecución al worker `arq` (`job_timeout = 3600s`, `keep_result = 0s`).
+
+> `keep_result = 0` (antes `86400s`): los runners encolan con un `_job_id` fijo para deduplicar y `enqueue_job` rechaza si existe la clave del job **o** la del resultado. Conservar el resultado 24 h haría que toda corrida posterior se rechazara como "ya en ejecución" hasta el día siguiente. El desenlace de cada corrida queda en `sync_log` y `audit_log`, así que no se pierde trazabilidad. Nada consume `Job.result_info()`.
 **Metric:** Tiempo de respuesta HTTP `< 500ms` p95 con código `202 Accepted`.
 **Priority:** Must
 

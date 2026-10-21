@@ -75,4 +75,10 @@ class WorkerSettings:
     functions = [detection_job, sync_job]
     redis_settings = RedisSettings.from_dsn(redis_url)
     job_timeout = 3600
-    keep_result = 86400
+    # 0 = no guardar la clave `arq:result:{job_id}`. Los runners encolan con un
+    # `_job_id` fijo para deduplicar, y `enqueue_job` rechaza si existe la clave
+    # del job O la del resultado. Con el valor por defecto (86400) el resultado
+    # sobrevive 24 h y toda corrida posterior se rechazaría como "ya en ejecución"
+    # hasta el día siguiente. El desenlace de cada job ya queda en `sync_log` y
+    # `audit_log`, así que no se pierde información.
+    keep_result = 0
