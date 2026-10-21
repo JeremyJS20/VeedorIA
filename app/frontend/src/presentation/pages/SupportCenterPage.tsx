@@ -22,18 +22,33 @@ import {
   useUpdateTicket,
 } from "../hooks/useAdminOps"
 import type { HealthStatus, SupportTicket } from "../hooks/useAdminOps"
+import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
 
-const STATUS_STYLES: Record<string, string> = {
-  OK: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  DEGRADED: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  DOWN: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
+const HEALTH_LABELS: Record<string, string> = {
+  OK: "Operativo",
+  DEGRADED: "Degradado",
+  DOWN: "Caído",
 }
 
-const TICKET_STATUS_STYLES: Record<string, string> = {
-  ABIERTO: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30",
-  EN_PROGRESO: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  RESUELTO: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  CERRADO: "bg-surface-container-high text-on-surface-variant border-outline-variant/35",
+const TICKET_LABELS: Record<string, string> = {
+  ABIERTO: "Abierto",
+  EN_PROGRESO: "En progreso",
+  RESUELTO: "Resuelto",
+  CERRADO: "Cerrado",
+}
+
+function healthTone(status: HealthStatus): StatusTone {
+  if (status === "OK") return "success"
+  if (status === "DEGRADED") return "warning"
+  if (status === "DOWN") return "danger"
+  return "neutral"
+}
+
+function ticketTone(status: string): StatusTone {
+  if (status === "ABIERTO") return "info"
+  if (status === "EN_PROGRESO") return "warning"
+  if (status === "RESUELTO") return "success"
+  return "neutral"
 }
 
 const CATEGORIES = [
@@ -140,20 +155,7 @@ function formatDateTime(value: string | null): string {
 }
 
 function StatusPill({ status }: { status: HealthStatus }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold ${
-        STATUS_STYLES[status] ?? "bg-surface-container-high text-on-surface-variant border-outline-variant/35"
-      }`}
-    >
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${
-          status === "OK" ? "bg-emerald-500" : status === "DEGRADED" ? "bg-amber-500" : "bg-rose-500"
-        }`}
-      />
-      {status}
-    </span>
-  )
+  return <StatusChip tone={healthTone(status)} label={HEALTH_LABELS[status] ?? status} />
 }
 
 export default function SupportCenterPage() {
@@ -361,13 +363,11 @@ export default function SupportCenterPage() {
                     {ticket.module} · {formatDateTime(ticket.created_at)}
                   </p>
                 </div>
-                <span
-                  className={`shrink-0 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${
-                    TICKET_STATUS_STYLES[ticket.status] ?? ""
-                  }`}
-                >
-                  {ticket.status.replace("_", " ")}
-                </span>
+                <StatusChip
+                  tone={ticketTone(ticket.status)}
+                  label={TICKET_LABELS[ticket.status] ?? ticket.status}
+                  className="shrink-0"
+                />
               </button>
             ))}
           </div>
@@ -449,13 +449,10 @@ export default function SupportCenterPage() {
                     <td className="px-4 py-3 text-on-surface-variant">{ticket.module}</td>
                     <td className="px-4 py-3 text-on-surface-variant">{ticket.priority}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold ${
-                          TICKET_STATUS_STYLES[ticket.status] ?? ""
-                        }`}
-                      >
-                        {ticket.status.replace("_", " ")}
-                      </span>
+                      <StatusChip
+                        tone={ticketTone(ticket.status)}
+                        label={TICKET_LABELS[ticket.status] ?? ticket.status}
+                      />
                     </td>
                     <td className="px-4 py-3 font-mono text-[11px] text-on-surface-variant">
                       {formatDateTime(ticket.created_at)}

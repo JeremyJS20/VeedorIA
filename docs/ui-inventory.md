@@ -184,7 +184,27 @@ Entry format (one `## Name` per component):
 - Use when: inset content panel inside a console page (profile blocks, settings groups) instead of `div.inset-panel`
 - Replaces: `inset-panel`
 
+## StatusChip
+- Path: app/frontend/src/presentation/components/ui/StatusChip.tsx
+- Use when: any status/label chip that must convey state with color + icon + text (health, sync runs, ticket states)
+- Replaces: -
+
+## KpiCard
+- Path: app/frontend/src/presentation/components/ui/KpiCard.tsx
+- Use when: KPI/metric card at the top of a console page (label, value, hint, optional icon and accent)
+- Replaces: -
+
 ---
+
+## Adoption debt (available but not yet enforced)
+
+These components exist and must be used by **new** screens. `Replaces` is still `-` because turning it on
+today would fail on legacy pages; the counts below are the migration target for the polish phase.
+
+| Component | Hand-written copies remaining |
+|-----------|------------------------------|
+| `KpiCard` | ~40 KPI cards with `border-l-4` across 10 pages (`AuditorPage`, `AuditResolutionsPage`, `B2BIntegrationsPage`, `CollusionNetworkPage`, `CompetitorProfilePage`, `ComplianceReportsPage`, `InstitutionalProcessesPage`, `MarketIntelligencePage`, `OpportunitiesRadarPage`, `MyBidsPipelinePage`) |
+| `StatusChip` | status chips hand-built in `AuditLogPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2BIntegrationsPage`, `RolesMatrixPage` |
 
 ## Missing composites (known duplication — do not re-implement; plan the extraction)
 
@@ -195,6 +215,4 @@ These are NOT components yet. Until they exist, a new screen must ask before wri
 | Table of records (header, empty state, pagination) | `<table` hand-written in 9 pages (`SyncOperationsPage`, `AuditLogPage`, `SupportCenterPage`, `UsersManagementPage`, `DetectionConfigPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `RolesMatrixPage`, `ComplianceReportsPage`) | `ui/DataTable` + `ui/Pagination` |
 | Modal / side drawer shell | `fixed inset-0` hand-written in 6 places (`SyncOperationsPage`, `CalibrationConsolePage`, `AuditLogPage`, `SupportCenterPage`, `AnomalyDrawer`, `ConsoleInspectorDrawers`) | `ui/Modal` + `ui/Drawer` (focus trap, ESC, scroll lock) |
 | Filter bar (inputs + selects + clear) | repeated grid of labelled inputs in `AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage` | `ui/FilterBar` |
-| KPI card | repeated `border-l-4` card in `SyncOperationsPage`, `CalibrationConsolePage`, `SubscriptionBillingPage`, `DetectionConfigPage` | `ui/KpiCard` |
-| Status chip with icon + text | repeated `px-2.5 py-1 rounded-lg border` spans (WCAG 1.4.1 requires color+icon+text) | `ui/StatusChip` |
 | Buttons bypassing `ui/Button` | `btn btn-primary btn-lg btn-full-width` hand-written 8× in `LoginPage`, `RegisterPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `InvitationGatewayPage` (needs `isDisabled` migration) | reuse `ui/Button` |

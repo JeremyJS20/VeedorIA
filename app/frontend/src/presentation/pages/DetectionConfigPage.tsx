@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { ExternalLink, ShieldAlert, SlidersHorizontal } from "lucide-react"
 import { useDetectionConfig } from "../hooks/useAuditorB2G"
 import { useAuth } from "../context/AuthContext"
+import KpiCard from "../components/ui/KpiCard"
 
 const MODALITY_SIGLA_MAP: Record<string, { code: string; lawRef: string }> = {
   THRESHOLD_CD_DOP: { code: "-CD-", lawRef: "Art. 16 Num. 7 · Compra Debajo del Umbral" },
@@ -72,39 +73,22 @@ export default function DetectionConfigPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Parámetros en Base de Datos
-          </p>
-          <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-            {parameters.length} Reglas Activas
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            {weightsList.length + coreThresholdsList.length} reglas del motor y {dgcpModalityList.length} topes DGCP
-          </p>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Ajustes Personalizados
-          </p>
-          <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-            {modifiedCount} {modifiedCount === 1 ? "Parámetro" : "Parámetros"}
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Con respecto a la línea base institucional
-          </p>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Superficie de Edición
-          </p>
-          <p className="font-mono text-2xl font-bold text-primary mt-2">Solo lectura</p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            La escritura se realiza únicamente en Calibración del Motor
-          </p>
-        </div>
+        <KpiCard
+          label="Parámetros en Base de Datos"
+          value={`${parameters.length} Reglas Activas`}
+          hint={`${weightsList.length + coreThresholdsList.length} reglas del motor y ${dgcpModalityList.length} topes DGCP`}
+        />
+        <KpiCard
+          label="Ajustes Personalizados"
+          value={`${modifiedCount} ${modifiedCount === 1 ? "Parámetro" : "Parámetros"}`}
+          hint="Con respecto a la línea base institucional"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Superficie de Edición"
+          value="Solo lectura"
+          hint="La escritura se realiza únicamente en Calibración del Motor"
+        />
       </div>
 
       <div className="flex items-center justify-between border-b border-outline-variant/25 pb-3">

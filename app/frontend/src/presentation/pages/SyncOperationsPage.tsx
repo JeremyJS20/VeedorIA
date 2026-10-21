@@ -13,12 +13,8 @@ import {
 } from "lucide-react"
 import { useQueueStatus, useSyncOverview, useTriggerSync } from "../hooks/useAdminOps"
 import type { SyncLogRow, SyncTriggerPayload } from "../hooks/useAdminOps"
-
-const STATUS_STYLES: Record<string, string> = {
-  running: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  completed: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  failed: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
-}
+import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
+import KpiCard from "../components/ui/KpiCard"
 
 function statusLabel(status: string): string {
   if (status === "running") return "En ejecución"
@@ -45,18 +41,25 @@ function formatNumber(value: number | null | undefined): string {
   return new Intl.NumberFormat("es-DO").format(value)
 }
 
-function StatusChip({ status }: { status: string }) {
+function SyncStatusChip({ status }: { status: string }) {
+  const tone: StatusTone =
+    status === "running"
+      ? "warning"
+      : status === "completed"
+        ? "success"
+        : status === "failed"
+          ? "danger"
+          : "neutral"
+  const Icon =
+    status === "running" ? Loader2 : status === "completed" ? CheckCircle2 : status === "failed" ? AlertTriangle : undefined
+
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold ${
-        STATUS_STYLES[status] ?? "bg-surface-container-high text-on-surface-variant border-outline-variant/35"
-      }`}
-    >
-      {status === "running" && <Loader2 className="w-3 h-3 animate-spin" />}
-      {status === "completed" && <CheckCircle2 className="w-3 h-3" />}
-      {status === "failed" && <AlertTriangle className="w-3 h-3" />}
-      {statusLabel(status)}
-    </span>
+    <StatusChip
+      tone={tone}
+      label={statusLabel(status)}
+      icon={Icon}
+      iconClassName={status === "running" ? "w-3 h-3 animate-spin" : "w-3 h-3"}
+    />
   )
 }
 
@@ -288,19 +291,13 @@ export default function SyncOperationsPage() {
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <div
+          <KpiCard
             key={kpi.label}
-            className="rounded-2xl border border-outline-variant/35 border-l-4 border-l-primary bg-surface-container-lowest dark:bg-surface-container p-5 space-y-2 shadow-xs"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {kpi.label}
-              </span>
-              <kpi.icon className="w-4 h-4 text-outline" />
-            </div>
-            <p className="font-mono text-xl font-bold text-on-surface truncate">{kpi.value}</p>
-            <p className="text-[11px] text-on-surface-variant">{kpi.hint}</p>
-          </div>
+            label={kpi.label}
+            value={kpi.value}
+            hint={kpi.hint}
+            icon={kpi.icon}
+          />
         ))}
       </div>
 
@@ -341,7 +338,7 @@ export default function SyncOperationsPage() {
                     </td>
                     <td className="px-4 py-3 font-mono text-[11px] text-on-surface">{row.sync_type}</td>
                     <td className="px-4 py-3">
-                      <StatusChip status={row.status} />
+                      <SyncStatusChip status={row.status} />
                     </td>
                     <td className="px-4 py-3 text-right font-mono">{formatNumber(row.records_synced)}</td>
                     <td className="px-4 py-3 text-right font-mono">
@@ -407,7 +404,7 @@ export default function SyncOperationsPage() {
                       {formatDateTime(row.started_at)}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusChip status={row.status} />
+                      <SyncStatusChip status={row.status} />
                     </td>
                     <td className="px-4 py-3 text-right font-mono">{formatNumber(row.records_synced)}</td>
                     <td className="px-4 py-3 text-right font-mono">
