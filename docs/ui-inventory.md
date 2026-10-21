@@ -224,8 +224,8 @@ today would fail on legacy pages; the counts below are the migration target for 
 
 | Component | Hand-written copies remaining |
 |-----------|------------------------------|
-| `KpiCard` | ~40 KPI cards with `border-l-4` across 10 pages (`AuditorPage`, `AuditResolutionsPage`, `B2BIntegrationsPage`, `CollusionNetworkPage`, `CompetitorProfilePage`, `ComplianceReportsPage`, `InstitutionalProcessesPage`, `MarketIntelligencePage`, `OpportunitiesRadarPage`, `MyBidsPipelinePage`) |
-| `StatusChip` | quedan en `AuditLogPage` y `RolesMatrixPage` (la matriz usa `Check`/`Minus`, no chips). Migrados: `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2GIntegrationsPage`, `UsersManagementPage`, `OverviewDashboardPage`, `SyncOperationsPage`, `SupportCenterPage`, `DetectionConfigPage`. |
+| `KpiCard` | adoptado en 11 páginas (~47 tarjetas). Fuera del componente, con motivo: la ficha de identidad del proveedor en `CompetitorProfilePage` (razón social, no métrica), el panel de alerta de `CollusionNetworkPage` y los selectores de rubro/plan de `SectorsExplorerPage` y `SubscriptionBillingPage` (son controles, no KPIs). |
+| `StatusChip` | adoptado en `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2GIntegrationsPage`, `UsersManagementPage`, `OverviewDashboardPage`, `SyncOperationsPage`, `SupportCenterPage`, `DetectionConfigPage`. Lo que queda no son estados: badges de métrica (`%` de afinidad, severidad), celdas `Check`/`Minus` de `RolesMatrixPage` y banners de alerta a nivel de bloque. |
 | `Modal` / `Drawer` | cerrado: los 6 overlays legacy usan `Modal`/`Drawer`. `FullscreenOverlay` es un componente distinto (gráfico a pantalla completa) y se conserva. |
 | `DataTable` | 19 tablas migradas. Quedan 2 excepciones declaradas: `AuditLogPage` (tabla de diff antes/después dentro del drawer de detalle, formato clave-valor) y `RolesMatrixPage` (una columna por rol, generadas dinámicamente). |
 | `Button` | 7 botones de auth migrados. Quedan 2 `<Link>` (`ForgotPasswordPage`, `ResetPasswordPage`) que conservan las clases `btn-*` porque `ui/Button` no acepta `as`; se resuelven si algún día hace falta un `ButtonLink`. |
@@ -236,5 +236,4 @@ These are NOT components yet. Until they exist, a new screen must ask before wri
 
 | Need | Current duplication | Proposal |
 |------|--------------------|----------|
-| Filter bar (inputs + selects + clear) | repeated grid of labelled inputs in `AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage` | `ui/FilterField` (label + control) — el contenedor grid varía por página |
-| Buttons bypassing `ui/Button` | `btn btn-primary btn-lg btn-full-width` hand-written 8× in `LoginPage`, `RegisterPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `InvitationGatewayPage` (needs `isDisabled` migration) | reuse `ui/Button` |
+| Filter bar (inputs + selects + clear) | cada página arma su propio grid con `label` + control (`AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage`, `OpportunitiesRadarPage`). El patrón label+control solo se repite igual en `AuditLogPage`; el resto usa selects inline o barras de una fila, por eso `ui/FilterBar` quedó descartado. | Reevaluar `ui/FilterField` (label + control) solo si aparece una tercera página con el mismo layout exacto |

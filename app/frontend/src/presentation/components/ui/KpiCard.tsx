@@ -10,6 +10,10 @@ interface KpiCardProps {
   accent?: "primary" | "neutral" | "warning" | "danger" | "success"
   /** Clases extra para el valor (p. ej. `text-primary`). */
   valueClassName?: string
+  /** Contenido alineado a la derecha del valor (p. ej. el porcentaje de uso). */
+  trailing?: ReactNode
+  /** Contenido extra bajo el hint (p. ej. una barra de progreso). */
+  children?: ReactNode
   className?: string
 }
 
@@ -28,6 +32,8 @@ export default function KpiCard({
   icon: Icon,
   accent = "primary",
   valueClassName = "",
+  trailing,
+  children,
   className = "",
 }: KpiCardProps) {
   return (
@@ -40,10 +46,14 @@ export default function KpiCard({
         </span>
         {Icon && <Icon className="w-4 h-4 text-outline shrink-0" />}
       </div>
-      <p className={`font-mono text-xl font-bold text-on-surface truncate ${valueClassName}`}>
-        {value}
-      </p>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className={`font-mono text-xl font-bold text-on-surface truncate ${valueClassName}`}>
+          {value}
+        </p>
+        {trailing}
+      </div>
       {hint && <p className="text-[11px] text-on-surface-variant">{hint}</p>}
+      {children}
     </div>
   )
 }

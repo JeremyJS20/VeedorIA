@@ -7,6 +7,7 @@ import {
 import { useDashboardOverview } from "../hooks/useAuthManagement"
 import DataTable from "../components/ui/DataTable"
 import StatusChip from "../components/ui/StatusChip"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatCurrencyDop(val: number): string {
   if (!val || val <= 0) return "—"
@@ -77,47 +78,28 @@ export default function OverviewDashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {(overview?.kpis || []).map((kpi) => {
-            const borderAccent = {
-              primary: "border-l-4 border-l-primary",
-              warning: "border-l-4 border-l-amber-500",
-              danger: "border-l-4 border-l-red-600",
-              neutral: "border-l-4 border-l-outline-variant",
-            }[kpi.tone]
-
-            return (
-              <div
-                key={kpi.id}
-                className={`bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 ${borderAccent} rounded-2xl p-5 flex flex-col justify-between shadow-xs`}
-              >
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  {kpi.label}
-                </span>
-
-                {kpi.locked ? (
-                  <div className="mt-3 pt-2 border-t border-outline-variant/25 space-y-1">
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Indicador restringido por plan</span>
-                    </div>
-                    <p className="text-[11px] text-on-surface-variant leading-snug">
-                      Disponible en{" "}
-                      <span className="font-semibold text-on-surface">
-                        {kpi.required_plan_label || "Plan Superior"}
-                      </span>
-                    </p>
-                  </div>
+          {(overview?.kpis || []).map((kpi) => (
+            <KpiCard
+              key={kpi.id}
+              label={kpi.label}
+              accent={kpi.tone}
+              value={
+                kpi.locked ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Indicador restringido por plan</span>
+                  </span>
                 ) : (
-                  <div className="mt-2.5 space-y-1">
-                    <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                      {kpi.value}
-                    </p>
-                    <p className="text-xs text-on-surface-variant">{kpi.sublabel}</p>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                  kpi.value
+                )
+              }
+              hint={
+                kpi.locked
+                  ? `Disponible en ${kpi.required_plan_label || "Plan Superior"}`
+                  : kpi.sublabel
+              }
+            />
+          ))}
         </div>
       )}
 

@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { useSubscriptionSummary, useUpdateSubscriptionPlan } from "../hooks/useB2BSuite"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 export default function SubscriptionBillingPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -88,17 +89,14 @@ export default function SubscriptionBillingPage() {
       ) : (
         usage && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 space-y-3 shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
-                Rubros UNSPSC Monitoreados
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="font-mono text-2xl font-bold text-on-surface">
-                  {usage.monitored_families_used} /{" "}
-                  {usage.monitored_families_limit >= 999
-                    ? "Ilimitados"
-                    : usage.monitored_families_limit}
-                </span>
+            <KpiCard
+              label="Rubros UNSPSC Monitoreados"
+              value={`${usage.monitored_families_used} / ${
+                usage.monitored_families_limit >= 999
+                  ? "Ilimitados"
+                  : usage.monitored_families_limit
+              }`}
+              trailing={
                 <span className="text-xs font-mono text-primary font-semibold">
                   {usage.monitored_families_limit >= 999
                     ? "Sin tope"
@@ -109,7 +107,8 @@ export default function SubscriptionBillingPage() {
                         )
                       )}%`}
                 </span>
-              </div>
+              }
+            >
               <div className="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
@@ -127,17 +126,14 @@ export default function SubscriptionBillingPage() {
                   }}
                 />
               </div>
-            </div>
+            </KpiCard>
 
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 space-y-3 shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
-                Procesos en Pipeline Comercial
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="font-mono text-2xl font-bold text-on-surface">
-                  {usage.active_bids_used} /{" "}
-                  {usage.active_bids_limit >= 999 ? "Ilimitados" : usage.active_bids_limit}
-                </span>
+            <KpiCard
+              label="Procesos en Pipeline Comercial"
+              value={`${usage.active_bids_used} / ${
+                usage.active_bids_limit >= 999 ? "Ilimitados" : usage.active_bids_limit
+              }`}
+              trailing={
                 <span className="text-xs font-mono text-primary font-semibold">
                   {usage.active_bids_limit >= 999
                     ? "Sin tope"
@@ -146,7 +142,8 @@ export default function SubscriptionBillingPage() {
                         Math.round((usage.active_bids_used / usage.active_bids_limit) * 100)
                       )}%`}
                 </span>
-              </div>
+              }
+            >
               <div className="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden">
                 <div
                   className="h-full rounded-full bg-primary transition-all"
@@ -162,16 +159,13 @@ export default function SubscriptionBillingPage() {
                   }}
                 />
               </div>
-            </div>
+            </KpiCard>
 
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-emerald-500 rounded-2xl p-5 space-y-3 shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant block">
-                Miembros del Equipo Autorizados
-              </span>
-              <div className="flex items-baseline justify-between">
-                <span className="font-mono text-2xl font-bold text-on-surface">
-                  {usage.team_members_used} / {usage.team_members_limit}
-                </span>
+            <KpiCard
+              label="Miembros del Equipo Autorizados"
+              value={`${usage.team_members_used} / ${usage.team_members_limit}`}
+              accent="success"
+              trailing={
                 <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                   {Math.min(
                     100,
@@ -179,7 +173,8 @@ export default function SubscriptionBillingPage() {
                   )}
                   %
                 </span>
-              </div>
+              }
+            >
               <div className="w-full h-2.5 rounded-full bg-surface-container-high overflow-hidden">
                 <div
                   className="h-full rounded-full bg-emerald-500 transition-all"
@@ -191,7 +186,7 @@ export default function SubscriptionBillingPage() {
                   }}
                 />
               </div>
-            </div>
+            </KpiCard>
           </div>
         )
       )}

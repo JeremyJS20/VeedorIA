@@ -5,6 +5,7 @@ import { useAnomalies, useAnomalyStats, useRunDetection } from "../hooks/useAnom
 import AnomalyCard from "../components/AnomalyCard"
 import AnomalyFilters from "../components/AnomalyFilters"
 import AnomalyDrawer from "../components/AnomalyDrawer"
+import KpiCard from "../components/ui/KpiCard"
 import type { Anomaly } from "../../domain/anomaly"
 
 export default function AuditorPage() {
@@ -74,61 +75,37 @@ export default function AuditorPage() {
 
           {/* 4 KPI Cards matching OverviewDashboardPage */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {t("anomalies.total")}
-              </span>
-              <div className="mt-2.5 space-y-1">
-                <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                  {statsLoading ? "..." : (stats?.total ?? 0).toLocaleString("es-DO")}
-                </p>
-                <p className="text-xs text-on-surface-variant">
-                  Hallazgos detectados en el alcance
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {t("anomalies.critical")}
-              </span>
-              <div className="mt-2.5 space-y-1">
-                <p className="font-mono text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
-                  {statsLoading ? "..." : (stats?.total_by_status?.PENDING ?? 0).toLocaleString("es-DO")}
-                </p>
-                <p className="text-xs text-on-surface-variant">
-                  Pendientes de revisión técnica
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-red-600 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {t("anomalies.investigating")}
-              </span>
-              <div className="mt-2.5 space-y-1">
-                <p className="font-mono text-2xl font-bold text-red-600 dark:text-red-400 tracking-tight">
-                  {statsLoading ? "..." : (stats?.total_by_status?.CONFIRMED ?? 0).toLocaleString("es-DO")}
-                </p>
-                <p className="text-xs text-on-surface-variant">
-                  Irregularidades ratificadas
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                {t("anomalies.resolved")}
-              </span>
-              <div className="mt-2.5 space-y-1">
-                <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                  {statsLoading ? "..." : (stats?.total_by_status?.DISMISSED ?? 0).toLocaleString("es-DO")}
-                </p>
-                <p className="text-xs text-on-surface-variant">
-                  Alertas desestimadas con sustento
-                </p>
-              </div>
-            </div>
+            <KpiCard
+              label={t("anomalies.total")}
+              value={statsLoading ? "..." : (stats?.total ?? 0).toLocaleString("es-DO")}
+              hint="Hallazgos detectados en el alcance"
+            />
+            <KpiCard
+              label={t("anomalies.critical")}
+              value={
+                statsLoading ? "..." : (stats?.total_by_status?.PENDING ?? 0).toLocaleString("es-DO")
+              }
+              hint="Pendientes de revisión técnica"
+              accent="warning"
+              valueClassName="text-amber-600 dark:text-amber-400"
+            />
+            <KpiCard
+              label={t("anomalies.investigating")}
+              value={
+                statsLoading ? "..." : (stats?.total_by_status?.CONFIRMED ?? 0).toLocaleString("es-DO")
+              }
+              hint="Irregularidades ratificadas"
+              accent="danger"
+              valueClassName="text-red-600 dark:text-red-400"
+            />
+            <KpiCard
+              label={t("anomalies.resolved")}
+              value={
+                statsLoading ? "..." : (stats?.total_by_status?.DISMISSED ?? 0).toLocaleString("es-DO")
+              }
+              hint="Alertas desestimadas con sustento"
+              accent="neutral"
+            />
           </div>
 
           {/* Elevated Filter Bar */}

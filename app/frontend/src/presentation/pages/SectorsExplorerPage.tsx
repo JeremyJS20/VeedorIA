@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
 } from "lucide-react"
 import { useSectors, useUpdateMonitoredSectors } from "../hooks/useB2BSuite"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -99,47 +100,23 @@ export default function SectorsExplorerPage() {
 
       {/* 3 KPI Cards matching MarketIntelligencePage */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Cuota de Rubros Monitoreados
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {monitored.length} / {isPyme ? maxAllowed : "Ilimitados"}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Familias UNSPSC con alertas activas
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Familias en Catálogo Analítico
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {sectors.length} Rubros
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Clasificador estándar de compras públicas
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Volumen Contratado en Catálogo
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-              {formatCompactDop(totalCatalogVolume)}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Adjudicaciones históricas consolidadas
-            </p>
-          </div>
-        </div>
+        <KpiCard
+          label="Cuota de Rubros Monitoreados"
+          value={`${monitored.length} / ${isPyme ? maxAllowed : "Ilimitados"}`}
+          hint="Familias UNSPSC con alertas activas"
+        />
+        <KpiCard
+          label="Familias en Catálogo Analítico"
+          value={`${sectors.length} Rubros`}
+          hint="Clasificador estándar de compras públicas"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Volumen Contratado en Catálogo"
+          value={formatCompactDop(totalCatalogVolume)}
+          hint="Adjudicaciones históricas consolidadas"
+          valueClassName="text-primary"
+        />
       </div>
 
       {errorMessage && (
