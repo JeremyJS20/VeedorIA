@@ -12,7 +12,7 @@ class AuditLog(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     action_type: str = Field(max_length=50, index=True)
     user_id: str | None = Field(default=None, foreign_key="user.id", index=True)
-    entity_type: str = Field(max_length=50)
+    entity_type: str = Field(max_length=50, index=True)
     entity_id: str = Field(max_length=100)
     old_value: str | None = Field(default=None, sa_type=JSON)
     new_value: str | None = Field(default=None, sa_type=JSON)
