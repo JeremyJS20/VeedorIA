@@ -12,6 +12,8 @@ import {
 import { useInstitutionalProcesses } from "../hooks/useAuditorB2G"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import AnomalyDrawer from "../components/AnomalyDrawer"
+import DataTable from "../components/ui/DataTable"
+import StatusChip from "../components/ui/StatusChip"
 import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
@@ -232,96 +234,99 @@ export default function InstitutionalProcessesPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Referencia</th>
-                <th className="py-3 px-5">Objeto de Contratación</th>
-                <th className="py-3 px-5">Unidad Compradora</th>
-                <th className="py-3 px-5">Proveedor Adjudicatario</th>
-                <th className="py-3 px-5 text-right">Monto Adjudicado</th>
-                <th className="py-3 px-5 text-center">Estado / Hallazgos</th>
-                <th className="py-3 px-5 text-right">Expediente</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center font-mono text-on-surface-variant">
-                    Consultando procesos institucionales...
-                  </td>
-                </tr>
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
-                    No se encontraron procesos que coincidan con los criterios seleccionados.
-                  </td>
-                </tr>
-              ) : (
-                items.map((proc) => (
-                  <tr
-                    key={proc.id}
-                    className="hover:bg-surface-container-low/50 transition-colors"
-                  >
-                    <td className="py-3.5 px-5 align-top">
-                      <div className="font-mono font-bold text-primary">
-                        {proc.process_code}
-                      </div>
-                      <div className="text-[11px] text-on-surface-variant mt-0.5 font-mono">
-                        {proc.signed_date} · {proc.contracts_count}{" "}
-                        {proc.contracts_count === 1 ? "contrato" : "contratos"}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 align-top">
-                      <div className="font-semibold text-on-surface line-clamp-2">
-                        {proc.title}
-                      </div>
-                      <span className="inline-block mt-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">
-                        {proc.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-on-surface-variant">
-                      {proc.institution_name}
-                    </td>
-                    <td className="py-3.5 px-5 align-top font-medium text-on-surface">
-                      {proc.primary_supplier}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-right font-mono font-bold text-on-surface">
-                      RD$ {proc.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-center">
-                      {proc.anomalies_count > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          {proc.anomalies_count} alerta{proc.anomalies_count === 1 ? "" : "s"} ({Math.round(proc.max_severity * 100)}%)
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Sin alertas
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-right">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedAnomaly(null)
-                          setSelectedProcessId(proc.id)
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <span>Ver Ficha</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={items}
+          rowKey={(proc) => proc.id}
+          isLoading={isLoading}
+          emptyMessage="No se encontraron procesos que coincidan con los criterios seleccionados."
+          columns={[
+            {
+              key: "referencia",
+              header: "Referencia",
+              cell: (proc) => (
+                <>
+                  <div className="font-mono font-bold text-primary">{proc.process_code}</div>
+                  <div className="text-[11px] text-on-surface-variant mt-0.5 font-mono">
+                    {proc.signed_date} · {proc.contracts_count}{" "}
+                    {proc.contracts_count === 1 ? "contrato" : "contratos"}
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: "objeto",
+              header: "Objeto de Contratación",
+              cell: (proc) => (
+                <>
+                  <div className="font-semibold text-on-surface line-clamp-2">{proc.title}</div>
+                  <span className="inline-block mt-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">
+                    {proc.status}
+                  </span>
+                </>
+              ),
+            },
+            {
+              key: "unidad",
+              header: "Unidad Compradora",
+              cellClassName: "text-on-surface-variant",
+              cell: (proc) => proc.institution_name,
+            },
+            {
+              key: "proveedor",
+              header: "Proveedor Adjudicatario",
+              cellClassName: "font-medium text-on-surface",
+              cell: (proc) => proc.primary_supplier,
+            },
+            {
+              key: "monto",
+              header: "Monto Adjudicado",
+              align: "right",
+              cellClassName: "font-mono font-bold text-on-surface",
+              cell: (proc) => `RD$ ${proc.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`,
+            },
+            {
+              key: "hallazgos",
+              header: "Estado / Hallazgos",
+              align: "center",
+              cell: (proc) =>
+                proc.anomalies_count > 0 ? (
+                  <StatusChip
+                    tone="warning"
+                    label={`${proc.anomalies_count} alerta${proc.anomalies_count === 1 ? "" : "s"} (${Math.round(
+                      proc.max_severity * 100
+                    )}%)`}
+                    icon={AlertTriangle}
+                    iconClassName="w-3.5 h-3.5"
+                  />
+                ) : (
+                  <StatusChip
+                    tone="success"
+                    label="Sin alertas"
+                    icon={CheckCircle2}
+                    iconClassName="w-3.5 h-3.5"
+                  />
+                ),
+            },
+            {
+              key: "expediente",
+              header: "Expediente",
+              align: "right",
+              cell: (proc) => (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAnomaly(null)
+                    setSelectedProcessId(proc.id)
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <span>Ver Ficha</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              ),
+            },
+          ]}
+        />
 
         {/* Pagination Footer */}
         <div className="px-6 py-3.5 border-t border-outline-variant/25 bg-surface-container-low/30 flex items-center justify-between text-xs text-on-surface-variant">

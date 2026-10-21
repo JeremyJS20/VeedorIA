@@ -4,6 +4,7 @@
   Building2,
 } from "lucide-react"
 import { useComplianceReportSummary } from "../hooks/useAuditorB2G"
+import DataTable from "../components/ui/DataTable"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -343,48 +344,60 @@ export default function ComplianceReportsPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Código de Proceso</th>
-                <th className="py-3 px-5">Organismo</th>
-                <th className="py-3 px-5">Proveedor Adjudicatario</th>
-                <th className="py-3 px-5">Tipología</th>
-                <th className="py-3 px-5 text-center">Severidad</th>
-                <th className="py-3 px-5">Estado</th>
-                <th className="py-3 px-5 text-right">Monto</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {topFindings.map((f) => (
-                <tr key={f.id} className="hover:bg-surface-container-low/50 transition-colors">
-                  <td className="py-3.5 px-5 font-mono font-bold text-primary">
-                    {f.process_code}
-                  </td>
-                  <td className="py-3.5 px-5 text-on-surface-variant">
-                    {f.institution_name}
-                  </td>
-                  <td className="py-3.5 px-5 font-semibold text-on-surface">
-                    {f.supplier_name}
-                  </td>
-                  <td className="py-3.5 px-5 text-on-surface-variant">
-                    {f.anomaly_type_label}
-                  </td>
-                  <td className="py-3.5 px-5 text-center">
-                    <span className="px-2.5 py-0.5 rounded-lg font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
-                      {Math.round(f.severity * 100)}%
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-5 font-medium text-on-surface">{f.status_label}</td>
-                  <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface">
-                    RD$ {f.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={topFindings}
+          rowKey={(f) => f.id}
+          emptyMessage="No hay hallazgos para el período seleccionado."
+          columns={[
+            {
+              key: "proceso",
+              header: "Código de Proceso",
+              cellClassName: "font-mono font-bold text-primary",
+              cell: (f) => f.process_code,
+            },
+            {
+              key: "organismo",
+              header: "Organismo",
+              cellClassName: "text-on-surface-variant",
+              cell: (f) => f.institution_name,
+            },
+            {
+              key: "proveedor",
+              header: "Proveedor Adjudicatario",
+              cellClassName: "font-semibold text-on-surface",
+              cell: (f) => f.supplier_name,
+            },
+            {
+              key: "tipologia",
+              header: "Tipología",
+              cellClassName: "text-on-surface-variant",
+              cell: (f) => f.anomaly_type_label,
+            },
+            {
+              key: "severidad",
+              header: "Severidad",
+              align: "center",
+              cell: (f) => (
+                <span className="px-2.5 py-0.5 rounded-lg font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
+                  {Math.round(f.severity * 100)}%
+                </span>
+              ),
+            },
+            {
+              key: "estado",
+              header: "Estado",
+              cellClassName: "font-medium text-on-surface",
+              cell: (f) => f.status_label,
+            },
+            {
+              key: "monto",
+              header: "Monto",
+              align: "right",
+              cellClassName: "font-mono font-bold text-on-surface",
+              cell: (f) => `RD$ ${f.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`,
+            },
+          ]}
+        />
       </div>
     </div>
   )

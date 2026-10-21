@@ -27,6 +27,8 @@ import {
 import { useAuth } from "../context/AuthContext"
 import { formatPlanLabel, formatTenantTypeLabel } from "../../domain/auth"
 import Modal from "../components/ui/Modal"
+import DataTable from "../components/ui/DataTable"
+import StatusChip from "../components/ui/StatusChip"
 
 export default function UsersManagementPage() {
   const { user: currentUser } = useAuth()
@@ -412,194 +414,213 @@ export default function UsersManagementPage() {
           </div>
 
           <div className="bg-surface border border-outline-variant/30 rounded-2xl shadow-sm overflow-hidden">
-            {loadingUsers ? (
-              <div className="p-8 text-xs font-mono text-on-surface-variant">Cargando usuarios...</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-surface-container-low border-b border-outline-variant/20 text-on-surface-variant uppercase font-mono text-[11px]">
-                      <th className="py-3 px-4">Usuario / Correo</th>
-                      <th className="py-3 px-4">Organización</th>
-                      <th className="py-3 px-4">Rol Asignado</th>
-                      <th className="py-3 px-4">Cargo</th>
-                      <th className="py-3 px-4">Estado</th>
-                      <th className="py-3 px-4 text-right">Acciones Administrativas</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/15">
-                    {users.map((u) => (
-                      <tr key={u.id} className="hover:bg-surface-container-low/40 transition-colors">
-                        <td className="py-3 px-4">
-                          <p className="font-bold text-on-surface">{u.nombre}</p>
-                          <p className="font-mono text-[11px] text-on-surface-variant">{u.correo}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div>
-                            <span className="font-semibold text-on-surface block">{u.tenant.nombre}</span>
-                            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary inline-block mt-0.5">
-                              {formatPlanLabel(u.tenant.plan_tier)}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <select
-                            value={u.rol.id}
-                            onChange={(e) =>
-                              updateUserMutation.mutate({
-                                userId: u.id,
-                                payload: { role_id: Number(e.target.value) },
-                              })
-                            }
-                            aria-label={`Cambiar rol de ${u.nombre}`}
-                            className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-semibold text-on-surface"
-                          >
-                            {rolesData?.roles.filter((r) => isPlatformAdmin || r.codigo !== "PLATFORM_ADMIN").map((r) => (
-                              <option key={r.id} value={r.id}>
-                                {r.nombre}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-on-surface">{u.cargo}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          {u.bloqueado ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-error/15 text-error">
-                              BLOQUEADO ({u.intentos_fallidos} int.)
-                            </span>
-                          ) : u.estado === "ACTIVO" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/15 text-green-600 dark:text-green-400">
-                              ACTIVO
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-high text-on-surface-variant">
-                              INACTIVO
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-1.5">
-                            {(u.bloqueado || u.intentos_fallidos > 0) && (
-                              <button
-                                type="button"
-                                onClick={() => handleUnlock(u.id)}
-                                title="Desbloquear cuenta"
-                                className="p-1.5 rounded-lg bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 cursor-pointer"
-                              >
-                                <Unlock className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleResetLink(u.id, u.correo)}
-                              title="Generar enlace de restablecimiento de contraseña"
-                              className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer"
-                            >
-                              <KeyRound className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleUserStatus(u.id, u.estado)}
-                              title={u.estado === "ACTIVO" ? "Desactivar cuenta" : "Activar cuenta"}
-                              className={`p-1.5 rounded-lg cursor-pointer ${
-                                u.estado === "ACTIVO"
-                                  ? "bg-error/10 text-error hover:bg-error/20"
-                                  : "bg-green-500/15 text-green-600 hover:bg-green-500/25"
-                              }`}
-                            >
-                              <Power className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              rows={users}
+              rowKey={(u) => u.id}
+              isLoading={loadingUsers}
+              emptyMessage="No hay usuarios que coincidan con los filtros seleccionados."
+              columns={[
+                {
+                  key: "usuario",
+                  header: "Usuario / Correo",
+                  cell: (u) => (
+                    <>
+                      <p className="font-bold text-on-surface">{u.nombre}</p>
+                      <p className="font-mono text-[11px] text-on-surface-variant">{u.correo}</p>
+                    </>
+                  ),
+                },
+                {
+                  key: "organizacion",
+                  header: "Organización",
+                  cell: (u) => (
+                    <div>
+                      <span className="font-semibold text-on-surface block">{u.tenant.nombre}</span>
+                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary inline-block mt-0.5">
+                        {formatPlanLabel(u.tenant.plan_tier)}
+                      </span>
+                    </div>
+                  ),
+                },
+                {
+                  key: "rol",
+                  header: "Rol Asignado",
+                  cell: (u) => (
+                    <select
+                      value={u.rol.id}
+                      onChange={(e) =>
+                        updateUserMutation.mutate({
+                          userId: u.id,
+                          payload: { role_id: Number(e.target.value) },
+                        })
+                      }
+                      aria-label={`Cambiar rol de ${u.nombre}`}
+                      className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-semibold text-on-surface"
+                    >
+                      {rolesData?.roles
+                        .filter((r) => isPlatformAdmin || r.codigo !== "PLATFORM_ADMIN")
+                        .map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.nombre}
+                          </option>
+                        ))}
+                    </select>
+                  ),
+                },
+                {
+                  key: "cargo",
+                  header: "Cargo",
+                  cell: (u) => <span className="text-on-surface">{u.cargo}</span>,
+                },
+                {
+                  key: "estado",
+                  header: "Estado",
+                  cell: (u) =>
+                    u.bloqueado ? (
+                      <StatusChip tone="danger" label={`Bloqueado (${u.intentos_fallidos} int.)`} />
+                    ) : u.estado === "ACTIVO" ? (
+                      <StatusChip tone="success" label="Activo" />
+                    ) : (
+                      <StatusChip tone="neutral" label="Inactivo" />
+                    ),
+                },
+                {
+                  key: "acciones",
+                  header: "Acciones Administrativas",
+                  align: "right",
+                  cell: (u) => (
+                    <div className="inline-flex items-center gap-1.5">
+                      {(u.bloqueado || u.intentos_fallidos > 0) && (
+                        <button
+                          type="button"
+                          onClick={() => handleUnlock(u.id)}
+                          title="Desbloquear cuenta"
+                          aria-label={`Desbloquear cuenta de ${u.nombre}`}
+                          className="p-1.5 rounded-lg bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 cursor-pointer"
+                        >
+                          <Unlock className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleResetLink(u.id, u.correo)}
+                        title="Generar enlace de restablecimiento de contraseña"
+                        aria-label={`Generar enlace de restablecimiento para ${u.nombre}`}
+                        className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleUserStatus(u.id, u.estado)}
+                        title={u.estado === "ACTIVO" ? "Desactivar cuenta" : "Activar cuenta"}
+                        aria-label={u.estado === "ACTIVO" ? "Desactivar cuenta" : "Activar cuenta"}
+                        className={`p-1.5 rounded-lg cursor-pointer ${
+                          u.estado === "ACTIVO"
+                            ? "bg-error/10 text-error hover:bg-error/20"
+                            : "bg-green-500/15 text-green-600 hover:bg-green-500/25"
+                        }`}
+                      >
+                        <Power className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </div>
         </div>
       ) : (
         <div className="bg-surface border border-outline-variant/30 rounded-2xl shadow-sm overflow-hidden">
-          {loadingTenants ? (
-            <div className="p-8 text-xs font-mono text-on-surface-variant">Cargando organizaciones...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-surface-container-low border-b border-outline-variant/20 text-on-surface-variant uppercase font-mono text-[11px]">
-                    <th className="py-3 px-4">Código / Organización</th>
-                    <th className="py-3 px-4">Segmento</th>
-                    <th className="py-3 px-4">Plan de Servicio</th>
-                    <th className="py-3 px-4">Alcance de Datos</th>
-                    <th className="py-3 px-4">Usuarios Activos</th>
-                    <th className="py-3 px-4">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/15">
-                  {tenants.map((t) => (
-                    <tr key={t.id} className="hover:bg-surface-container-low/40">
-                      <td className="py-3 px-4">
-                        <span className="font-mono font-bold text-primary block">{t.codigo}</span>
-                        <span className="font-semibold text-on-surface">{t.nombre}</span>
-                      </td>
-                      <td className="py-3 px-4 text-xs">{formatTenantTypeLabel(t.tipo)}</td>
-                      <td className="py-3 px-4">
-                        <select
-                          value={t.plan_tier}
-                          onChange={(e) =>
-                            updateTenantMutation.mutate({
-                              tenantId: t.id,
-                              payload: { plan_tier: e.target.value },
-                            })
-                          }
-                          aria-label={`Cambiar plan SaaS de ${t.nombre}`}
-                          className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-mono font-bold text-primary"
-                        >
-                          <option value="PLATFORM_GLOBAL">Gobierno de Plataforma</option>
-                          <option value="B2G_BASIC">Institucional Básico</option>
-                          <option value="B2G_PREMIUM">Institucional Avanzado</option>
-                          <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
-                          <option value="B2B_PYME">Proveedor Pyme</option>
-                          <option value="B2B_CORPORATE">Proveedor Corporativo</option>
-                        </select>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-[11px]">
-                        {t.institution_id
-                          ? `Cobertura Institucional #${t.institution_id}`
-                          : t.supplier_rpe
-                            ? `Proveedor RPE #${t.supplier_rpe}`
-                            : "Alcance Nacional (Global)"}
-                      </td>
-                      <td className="py-3 px-4 font-mono">{t.usuarios_count ?? 0} usuarios</td>
-                      <td className="py-3 px-4">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateTenantMutation.mutate({
-                              tenantId: t.id,
-                              payload: {
-                                estado: t.estado === "ACTIVO" ? "INACTIVO" : "ACTIVO",
-                              },
-                            })
-                          }
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
-                            t.estado === "ACTIVO"
-                              ? "bg-green-500/15 text-green-600 dark:text-green-400"
-                              : "bg-error/15 text-error"
-                          }`}
-                        >
-                          {t.estado}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <DataTable
+            rows={tenants}
+            rowKey={(t) => t.id}
+            isLoading={loadingTenants}
+            emptyMessage="No hay organizaciones registradas."
+            columns={[
+              {
+                key: "codigo",
+                header: "Código / Organización",
+                cell: (t) => (
+                  <>
+                    <span className="font-mono font-bold text-primary block">{t.codigo}</span>
+                    <span className="font-semibold text-on-surface">{t.nombre}</span>
+                  </>
+                ),
+              },
+              {
+                key: "segmento",
+                header: "Segmento",
+                cell: (t) => <span className="text-xs">{formatTenantTypeLabel(t.tipo)}</span>,
+              },
+              {
+                key: "plan",
+                header: "Plan de Servicio",
+                cell: (t) => (
+                  <select
+                    value={t.plan_tier}
+                    onChange={(e) =>
+                      updateTenantMutation.mutate({
+                        tenantId: t.id,
+                        payload: { plan_tier: e.target.value },
+                      })
+                    }
+                    aria-label={`Cambiar plan SaaS de ${t.nombre}`}
+                    className="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/30 text-xs font-mono font-bold text-primary"
+                  >
+                    <option value="PLATFORM_GLOBAL">Gobierno de Plataforma</option>
+                    <option value="B2G_BASIC">Institucional Básico</option>
+                    <option value="B2G_PREMIUM">Institucional Avanzado</option>
+                    <option value="B2G_ENTERPRISE">Ente Rector Nacional</option>
+                    <option value="B2B_PYME">Proveedor Pyme</option>
+                    <option value="B2B_CORPORATE">Proveedor Corporativo</option>
+                  </select>
+                ),
+              },
+              {
+                key: "alcance",
+                header: "Alcance de Datos",
+                cellClassName: "font-mono text-[11px]",
+                cell: (t) =>
+                  t.institution_id
+                    ? `Cobertura Institucional #${t.institution_id}`
+                    : t.supplier_rpe
+                      ? `Proveedor RPE #${t.supplier_rpe}`
+                      : "Alcance Nacional (Global)",
+              },
+              {
+                key: "usuarios",
+                header: "Usuarios Activos",
+                cellClassName: "font-mono",
+                cell: (t) => `${t.usuarios_count ?? 0} usuarios`,
+              },
+              {
+                key: "estado",
+                header: "Estado",
+                cell: (t) => (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateTenantMutation.mutate({
+                        tenantId: t.id,
+                        payload: {
+                          estado: t.estado === "ACTIVO" ? "INACTIVO" : "ACTIVO",
+                        },
+                      })
+                    }
+                    aria-label={`Cambiar estado de ${t.nombre}`}
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                      t.estado === "ACTIVO"
+                        ? "bg-green-500/15 text-green-600 dark:text-green-400"
+                        : "bg-error/15 text-error"
+                    }`}
+                  >
+                    {t.estado}
+                  </button>
+                ),
+              },
+            ]}
+          />
         </div>
       )}
       <Modal

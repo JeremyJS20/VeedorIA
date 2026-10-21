@@ -13,6 +13,8 @@ import {
   useRevokeIntegrationKey,
   type CreatedIntegrationKeyResponse,
 } from "../hooks/useAuditorB2G"
+import DataTable from "../components/ui/DataTable"
+import StatusChip from "../components/ui/StatusChip"
 
 export default function B2GIntegrationsPage() {
   const { data, isLoading } = useAuditorIntegrations()
@@ -214,77 +216,73 @@ export default function B2GIntegrationsPage() {
             </form>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  <th className="py-3 px-4">Conector / Destino</th>
-                  <th className="py-3 px-4">Prefijo</th>
-                  <th className="py-3 px-4">Emisión</th>
-                  <th className="py-3 px-4">Estado</th>
-                  {canManage && <th className="py-3 px-4 text-right">Acción</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/20 text-xs">
-                {keys.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={canManage ? 5 : 4}
-                      className="py-10 text-center text-on-surface-variant"
-                    >
-                      No hay llaves de integración registradas para esta organización.
-                    </td>
-                  </tr>
-                ) : (
-                  keys.map((k) => (
-                    <tr key={k.id} className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-on-surface">{k.name}</div>
-                        <div className="text-[11px] text-on-surface-variant mt-0.5">
-                          {k.system_target}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 font-mono text-primary font-semibold">
-                        {k.prefix}
-                      </td>
-                      <td className="py-3.5 px-4 text-on-surface-variant">
-                        <div className="font-mono text-[11px]">{k.created_at}</div>
-                        <div className="text-[11px]">{k.created_by}</div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {k.status === "ACTIVE" ? (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
-                            Activa
-                          </span>
+          <DataTable
+            rows={keys}
+            rowKey={(k) => k.id}
+            emptyMessage="No hay llaves de integración registradas para esta organización."
+            columns={[
+              {
+                key: "conector",
+                header: "Conector / Destino",
+                cell: (k) => (
+                  <>
+                    <div className="font-semibold text-on-surface">{k.name}</div>
+                    <div className="text-[11px] text-on-surface-variant mt-0.5">{k.system_target}</div>
+                  </>
+                ),
+              },
+              {
+                key: "prefijo",
+                header: "Prefijo",
+                cellClassName: "font-mono text-primary font-semibold",
+                cell: (k) => k.prefix,
+              },
+              {
+                key: "emision",
+                header: "Emisión",
+                cellClassName: "text-on-surface-variant",
+                cell: (k) => (
+                  <>
+                    <div className="font-mono text-[11px]">{k.created_at}</div>
+                    <div className="text-[11px]">{k.created_by}</div>
+                  </>
+                ),
+              },
+              {
+                key: "estado",
+                header: "Estado",
+                cell: (k) =>
+                  k.status === "ACTIVE" ? (
+                    <StatusChip tone="success" label="Activa" />
+                  ) : (
+                    <StatusChip tone="neutral" label="Revocada" />
+                  ),
+              },
+              ...(canManage
+                ? [
+                    {
+                      key: "accion",
+                      header: "Acción",
+                      align: "right" as const,
+                      cell: (k: (typeof keys)[number]) =>
+                        k.status === "ACTIVE" ? (
+                          <button
+                            type="button"
+                            disabled={revokeMutation.isPending}
+                            onClick={() => void revokeMutation.mutateAsync(k.id)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/25 hover:bg-red-500/20 font-semibold cursor-pointer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Revocar</span>
+                          </button>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/30">
-                            Revocada
-                          </span>
-                        )}
-                      </td>
-                      {canManage && (
-                        <td className="py-3.5 px-4 text-right">
-                          {k.status === "ACTIVE" ? (
-                            <button
-                              type="button"
-                              disabled={revokeMutation.isPending}
-                              onClick={() => void revokeMutation.mutateAsync(k.id)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/25 hover:bg-red-500/20 font-semibold cursor-pointer"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Revocar</span>
-                            </button>
-                          ) : (
-                            <span className="text-on-surface-variant">—</span>
-                          )}
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          <span className="text-on-surface-variant">—</span>
+                        ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </div>
 
         {/* Right: Catálogo de Flujos Disponibles */}

@@ -11,6 +11,8 @@ import {
 } from "lucide-react"
 import { useAuditResolutions, type AuditResolutionItem } from "../hooks/useAuditorB2G"
 import AnomalyDrawer from "../components/AnomalyDrawer"
+import DataTable from "../components/ui/DataTable"
+import StatusChip from "../components/ui/StatusChip"
 import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
@@ -242,97 +244,86 @@ export default function AuditResolutionsPage() {
           </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Proceso / Fecha</th>
-                <th className="py-3 px-5">Tipología de Alerta</th>
-                <th className="py-3 px-5">Entidad / Proveedor</th>
-                <th className="py-3 px-5">Dictamen</th>
-                <th className="py-3 px-5">Fundamento de Resolución</th>
-                <th className="py-3 px-5 text-right">Monto Auditado</th>
-                <th className="py-3 px-5 text-right">Expediente</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center font-mono text-on-surface-variant">
-                    Consultando historial de dictámenes...
-                  </td>
-                </tr>
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
-                    Aún no se registran dictámenes que coincidan con el filtro seleccionado. Puede confirmar o desestimar alertas desde la Bandeja de Anomalías.
-                  </td>
-                </tr>
-              ) : (
-                items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-surface-container-low/50 transition-colors"
-                  >
-                    <td className="py-3.5 px-5 align-top">
-                      <div className="font-mono font-bold text-primary">
-                        {item.process_code}
-                      </div>
-                      <div className="text-[11px] font-mono text-on-surface-variant mt-0.5">
-                        {item.resolved_at}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 align-top">
-                      <div className="font-semibold text-on-surface">
-                        {item.anomaly_type_label}
-                      </div>
-                      <div className="text-[11px] font-mono text-on-surface-variant mt-0.5">
-                        Severidad {Math.round(item.severity * 100)}%
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 align-top">
-                      <div className="font-semibold text-on-surface">
-                        {item.supplier_name}
-                      </div>
-                      <div className="text-[11px] text-on-surface-variant mt-0.5">
-                        {item.institution_name}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 align-top">
-                      {item.status === "CONFIRMED" ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/25">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Confirmada
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/30">
-                          <XCircle className="w-3.5 h-3.5" />
-                          Desestimada
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-on-surface-variant">
-                      {item.resolution_summary}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-right font-mono font-bold text-on-surface">
-                      RD$ {item.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                    </td>
-                    <td className="py-3.5 px-5 align-top text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleInspectResolution(item)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <span>Ver Caso</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={items}
+          rowKey={(item) => item.id}
+          isLoading={isLoading}
+          emptyMessage="Aún no se registran dictámenes que coincidan con el filtro seleccionado. Puede confirmar o desestimar alertas desde la Bandeja de Anomalías."
+          columns={[
+            {
+              key: "proceso",
+              header: "Proceso / Fecha",
+              cell: (item) => (
+                <>
+                  <div className="font-mono font-bold text-primary">{item.process_code}</div>
+                  <div className="text-[11px] font-mono text-on-surface-variant mt-0.5">
+                    {item.resolved_at}
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: "tipologia",
+              header: "Tipología de Alerta",
+              cell: (item) => (
+                <>
+                  <div className="font-semibold text-on-surface">{item.anomaly_type_label}</div>
+                  <div className="text-[11px] font-mono text-on-surface-variant mt-0.5">
+                    Severidad {Math.round(item.severity * 100)}%
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: "entidad",
+              header: "Entidad / Proveedor",
+              cell: (item) => (
+                <>
+                  <div className="font-semibold text-on-surface">{item.supplier_name}</div>
+                  <div className="text-[11px] text-on-surface-variant mt-0.5">{item.institution_name}</div>
+                </>
+              ),
+            },
+            {
+              key: "dictamen",
+              header: "Dictamen",
+              cell: (item) =>
+                item.status === "CONFIRMED" ? (
+                  <StatusChip tone="danger" label="Confirmada" icon={CheckCircle2} iconClassName="w-3.5 h-3.5" />
+                ) : (
+                  <StatusChip tone="neutral" label="Desestimada" icon={XCircle} iconClassName="w-3.5 h-3.5" />
+                ),
+            },
+            {
+              key: "fundamento",
+              header: "Fundamento de Resolución",
+              cellClassName: "text-on-surface-variant",
+              cell: (item) => item.resolution_summary,
+            },
+            {
+              key: "monto",
+              header: "Monto Auditado",
+              align: "right",
+              cellClassName: "font-mono font-bold text-on-surface",
+              cell: (item) => `RD$ ${item.amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`,
+            },
+            {
+              key: "expediente",
+              header: "Expediente",
+              align: "right",
+              cell: (item) => (
+                <button
+                  type="button"
+                  onClick={() => handleInspectResolution(item)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <span>Ver Caso</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              ),
+            },
+          ]}
+        />
 
         <div className="px-6 py-3.5 border-t border-outline-variant/25 bg-surface-container-low/30 flex items-center justify-between text-xs text-on-surface-variant">
           <span>

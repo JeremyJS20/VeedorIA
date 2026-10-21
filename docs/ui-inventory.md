@@ -213,13 +213,9 @@ Entry format (one `## Name` per component):
 - Use when: any table of records with columns, loading skeleton and empty state; pass `columns`, `rows`, `rowKey` and `emptyMessage`
 - Replaces: `<table`
 - Allowed: `app/frontend/src/presentation/pages/AuditLogPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/AuditResolutionsPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/B2GIntegrationsPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/CollusionNetworkPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/CompetitorProfilePage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/ComplianceReportsPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/DetectionConfigPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/InstitutionalProcessesPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/MarketIntelligencePage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/OpportunitiesRadarPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
@@ -229,7 +225,6 @@ Entry format (one `## Name` per component):
 - Allowed: `app/frontend/src/presentation/pages/RolesMatrixPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/SubscriptionBillingPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/TenderDetailPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/UsersManagementPage.tsx`
 
 ---
 
