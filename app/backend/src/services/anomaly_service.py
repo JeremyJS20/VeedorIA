@@ -915,14 +915,21 @@ class AnomalyService:
                 inst_process_ids = [anomaly.process_id]
 
             if inst_process_ids:
+                conds = []
+                if anomaly.process_id:
+                    conds.append(Contract.process_id == anomaly.process_id)
+                if anomaly.contract_id:
+                    conds.append(Contract.id == anomaly.contract_id)
+                if alert_codes:
+                    conds.append(Contract.contract_id.in_(alert_codes))
+
                 alert_contracts: list[Contract] = []
-                if alert_codes or anomaly.contract_id:
-                    conds = []
-                    if anomaly.contract_id:
-                        conds.append(Contract.id == anomaly.contract_id)
-                    if alert_codes:
-                        conds.append(Contract.contract_id.in_(alert_codes))
-                    ac_res = await self.db.execute(select(Contract).where(or_(*conds)))
+                if conds:
+                    ac_res = await self.db.execute(
+                        select(Contract)
+                        .where(or_(*conds), Contract.amount_adjudicated.isnot(None))
+                        .order_by(Contract.creation_date.desc())
+                    )
                     alert_contracts = list(ac_res.scalars().all())
 
                 alert_ids = {c.id for c in alert_contracts}
@@ -942,16 +949,21 @@ class AnomalyService:
                         recent.insert(0, ac)
                         seen_ids.add(ac.id)
                 recent = recent[:12]
+
+                alert_in_recent = [c for c in recent if c.id in alert_ids or (c.contract_id in alert_codes)]
+                if alert_in_recent:
+                    frag_combined = float(sum(c.amount_adjudicated or 0.0 for c in alert_in_recent))
+
                 recent_contracts = [
                     {
                         "date": str(c.creation_date.date()) if c.creation_date else "2026-06-01",
                         "reference": c.contract_id or f"ID-{c.id}",
                         "title": c.object_description or c.supplier_name or "Contrato",
                         "amount": c.amount_adjudicated,
-                        "is_alert": c.id == anomaly.contract_id or (c.contract_id in alert_codes),
+                        "is_alert": (c.id in alert_ids) or (c.contract_id in alert_codes),
                         "alert_message": (
-                            "Contrato vinculado a esta alerta de fraccionamiento."
-                            if (c.id == anomaly.contract_id or (c.contract_id in alert_codes))
+                            "Contrato perteneciente al expediente fraccionado."
+                            if ((c.id in alert_ids) or (c.contract_id in alert_codes))
                             else None
                         ),
                     }
