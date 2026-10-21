@@ -181,6 +181,8 @@ Entry format (one `## Name` per component):
 - Use when: adding, moving or hiding an entry of the console sidebar. The groups live in `navModel.ts` (`buildNavGroups`); `NavItem.tsx` renders a plain entry, `NavSection.tsx` the group header and `NavAccordion.tsx` an entry with `?seccion=` sub-views
 - Replaces: -
 - Rule: an entry is never written as raw `<NavLink>` inside `DashboardLayout`; it is data in `navModel.ts`. Gates (`isB2GOrPlatform`, `canCommercial`, `canAnalytics`, `isPlatformAdmin`) are decided there, not in JSX
+- Rule: the breadcrumb comes from `buildPageTitles(navData)`, so an item and its breadcrumb cannot disagree. Routes without a sidebar entry (perfil, competidor) go in `EXTRA_PAGE_TITLES`
+- Order: panorama (sin encabezado) → veeduría → mercado → comercial → cumplimiento → operación → configuración → gestión. Cada grupo se empuja ya filtrado, así que nunca queda un encabezado vacío
 
 ## GlassCard
 - Path: app/frontend/src/presentation/components/ui/GlassCard.tsx

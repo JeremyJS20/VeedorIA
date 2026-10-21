@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 
 interface NavSectionProps {
+  /** Vacío = sin encabezado (entrada suelta, p. ej. Panorama Ejecutivo). */
   title: string
   collapsed: boolean
   children: ReactNode
@@ -10,7 +11,7 @@ interface NavSectionProps {
 export default function NavSection({ title, collapsed, children }: NavSectionProps) {
   return (
     <div className="space-y-1">
-      {!collapsed && (
+      {!collapsed && title && (
         <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
           {title}
         </p>

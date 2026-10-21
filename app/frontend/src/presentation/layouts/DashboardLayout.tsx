@@ -21,7 +21,7 @@ import Logo from "../components/Logo"
 import NavItem from "../components/nav/NavItem"
 import NavSection from "../components/nav/NavSection"
 import NavAccordion from "../components/nav/NavAccordion"
-import { buildNavGroups } from "../components/nav/navModel"
+import { buildNavGroups, buildPageTitles } from "../components/nav/navModel"
 import { useAuth } from "../context/AuthContext"
 import isotipoLight from "../../assets/veedoria_isotipo_light.webp"
 import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
@@ -68,38 +68,18 @@ export default function DashboardLayout() {
     .join("")
     .toUpperCase()
 
-  const pageTitleMap: Record<string, string> = {
-    "/app/dashboard": "Panorama Ejecutivo",
-    "/app/mercado": "Inteligencia de Mercado por Rubro",
-    "/app/oportunidades": "Radar de Oportunidades B2B",
-    "/app/mis-licitaciones": "Mis Licitaciones y Pipeline",
-    "/app/simulador-precios": "Simulador de Precios y Cuartiles",
-    "/app/competidor": "Ficha Forense de Competidor",
-    "/app/sectores": "Sectores y Rubros Monitoreados",
-    "/app/suscripcion": "Suscripción y Cuotas B2B",
-    "/app/bandeja": "Bandeja de Anomalías",
-    "/app/procesos": "Procesos Institucionales",
-    "/app/red-colusion": "Red de Colusión",
-    "/app/configuracion-deteccion": "Parámetros y Topes de Detección",
-    "/app/sincronizacion": "Sincronización DGCP y Cola",
-    "/app/calibracion": "Calibración del Motor Estadístico",
-    "/app/bitacora": "Bitácora del Sistema",
-    "/app/soporte": "Centro de Soporte y Servicios",
-    "/app/resoluciones": "Historial de Resoluciones",
-    "/app/reportes": "Reportes de Cumplimiento",
-    "/app/integraciones": "Integraciones Institucionales",
-    "/app/usuarios": user?.rol?.codigo === "PLATFORM_ADMIN" ? "Usuarios y Organizaciones" : "Usuarios y Equipo",
-    "/app/roles": "Roles y Planes de Servicio",
-    "/app/perfil": "Mi Perfil Institucional",
-  }
-
   const navGroups = buildNavGroups({
     tenantType: user?.tenant?.tipo,
     roleCode: user?.rol?.codigo,
     hasPermission,
   })
 
-  const currentBreadcrumb = pageTitleMap[location.pathname] || "Consola Operativa"
+  const pageTitles = buildPageTitles(navGroups)
+  const pathname = location.pathname
+  const currentBreadcrumb =
+    pageTitles[pathname] ||
+    Object.entries(pageTitles).find(([path]) => pathname.startsWith(`${path}/`))?.[1] ||
+    "Consola Operativa"
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface overflow-hidden">
