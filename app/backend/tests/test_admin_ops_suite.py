@@ -3,7 +3,9 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models.audit_log import AuditLog
 from src.models.auth import AppUser
+from src.models.detection_config import DetectionConfig
 from src.models.sync_log import SyncLog
 from src.models.user import User
 from src.services.auth_service import ensure_auth_seed
@@ -47,6 +49,10 @@ async def test_admin_endpoints_reject_non_platform_admin(
     overview = await client.get("/api/admin/sync/overview", headers=headers)
     assert overview.status_code == 403
     assert overview.json()["code"] == "FORBIDDEN_ADMIN"
+
+    config = await client.get("/api/admin/detection-config", headers=headers)
+    assert config.status_code == 403
+    assert config.json()["code"] == "FORBIDDEN_ADMIN"
 
 
 async def test_sync_overview_returns_kpis_and_history(
@@ -139,3 +145,124 @@ async def test_queue_status_degrades_without_redis(
     assert data["queue_depth"] == 0
     assert data["failed_jobs_24h"] == 0
     assert data["checked_at"]
+
+
+async def test_detection_config_clamp_is_audited(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    headers = await _login(client, ADMIN_EMAIL)
+
+    response = await client.get("/api/admin/detection-config", headers=headers)
+    assert response.status_code == 200
+    parameters = response.json()["data"]["parameters"]
+    assert len(parameters) == 13
+    assert {"key", "min", "max", "step", "default_value", "updated_at"} <= set(
+        parameters[0]
+    )
+
+    updated = await client.put(
+        "/api/admin/detection-config",
+        headers=headers,
+        json={"parameters": {"THRESHOLD_CD_DOP": 5_000_000}},
+    )
+    assert updated.status_code == 200
+    payload = updated.json()["data"]
+    assert payload["adjusted"]["THRESHOLD_CD_DOP"] == {
+        "requested": 5_000_000.0,
+        "applied": 1_000_000.0,
+    }
+    cd_param = next(
+        item for item in payload["parameters"] if item["key"] == "THRESHOLD_CD_DOP"
+    )
+    assert cd_param["value"] == 1_000_000.0
+
+    stored = await db_session.get(DetectionConfig, "THRESHOLD_CD_DOP")
+    assert stored is not None
+    assert stored.value == 1_000_000.0
+
+    logs = (
+        await db_session.execute(
+            select(AuditLog).where(
+                AuditLog.action_type == "UPDATE_DETECTION_CONFIG"
+            )
+        )
+    ).scalars().all()
+    assert len(logs) == 1
+    assert logs[0].old_value == {"THRESHOLD_CD_DOP": 250000.0}
+    assert logs[0].new_value["parameters"] == {"THRESHOLD_CD_DOP": 1_000_000.0}
+    assert logs[0].timestamp.tzinfo is None
+
+
+async def test_detection_config_reset_restores_default(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    headers = await _login(client, ADMIN_EMAIL)
+    await client.put(
+        "/api/admin/detection-config",
+        headers=headers,
+        json={"parameters": {"THRESHOLD_CM_DOP": 900_000}},
+    )
+
+    reset = await client.post(
+        "/api/admin/detection-config/reset",
+        headers=headers,
+        json={"keys": ["THRESHOLD_CM_DOP"]},
+    )
+
+    assert reset.status_code == 200
+    payload = reset.json()["data"]
+    assert payload["reset"] == ["THRESHOLD_CM_DOP"]
+    cm_param = next(
+        item for item in payload["parameters"] if item["key"] == "THRESHOLD_CM_DOP"
+    )
+    assert cm_param["value"] == cm_param["default_value"] == 1_650_000.0
+
+    logs = (
+        await db_session.execute(
+            select(AuditLog).where(
+                AuditLog.action_type == "DETECTION_CONFIG_RESET"
+            )
+        )
+    ).scalars().all()
+    assert len(logs) == 1
+    assert logs[0].new_value["keys"] == ["THRESHOLD_CM_DOP"]
+
+
+async def test_calibration_analysis_reports_insufficient_data(
+    client: AsyncClient, seeded: None
+):
+    headers = await _login(client, ADMIN_EMAIL)
+
+    response = await client.get("/api/admin/calibration/analysis", headers=headers)
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["generated_at"]
+    assert [item["anomaly_type"] for item in data["types"]] == [
+        "PRICE_ANOMALY",
+        "FRAGMENTATION",
+        "COLLUSION",
+    ]
+    assert data["insufficient_data"] == [
+        "PRICE_ANOMALY",
+        "FRAGMENTATION",
+        "COLLUSION",
+    ]
+    assert all(item["reviews"] == 0 for item in data["types"])
+
+
+async def test_detection_run_enqueues_job(
+    client: AsyncClient, seeded: None, monkeypatch: pytest.MonkeyPatch
+):
+    async def fake_run_detection() -> str:
+        return "job-detection-1"
+
+    monkeypatch.setattr(
+        "src.services.admin_calibration_service.run_detection", fake_run_detection
+    )
+    headers = await _login(client, ADMIN_EMAIL)
+
+    response = await client.post("/api/admin/detection/run", headers=headers)
+
+    assert response.status_code == 202
+    assert response.json()["data"]["task"] == "job-detection-1"

@@ -4,7 +4,6 @@ import sys
 from collections import defaultdict
 
 import numpy as np
-from sqlalchemy import text
 from sqlmodel import select
 
 from src.infrastructure.database import async_session_maker, engine
@@ -12,22 +11,18 @@ from src.models.anomaly import Anomaly
 from src.models.detection_config import DetectionConfig
 from src.services.anomaly_service import (
     FRAGMENTATION_THRESHOLD_DOP,
-    IF_CONTAMINATION,
     MIN_DEVIATION_PCT,
     ZSCORE_THRESHOLD,
 )
+from src.services.calibration_core import (
+    DEVIATION_GRID,
+    FRAGMENTATION_GRID,
+    ZSCORE_GRID,
+    best_threshold,
+    evaluate_threshold,
+)
 
 logger = logging.getLogger("veedoria.cli.tune_detection")
-
-
-def _calc_pr(reviews: list[tuple[float, str]], threshold: float) -> dict:
-    tp = sum(1 for s, st in reviews if s >= threshold and st == "CONFIRMED")
-    fp = sum(1 for s, st in reviews if s >= threshold and st == "DISMISSED")
-    fn = sum(1 for s, st in reviews if s < threshold and st == "CONFIRMED")
-    precision = tp / (tp + fp) if (tp + fp) else 0
-    recall = tp / (tp + fn) if (tp + fn) else 0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0
-    return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall, "f1": f1, "threshold": threshold}
 
 
 async def _apply_config(key: str, value: float, current: float) -> None:
@@ -61,8 +56,10 @@ async def analyze_price(apply: bool = False) -> None:
     if dismissed_scores:
         logger.info("Price | DISMISSED scores: median=%.2f, min=%.2f, max=%.2f", np.median(dismissed_scores), min(dismissed_scores), max(dismissed_scores))
 
-    thresholds = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
-    best = max((_calc_pr(reviews, t) for t in thresholds), key=lambda x: x["f1"])
+    recommended = best_threshold(reviews, ZSCORE_GRID)
+    best = evaluate_threshold(
+        reviews, ZSCORE_THRESHOLD if recommended is None else recommended
+    )
     logger.info("Price | Best z-score threshold: %.1f (precision=%.0f%%, recall=%.0f%%, f1=%.2f)",
                 best["threshold"], best["precision"] * 100, best["recall"] * 100, best["f1"])
     if best["threshold"] != ZSCORE_THRESHOLD:
@@ -70,9 +67,10 @@ async def analyze_price(apply: bool = False) -> None:
         if apply:
             await _apply_config("price_zscore_threshold", best["threshold"], ZSCORE_THRESHOLD)
 
-    dev_pcts = [float(s) for s, _ in reviews]
-    thresholds_dev = [25, 50, 75, 100, 125, 150]
-    best_dev = max((_calc_pr(list(zip(dev_pcts, [st for _, st in reviews])), t) for t in thresholds_dev), key=lambda x: x["f1"])
+    recommended_dev = best_threshold(reviews, DEVIATION_GRID)
+    best_dev = evaluate_threshold(
+        reviews, MIN_DEVIATION_PCT if recommended_dev is None else recommended_dev
+    )
     logger.info("Price | Best deviation %% threshold: %.0f%% (precision=%.0f%%, recall=%.0f%%, f1=%.2f)",
                 best_dev["threshold"], best_dev["precision"] * 100, best_dev["recall"] * 100, best_dev["f1"])
     if best_dev["threshold"] != MIN_DEVIATION_PCT:
@@ -96,8 +94,11 @@ async def analyze_fragmentation(apply: bool = False) -> None:
         logger.info("Frag | DISMISSED amounts: median=RD$ %.0f, min=RD$ %.0f, max=RD$ %.0f",
                     np.median(dismissed_amt), min(dismissed_amt), max(dismissed_amt))
 
-    thresholds_dop = [3_000_000, 5_000_000, 7_000_000, 8_000_000, 10_000_000, 12_000_000]
-    best = max((_calc_pr(result, t) for t in thresholds_dop), key=lambda x: x["f1"])
+    recommended_frag = best_threshold(result, FRAGMENTATION_GRID)
+    best = evaluate_threshold(
+        result,
+        FRAGMENTATION_THRESHOLD_DOP if recommended_frag is None else recommended_frag,
+    )
     logger.info("Frag | Best DOP threshold: RD$ %.0f (precision=%.0f%%, recall=%.0f%%, f1=%.2f)",
                 best["threshold"], best["precision"] * 100, best["recall"] * 100, best["f1"])
     if best["threshold"] != FRAGMENTATION_THRESHOLD_DOP:

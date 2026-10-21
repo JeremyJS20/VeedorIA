@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.types import ApiErrorResponse, ApiResponse
 from src.infrastructure.dependencies import get_db
 from src.presentation.dependencies import get_current_user
+from src.services.admin_calibration_service import AdminCalibrationService
 from src.services.admin_ops_errors import (
     DETECTION_ALREADY_RUNNING,
     EXPORT_TOO_LARGE,
@@ -67,20 +68,14 @@ class CalibrationApplyPayload(BaseModel):
     changes: dict[str, float] = Field(default_factory=dict)
 
 
-class DetectionConfigPayload(BaseModel):
-    parameters: dict[str, float] = Field(default_factory=dict)
-
-
-class ResetPayload(BaseModel):
-    keys: list[str] | None = Field(default=None)
-
-
-class CalibrationApplyPayload(BaseModel):
-    changes: dict[str, float] = Field(default_factory=dict)
-
-
 def get_admin_sync_service(db: AsyncSession = Depends(get_db)) -> AdminSyncService:
     return AdminSyncService(db=db)
+
+
+def get_admin_calibration_service(
+    db: AsyncSession = Depends(get_db),
+) -> AdminCalibrationService:
+    return AdminCalibrationService(db=db)
 
 
 async def admin_ops_error_handler(request: Request, exc: AdminOpsError) -> JSONResponse:
@@ -124,3 +119,64 @@ async def get_queue_status(
 ):
     data = await service.queue_status(current_user)
     return ApiResponse(success=True, data=data)
+
+
+# ── Motor de detección ─────────────────────────────────────────────────────
+@router.get("/detection-config", response_model=ApiResponse[dict])
+async def get_detection_config(
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.get_detection_config(current_user)
+    return ApiResponse(success=True, data=data)
+
+
+@router.put("/detection-config", response_model=ApiResponse[dict])
+async def update_detection_config(
+    payload: DetectionConfigPayload,
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.update_detection_config(
+        current_user, payload.parameters
+    )
+    return ApiResponse(success=True, data=data)
+
+
+@router.post("/detection-config/reset", response_model=ApiResponse[dict])
+async def reset_detection_config(
+    payload: ResetPayload,
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.reset_detection_config(current_user, payload.keys)
+    return ApiResponse(success=True, data=data)
+
+
+@router.get("/calibration/analysis", response_model=ApiResponse[dict])
+async def get_calibration_analysis(
+    anomaly_type: str | None = Query(default=None),
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.get_calibration_analysis(current_user, anomaly_type)
+    return ApiResponse(success=True, data=data)
+
+
+@router.post("/calibration/apply", response_model=ApiResponse[dict])
+async def apply_calibration(
+    payload: CalibrationApplyPayload,
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.apply_calibration(current_user, payload.changes)
+    return ApiResponse(success=True, data=data)
+
+
+@router.post("/detection/run", status_code=202, response_model=ApiResponse[dict])
+async def trigger_detection(
+    current_user: dict = Depends(get_current_user),
+    service: AdminCalibrationService = Depends(get_admin_calibration_service),
+):
+    data = await service.trigger_detection(current_user)
+    return ApiResponse(success=True, data=data, message="Detección encolada")
