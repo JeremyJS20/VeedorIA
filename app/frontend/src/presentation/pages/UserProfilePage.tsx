@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { Shield, Building2, KeyRound, CheckCircle2, AlertCircle, UserCheck } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 import { useChangePassword } from "../hooks/useAuthManagement"
+import InsetPanel from "../components/ui/InsetPanel"
 import {
   formatPlanLabel,
   formatTenantTypeLabel,
@@ -59,7 +60,7 @@ export default function UserProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-6">
-          <div className="inset-panel space-y-5">
+          <InsetPanel className="space-y-5">
             <div className="flex items-center gap-4 border-b border-outline-variant/20 pb-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/15 text-primary flex items-center justify-center font-bold text-lg">
                 {user.nombre
@@ -92,10 +93,10 @@ export default function UserProfilePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </InsetPanel>
 
           {user.tenant && (
-            <div className="inset-panel space-y-4">
+            <InsetPanel className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Building2 className="w-5 h-5 text-primary" />
@@ -130,10 +131,10 @@ export default function UserProfilePage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </InsetPanel>
           )}
 
-          <div className="inset-panel space-y-3">
+          <InsetPanel className="space-y-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
               <h3 className="font-display text-sm font-bold text-on-surface">
@@ -150,11 +151,11 @@ export default function UserProfilePage() {
                 </span>
               ))}
             </div>
-          </div>
+          </InsetPanel>
         </div>
 
         <div className="lg:col-span-5">
-          <div className="inset-panel space-y-4">
+          <InsetPanel className="space-y-4">
             <div className="flex items-center gap-2.5">
               <KeyRound className="w-5 h-5 text-primary" />
               <div>
@@ -238,7 +239,7 @@ export default function UserProfilePage() {
                 {changePasswordMutation.isPending ? "Actualizando..." : "Guardar Nueva Contraseña"}
               </button>
             </form>
-          </div>
+          </InsetPanel>
         </div>
       </div>
     </div>
