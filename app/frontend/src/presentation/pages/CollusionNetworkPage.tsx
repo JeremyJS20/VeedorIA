@@ -11,6 +11,7 @@ import { SupplierInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import { useAuth } from "../context/AuthContext"
 import { resolvePlanLock } from "../../domain/previewProfiles"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -146,61 +147,31 @@ export default function CollusionNetworkPage() {
 
       {/* 4 KPI Cards matching OverviewDashboardPage */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Vínculos Detectados
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.clusters_detected}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Pares de proveedores con concurrencia
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Proveedores en Observación
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.suppliers_flagged}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Adjudicatarios de alta recurrencia
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-red-600 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Alertas de Coordinación
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-red-600 dark:text-red-400 tracking-tight">
-              {kpis.collusion_anomalies_count}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Señales preventivas por patrón relacional
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Exposición Asociada
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-              {formatCompactDop(kpis.exposed_amount)}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Volumen contractual en vínculos observados
-            </p>
-          </div>
-        </div>
+        <KpiCard
+          label="Vínculos Detectados"
+          value={kpis.clusters_detected}
+          hint="Pares de proveedores con concurrencia"
+        />
+        <KpiCard
+          label="Proveedores en Observación"
+          value={kpis.suppliers_flagged}
+          hint="Adjudicatarios de alta recurrencia"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Alertas de Coordinación"
+          value={kpis.collusion_anomalies_count}
+          hint="Señales preventivas por patrón relacional"
+          accent="danger"
+          valueClassName="text-red-600 dark:text-red-400"
+        />
+        <KpiCard
+          label="Exposición Asociada"
+          value={formatCompactDop(kpis.exposed_amount)}
+          hint="Volumen contractual en vínculos observados"
+          accent="warning"
+          valueClassName="text-primary"
+        />
       </div>
 
       {/* Two-Column Analytical Layout matching MarketIntelligencePage */}

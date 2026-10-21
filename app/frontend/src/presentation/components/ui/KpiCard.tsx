@@ -7,13 +7,18 @@ interface KpiCardProps {
   hint?: string
   icon?: LucideIcon
   /** Franja lateral: `primary` para métricas clave, `neutral` para contextuales. */
-  accent?: "primary" | "neutral"
+  accent?: "primary" | "neutral" | "warning" | "danger" | "success"
+  /** Clases extra para el valor (p. ej. `text-primary`). */
+  valueClassName?: string
   className?: string
 }
 
 const ACCENT_STYLES = {
   primary: "border-l-primary",
   neutral: "border-l-outline-variant",
+  warning: "border-l-amber-500",
+  danger: "border-l-red-600",
+  success: "border-l-emerald-500",
 } as const
 
 export default function KpiCard({
@@ -22,6 +27,7 @@ export default function KpiCard({
   hint,
   icon: Icon,
   accent = "primary",
+  valueClassName = "",
   className = "",
 }: KpiCardProps) {
   return (
@@ -34,7 +40,9 @@ export default function KpiCard({
         </span>
         {Icon && <Icon className="w-4 h-4 text-outline shrink-0" />}
       </div>
-      <p className="font-mono text-xl font-bold text-on-surface truncate">{value}</p>
+      <p className={`font-mono text-xl font-bold text-on-surface truncate ${valueClassName}`}>
+        {value}
+      </p>
       {hint && <p className="text-[11px] text-on-surface-variant">{hint}</p>}
     </div>
   )

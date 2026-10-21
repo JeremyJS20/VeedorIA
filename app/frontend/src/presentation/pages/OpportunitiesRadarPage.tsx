@@ -12,6 +12,7 @@ import {
 import { useB2BOpportunities, useUpsertBid } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -151,62 +152,34 @@ export default function OpportunitiesRadarPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Oportunidades Detectadas
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {(kpis?.total_opportunities ?? 0).toLocaleString("es-DO")}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    En sus {monitoredFamilies.length} rubros UNSPSC activos
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-emerald-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Alta Afinidad Comercial
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-                    {`${kpis?.avg_affinity_score ?? 0}%`}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Afinidad promedio en sus rubros
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Volumen en Oportunidades
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-                    {formatCompactDop(kpis?.sector_total_amount_dop ?? 0)}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Monto referencial acumulado en RD$
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Rubros Monitoreados
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {kpis?.monitored_families_count ?? monitoredFamilies.length} /{" "}
-                    {(kpis?.max_families_allowed ?? 3) >= 999 ? "Ilimitados" : kpis?.max_families_allowed ?? 3}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Familias del clasificador UNSPSC
-                  </p>
-                </div>
-              </div>
+              <KpiCard
+                label="Oportunidades Detectadas"
+                value={(kpis?.total_opportunities ?? 0).toLocaleString("es-DO")}
+                hint={`En sus ${monitoredFamilies.length} rubros UNSPSC activos`}
+              />
+              <KpiCard
+                label="Alta Afinidad Comercial"
+                value={`${kpis?.avg_affinity_score ?? 0}%`}
+                hint="Afinidad promedio en sus rubros"
+                accent="success"
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+              <KpiCard
+                label="Volumen en Oportunidades"
+                value={formatCompactDop(kpis?.sector_total_amount_dop ?? 0)}
+                hint="Monto referencial acumulado en RD$"
+                valueClassName="text-primary"
+              />
+              <KpiCard
+                label="Rubros Monitoreados"
+                value={`${kpis?.monitored_families_count ?? monitoredFamilies.length} / ${
+                  (kpis?.max_families_allowed ?? 3) >= 999
+                    ? "Ilimitados"
+                    : (kpis?.max_families_allowed ?? 3)
+                }`}
+                hint="Familias del clasificador UNSPSC"
+                accent="neutral"
+              />
             </div>
           )}
 

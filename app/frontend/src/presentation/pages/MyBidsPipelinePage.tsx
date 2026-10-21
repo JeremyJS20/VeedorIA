@@ -14,6 +14,7 @@ import type { BidItem, BidStage } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import Modal from "../components/ui/Modal"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -172,64 +173,32 @@ export default function MyBidsPipelinePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Procesos en Cartera
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {kpis?.total_tracked ?? items.length} /{" "}
-                    {(data?.active_limit ?? 10) >= 999
-                      ? "Ilimitados"
-                      : data?.active_limit ?? 10}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Licitaciones bajo seguimiento activo
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Pipeline Activo
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-                    {formatCompactDop(kpis?.pipeline_amount_dop ?? 0)}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Guardadas, en preparación y enviadas
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-emerald-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Monto Adjudicado
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-                    {`${kpis?.awarded_count ?? 0} adjudicadas`}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Contratos ganados registrados en cartera
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Tasa de Éxito Comercial
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {kpis?.win_rate_pct ?? 0}%
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Sobre resoluciones finalizadas
-                  </p>
-                </div>
-              </div>
+              <KpiCard
+                label="Procesos en Cartera"
+                value={`${kpis?.total_tracked ?? items.length} / ${
+                  (data?.active_limit ?? 10) >= 999 ? "Ilimitados" : (data?.active_limit ?? 10)
+                }`}
+                hint="Licitaciones bajo seguimiento activo"
+              />
+              <KpiCard
+                label="Pipeline Activo"
+                value={formatCompactDop(kpis?.pipeline_amount_dop ?? 0)}
+                hint="Guardadas, en preparación y enviadas"
+                valueClassName="text-primary"
+              />
+              <KpiCard
+                label="Monto Adjudicado"
+                value={`${kpis?.awarded_count ?? 0} adjudicadas`}
+                hint="Contratos ganados registrados en cartera"
+                accent="success"
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+              <KpiCard
+                label="Tasa de Éxito Comercial"
+                value={`${kpis?.win_rate_pct ?? 0}%`}
+                hint="Sobre resoluciones finalizadas"
+                accent="warning"
+              />
             </div>
           )}
 

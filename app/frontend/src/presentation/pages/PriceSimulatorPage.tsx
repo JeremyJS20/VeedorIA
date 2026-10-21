@@ -11,6 +11,7 @@ import { useSimulatorCatalog, useSimulatePrice } from "../hooks/useB2BSuite"
 import type { PriceSimulationResponse } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -125,64 +126,36 @@ export default function PriceSimulatorPage() {
           {/* 4 KPI Cards when simulationResult is available */}
           {simulationResult && dist && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Índice de Competitividad
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-                    {simulationResult.competitiveness_index} / 100
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    {simulationResult.risk_band_label}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-emerald-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Probabilidad de Adjudicación
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-                    {simulationResult.win_probability_pct}%
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Frente a {simulationResult.sample_size} adjudicaciones del rubro
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Desviación vs. Mediana (P50)
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {simulationResult.deviation_vs_median_pct > 0
-                      ? `+${simulationResult.deviation_vs_median_pct}%`
-                      : `${simulationResult.deviation_vs_median_pct}%`}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    Mediana: {formatDop(dist.median_p50_dop)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Monto Total Simulado
-                </span>
-                <div className="mt-2.5 space-y-1">
-                  <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                    {formatCompactDop(simulationResult.projected_total_dop)}
-                  </p>
-                  <p className="text-xs text-on-surface-variant">
-                    {simulationResult.quantity.toLocaleString("es-DO")} unidades ×{" "}
-                    {formatDop(simulationResult.proposed_unit_price_dop)}
-                  </p>
-                </div>
-              </div>
+              <KpiCard
+                label="Índice de Competitividad"
+                value={`${simulationResult.competitiveness_index} / 100`}
+                hint={simulationResult.risk_band_label}
+                valueClassName="text-primary"
+              />
+              <KpiCard
+                label="Probabilidad de Adjudicación"
+                value={`${simulationResult.win_probability_pct}%`}
+                hint={`Frente a ${simulationResult.sample_size} adjudicaciones del rubro`}
+                accent="success"
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+              <KpiCard
+                label="Desviación vs. Mediana (P50)"
+                value={
+                  simulationResult.deviation_vs_median_pct > 0
+                    ? `+${simulationResult.deviation_vs_median_pct}%`
+                    : `${simulationResult.deviation_vs_median_pct}%`
+                }
+                hint={`Mediana: ${formatDop(dist.median_p50_dop)}`}
+                accent="neutral"
+              />
+              <KpiCard
+                label="Monto Total Simulado"
+                value={formatCompactDop(simulationResult.projected_total_dop)}
+                hint={`${simulationResult.quantity.toLocaleString("es-DO")} unidades × ${formatDop(
+                  simulationResult.proposed_unit_price_dop
+                )}`}
+              />
             </div>
           )}
 

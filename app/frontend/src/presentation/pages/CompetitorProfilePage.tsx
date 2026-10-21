@@ -11,6 +11,7 @@ import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import { useAuth } from "../context/AuthContext"
 import { resolvePlanLock } from "../../domain/previewProfiles"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -111,47 +112,27 @@ export default function CompetitorProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Volumen Total Adjudicado
-                  </span>
-                  <div className="mt-2.5 space-y-1">
-                    <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-                      {formatCompactDop(kpis?.total_adjudicated_dop ?? 0)}
-                    </p>
-                    <p className="text-xs text-on-surface-variant">
-                      {(kpis?.contracts_won ?? 0).toLocaleString("es-DO")} contratos ganados
-                    </p>
-                  </div>
-                </div>
+                <KpiCard
+                  label="Volumen Total Adjudicado"
+                  value={formatCompactDop(kpis?.total_adjudicated_dop ?? 0)}
+                  hint={`${(kpis?.contracts_won ?? 0).toLocaleString("es-DO")} contratos ganados`}
+                  valueClassName="text-primary"
+                />
 
-                <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Contrato Promedio
-                  </span>
-                  <div className="mt-2.5 space-y-1">
-                    <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-                      {formatCompactDop(kpis?.avg_contract_dop ?? 0)}
-                    </p>
-                    <p className="text-xs text-on-surface-variant">
-                      En {kpis?.institutions_count ?? 0} instituciones compradoras
-                    </p>
-                  </div>
-                </div>
+                <KpiCard
+                  label="Contrato Promedio"
+                  value={formatCompactDop(kpis?.avg_contract_dop ?? 0)}
+                  hint={`En ${kpis?.institutions_count ?? 0} instituciones compradoras`}
+                  accent="neutral"
+                />
 
-                <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-emerald-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Estado Registral DGCP
-                  </span>
-                  <div className="mt-2.5 space-y-1">
-                    <p className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-                      {supplier?.status || "ACTIVO"}
-                    </p>
-                    <p className="text-xs text-on-surface-variant">
-                      Registro de Proveedores del Estado
-                    </p>
-                  </div>
-                </div>
+                <KpiCard
+                  label="Estado Registral DGCP"
+                  value={supplier?.status || "ACTIVO"}
+                  hint="Registro de Proveedores del Estado"
+                  accent="success"
+                  valueClassName="text-emerald-600 dark:text-emerald-400"
+                />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

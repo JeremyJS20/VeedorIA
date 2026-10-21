@@ -5,6 +5,7 @@ import { useMarketIntelligence } from "../hooks/useAuthManagement"
 import { useAuth } from "../context/AuthContext"
 import { resolvePlanLock } from "../../domain/previewProfiles"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatDop(amount: number): string {
   return new Intl.NumberFormat("es-DO", {
@@ -108,32 +109,20 @@ export default function MarketIntelligencePage() {
       {/* Selected Family 3 Summary KPI Cards */}
       {currentFamily && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-              Contratos en el Rubro {currentFamily.code}
-            </p>
-            <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-              {currentFamily.total_contracts.toLocaleString("es-DO")} Contratos
-            </p>
-          </div>
-
-          <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-              Líneas de Artículos Analizadas
-            </p>
-            <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-              {currentFamily.total_items.toLocaleString("es-DO")} Ítems
-            </p>
-          </div>
-
-          <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-              Volumen Total Adjudicado
-            </p>
-            <p className="font-mono text-2xl font-bold text-primary mt-2">
-              {formatCompactDop(currentFamily.total_amount_dop)}
-            </p>
-          </div>
+          <KpiCard
+            label={`Contratos en el Rubro ${currentFamily.code}`}
+            value={`${currentFamily.total_contracts.toLocaleString("es-DO")} Contratos`}
+          />
+          <KpiCard
+            label="Líneas de Artículos Analizadas"
+            value={`${currentFamily.total_items.toLocaleString("es-DO")} Ítems`}
+            accent="neutral"
+          />
+          <KpiCard
+            label="Volumen Total Adjudicado"
+            value={formatCompactDop(currentFamily.total_amount_dop)}
+            valueClassName="text-primary"
+          />
         </div>
       )}
 

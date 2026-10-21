@@ -5,6 +5,7 @@
 } from "lucide-react"
 import { useComplianceReportSummary } from "../hooks/useAuditorB2G"
 import DataTable from "../components/ui/DataTable"
+import KpiCard from "../components/ui/KpiCard"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -99,61 +100,30 @@ export default function ComplianceReportsPage() {
 
       {/* 4 KPI Cards matching OverviewDashboardPage */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Procesos y Contratos
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.total_processes.toLocaleString("es-DO")} / {kpis.total_contracts.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Total contratado: {formatCompactDop(kpis.total_amount)}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Hallazgos Detectados
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
-              {kpis.total_anomalies.toLocaleString("es-DO")} ({kpis.critical_count} críticos)
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Exposición en revisión: {formatCompactDop(kpis.exposed_amount)}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Dictámenes Emitidos
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.confirmed_count} conf. · {kpis.dismissed_count} desest.
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Pendientes de revisión: {kpis.pending_count}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Tasa de Resolución
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-              {kpis.resolution_rate_pct}%
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Porcentaje de alertas dictaminadas
-            </p>
-          </div>
-        </div>
+        <KpiCard
+          label="Procesos y Contratos"
+          value={`${kpis.total_processes.toLocaleString("es-DO")} / ${kpis.total_contracts.toLocaleString("es-DO")}`}
+          hint={`Total contratado: ${formatCompactDop(kpis.total_amount)}`}
+        />
+        <KpiCard
+          label="Hallazgos Detectados"
+          value={`${kpis.total_anomalies.toLocaleString("es-DO")} (${kpis.critical_count} críticos)`}
+          hint={`Exposición en revisión: ${formatCompactDop(kpis.exposed_amount)}`}
+          accent="warning"
+          valueClassName="text-amber-600 dark:text-amber-400"
+        />
+        <KpiCard
+          label="Dictámenes Emitidos"
+          value={`${kpis.confirmed_count} conf. · ${kpis.dismissed_count} desest.`}
+          hint={`Pendientes de revisión: ${kpis.pending_count}`}
+          accent="neutral"
+        />
+        <KpiCard
+          label="Tasa de Resolución"
+          value={`${kpis.resolution_rate_pct}%`}
+          hint="Porcentaje de alertas dictaminadas"
+          valueClassName="text-primary"
+        />
       </div>
 
       {/* Two-Column Executive Acta & Breakdown matching MarketIntelligencePage */}

@@ -14,6 +14,7 @@ import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import AnomalyDrawer from "../components/AnomalyDrawer"
 import DataTable from "../components/ui/DataTable"
 import StatusChip from "../components/ui/StatusChip"
+import KpiCard from "../components/ui/KpiCard"
 import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
@@ -93,61 +94,30 @@ export default function InstitutionalProcessesPage() {
 
       {/* 4 KPI Cards with border-l-4 matching OverviewDashboardPage */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Procesos Registrados
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.total_processes.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Expedientes bajo cobertura de fiscalización
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Contratos Vinculados
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.total_contracts.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Órdenes y contratos formalizados
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Volumen Fiscalizado
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-              {formatCompactDop(kpis.total_amount)}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Monto acumulado adjudicado
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-amber-500 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Procesos con Hallazgos
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">
-              {kpis.processes_with_findings.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Expedientes con señales preventivas
-            </p>
-          </div>
-        </div>
+        <KpiCard
+          label="Procesos Registrados"
+          value={kpis.total_processes.toLocaleString("es-DO")}
+          hint="Expedientes bajo cobertura de fiscalización"
+        />
+        <KpiCard
+          label="Contratos Vinculados"
+          value={kpis.total_contracts.toLocaleString("es-DO")}
+          hint="Órdenes y contratos formalizados"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Volumen Fiscalizado"
+          value={formatCompactDop(kpis.total_amount)}
+          hint="Monto acumulado adjudicado"
+          valueClassName="text-primary"
+        />
+        <KpiCard
+          label="Procesos con Hallazgos"
+          value={kpis.processes_with_findings.toLocaleString("es-DO")}
+          hint="Expedientes con señales preventivas"
+          accent="warning"
+          valueClassName="text-amber-600 dark:text-amber-400"
+        />
       </div>
 
       {/* Filter Bar matching UsersManagementPage & RolesMatrixPage */}

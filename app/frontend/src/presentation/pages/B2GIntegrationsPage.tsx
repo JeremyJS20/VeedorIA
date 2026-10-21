@@ -15,6 +15,7 @@ import {
 } from "../hooks/useAuditorB2G"
 import DataTable from "../components/ui/DataTable"
 import StatusChip from "../components/ui/StatusChip"
+import KpiCard from "../components/ui/KpiCard"
 
 export default function B2GIntegrationsPage() {
   const { data, isLoading } = useAuditorIntegrations()
@@ -66,41 +67,23 @@ export default function B2GIntegrationsPage() {
 
       {/* 3 Summary KPI Cards matching MarketIntelligencePage */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Llaves Activas
-          </p>
-          <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-            {activeKeysCount} {activeKeysCount === 1 ? "Credencial" : "Credenciales"}
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            De {keys.length} emitidas en el historial
-          </p>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Flujos de Lectura Habilitados
-          </p>
-          <p className="font-mono text-2xl font-bold text-on-surface mt-2">
-            {endpoints.length} Conectores REST
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Formato JSON compatible con Power BI y Tableau
-          </p>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Modo de Acceso
-          </p>
-          <p className="font-mono text-2xl font-bold text-primary mt-2">
-            Solo Lectura (GET)
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Aislamiento estricto por unidad institucional
-          </p>
-        </div>
+        <KpiCard
+          label="Llaves Activas"
+          value={`${activeKeysCount} ${activeKeysCount === 1 ? "Credencial" : "Credenciales"}`}
+          hint={`De ${keys.length} emitidas en el historial`}
+        />
+        <KpiCard
+          label="Flujos de Lectura Habilitados"
+          value={`${endpoints.length} Conectores REST`}
+          hint="Formato JSON compatible con Power BI y Tableau"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Modo de Acceso"
+          value="Solo Lectura (GET)"
+          hint="Aislamiento estricto por unidad institucional"
+          valueClassName="text-primary"
+        />
       </div>
 
       {!canManage && !isLoading && (

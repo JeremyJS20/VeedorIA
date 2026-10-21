@@ -13,6 +13,7 @@ import { useAuditResolutions, type AuditResolutionItem } from "../hooks/useAudit
 import AnomalyDrawer from "../components/AnomalyDrawer"
 import DataTable from "../components/ui/DataTable"
 import StatusChip from "../components/ui/StatusChip"
+import KpiCard from "../components/ui/KpiCard"
 import type { Anomaly } from "../../domain/anomaly"
 
 function formatCompactDop(amount: number): string {
@@ -104,61 +105,30 @@ export default function AuditResolutionsPage() {
 
       {/* 4 KPI Cards matching OverviewDashboardPage */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Total Dictaminadas
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.total_resolved.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Casos con resolución formal emitida
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-red-600 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Irregularidades Confirmadas
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-red-600 dark:text-red-400 tracking-tight">
-              {kpis.confirmed_count.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Ratificadas para expediente de control
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-outline-variant rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Alertas Desestimadas
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-on-surface tracking-tight">
-              {kpis.dismissed_count.toLocaleString("es-DO")}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Descargadas con justificación documental
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 border-l-4 border-l-primary rounded-2xl p-5 flex flex-col justify-between shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-            Volumen Dictaminado
-          </span>
-          <div className="mt-2.5 space-y-1">
-            <p className="font-mono text-2xl font-bold text-primary tracking-tight">
-              {formatCompactDop(kpis.audited_amount)}
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              Monto involucrado en casos resueltos
-            </p>
-          </div>
-        </div>
+        <KpiCard
+          label="Total Dictaminadas"
+          value={kpis.total_resolved.toLocaleString("es-DO")}
+          hint="Casos con resolución formal emitida"
+        />
+        <KpiCard
+          label="Irregularidades Confirmadas"
+          value={kpis.confirmed_count.toLocaleString("es-DO")}
+          hint="Ratificadas para expediente de control"
+          accent="danger"
+          valueClassName="text-red-600 dark:text-red-400"
+        />
+        <KpiCard
+          label="Alertas Desestimadas"
+          value={kpis.dismissed_count.toLocaleString("es-DO")}
+          hint="Descargadas con justificación documental"
+          accent="neutral"
+        />
+        <KpiCard
+          label="Volumen Dictaminado"
+          value={formatCompactDop(kpis.audited_amount)}
+          hint="Monto involucrado en casos resueltos"
+          valueClassName="text-primary"
+        />
       </div>
 
       {/* Filter Bar */}
