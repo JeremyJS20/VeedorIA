@@ -764,3 +764,147 @@ async def test_audit_logs_keep_naive_utc_timestamps(
         "AUDIT_LOG_EXPORT",
     } <= action_types
 
+
+# ── Wave 4: cobertura de calibración aplicada, mutex de detección y reapertura ─
+async def test_calibration_apply_clamps_and_audits(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    headers = await _login(client, ADMIN_EMAIL)
+
+    response = await client.post(
+        "/api/admin/calibration/apply",
+        headers=headers,
+        json={
+            "changes": {
+                "price_zscore_threshold": 9.9,
+                "fragmentation_threshold_dop": 1000,
+            }
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    assert data["applied"]["price_zscore_threshold"] == 4.0
+    assert data["applied"]["fragmentation_threshold_dop"] == 3_000_000.0
+    assert data["adjusted"]["price_zscore_threshold"] == {
+        "requested": 9.9,
+        "applied": 4.0,
+    }
+    assert data["adjusted"]["fragmentation_threshold_dop"] == {
+        "requested": 1000.0,
+        "applied": 3_000_000.0,
+    }
+
+    db_session.expire_all()
+    rows = {
+        row.key: row
+        for row in (await db_session.execute(select(DetectionConfig))).scalars()
+    }
+    assert float(rows["price_zscore_threshold"].value) == 4.0
+    assert float(rows["fragmentation_threshold_dop"].value) == 3_000_000.0
+
+    logs = await _audit_logs(db_session)
+    applied_logs = [log for log in logs if log.action_type == "CALIBRATION_APPLY"]
+    assert applied_logs
+    latest = applied_logs[-1]
+    assert latest.timestamp.tzinfo is None
+    assert latest.new_value["parameters"]["price_zscore_threshold"] == 4.0
+
+    rejected = await client.post(
+        "/api/admin/calibration/apply",
+        headers=headers,
+        json={"changes": {"unknown_threshold": 1.0}},
+    )
+    assert rejected.status_code == 422
+    assert rejected.json()["code"] == "VALIDATION_ERROR"
+
+    empty = await client.post(
+        "/api/admin/calibration/apply", headers=headers, json={"changes": {}}
+    )
+    assert empty.status_code == 422
+    assert empty.json()["code"] == "VALIDATION_ERROR"
+
+
+async def test_detection_run_respects_mutex(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    seeded: None,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    async def unexpected_run() -> str:
+        raise AssertionError("run_detection no debe invocarse con una corrida activa")
+
+    monkeypatch.setattr(
+        "src.services.admin_calibration_service.run_detection", unexpected_run
+    )
+    headers = await _login(client, ADMIN_EMAIL)
+
+    db_session.add(SyncLog(process_type="detection", status="running"))
+    await db_session.commit()
+
+    response = await client.post("/api/admin/detection/run", headers=headers)
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "DETECTION_ALREADY_RUNNING"
+
+
+async def test_export_audit_logs_json_matches_checksum(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    headers = await _login(client, ADMIN_EMAIL)
+    admin_id = await _user_id(db_session, ADMIN_EMAIL)
+    _seed_audit_log(db_session, admin_id, action_type="CALIBRATION_APPLY")
+    await db_session.commit()
+
+    response = await client.get(
+        "/api/admin/audit-logs/export?format=json", headers=headers
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.headers["x-checksum-sha256"] == hashlib.sha256(
+        response.content
+    ).hexdigest()
+    payload = response.json()
+    assert isinstance(payload, list) and payload
+    assert {"id", "action_type", "timestamp"} <= set(payload[0])
+
+    logs = await _audit_logs(db_session)
+    export_logs = [log for log in logs if log.action_type == "AUDIT_LOG_EXPORT"]
+    assert export_logs[-1].new_value["format"] == "json"
+
+
+async def test_ticket_reopen_clears_closed_at_and_is_audited(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    requester = await _login(client, AUDITOR_EMAIL)
+    ticket = (
+        await client.post(
+            "/api/support/tickets", headers=requester, json=_ticket_payload()
+        )
+    ).json()["data"]
+
+    headers = await _login(client, ADMIN_EMAIL)
+
+    closed = await client.patch(
+        f"/api/admin/support/tickets/{ticket['id']}",
+        headers=headers,
+        json={"status": "CERRADO"},
+    )
+    assert closed.status_code == 200
+    assert closed.json()["data"]["closed_at"]
+
+    reopened = await client.patch(
+        f"/api/admin/support/tickets/{ticket['id']}",
+        headers=headers,
+        json={"status": "EN_PROGRESO"},
+    )
+    assert reopened.status_code == 200
+    data = reopened.json()["data"]
+    assert data["status"] == "EN_PROGRESO"
+    assert data["closed_at"] is None
+
+    action_types = {log.action_type for log in await _audit_logs(db_session)}
+    assert "TICKET_REOPENED" in action_types
+
+
