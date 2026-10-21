@@ -7,6 +7,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 
 from src.infrastructure.dependencies import get_db
+from src.presentation.routers.admin_ops_router import (
+    install_admin_ops_error_handlers,
+    router as admin_ops_router,
+)
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.auditor_b2g_router import (
     integration_router,
@@ -54,6 +58,8 @@ async def client(db_session: AsyncSession) -> AsyncClient:
     test_app.include_router(auditor_b2g_router, prefix="/api")
     test_app.include_router(b2b_suite_router, prefix="/api")
     test_app.include_router(integration_router, prefix="/api")
+    test_app.include_router(admin_ops_router, prefix="/api")
+    install_admin_ops_error_handlers(test_app)
     test_app.dependency_overrides[get_db] = lambda: db_session
 
     @test_app.get("/health")

@@ -10,6 +10,10 @@ from src.config import settings
 from src.domain.types import ApiErrorResponse
 from src.infrastructure.database import engine, init_db
 from src.infrastructure.queue import close_arq_pool, get_arq_pool
+from src.presentation.routers.admin_ops_router import (
+    install_admin_ops_error_handlers,
+    router as admin_ops_router,
+)
 from src.presentation.routers.anomaly import router as anomaly_router
 from src.presentation.routers.auth_router import router as auth_router
 from src.presentation.routers.auditor_b2g_router import integration_router, router as auditor_b2g_router
@@ -132,6 +136,9 @@ app.include_router(dashboard_router, prefix="/api")
 app.include_router(auditor_b2g_router, prefix="/api")
 app.include_router(integration_router, prefix="/api")
 app.include_router(b2b_suite_router, prefix="/api")
+app.include_router(admin_ops_router, prefix="/api")
+
+install_admin_ops_error_handlers(app)
 
 
 @app.get("/", include_in_schema=False)
