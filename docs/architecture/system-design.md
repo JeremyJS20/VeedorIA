@@ -91,10 +91,27 @@ graph TB
 ### Cost Scaling
 - Al superar el límite de memoria o almacenamiento del tier gratuito de PostgreSQL (>500MB por histórico completo de contratos e ítems OCDS), escalar a plan gestionado (~$15-$25/mes) y worker dedicado con ≥1GB RAM para ejecución de `scikit-learn` y `NetworkX`.
 
+## Motor Analítico B2G, Umbrales por Modalidad DGCP y Marco Legal (Ley 340-06)
+
+### 1. Cálculo de Sobreprecio y Detección de Ruido de Catalogación UNSPSC (`PRICE_ANOMALY`)
+- **Mediana por Rubro UNSPSC**: Agrupa todos los ítems adjudicados con el mismo `unspsc_code` ($n \ge 4$) y calcula la mediana estadística $\text{Mediana} = \text{median}(P_1, \dots, P_n)$.
+- **Porcentaje de Sobreprecio**:
+  $$\text{Desviación \%} = \left(\frac{\text{Precio Unitario} - \text{Mediana}}{\text{Mediana}}\right) \times 100$$
+- **Curación de Contexto (`get_anomaly_context`)**: Selecciona únicamente el renglón anómalo objetivo (`is_anomaly = true`) junto a una muestra estratificada de hasta 29 puntos del rubro para evitar saturación visual en `PriceScatter.tsx`. Si el contrato contiene múltiples renglones bajo el mismo código UNSPSC, alerta sobre **Agrupamiento Indebido del Catálogo CBS/UNSPSC (Art. 3 num. 3 Ley 340-06)**.
+
+### 2. Evaluación de Fraccionamiento y Tabla de Umbrales DGCP en Base de Datos (`FRAGMENTATION`)
+- **Extracción de Sigla de Modalidad**: El motor extrae la sigla del procedimiento desde `Process.dgcp_code` (`-CD-`, `-CM-`, `-CP-`, `-PEIN-`/`-PEPU-`, `-LPN-`/`-LPI-`, `-PEEN-`/`-PEUR-`) y resuelve su tope normativo consultando la tabla `detection_config` en PostgreSQL (`THRESHOLD_CD_DOP`, `THRESHOLD_CM_DOP`, `THRESHOLD_CP_DOP`, `THRESHOLD_PEIN_DOP`, `THRESHOLD_LPN_DOP`, `THRESHOLD_PEEN_DOP`, `FRAGMENTATION_THRESHOLD_DOP`), editable en vivo desde `/app/configuracion-deteccion`.
+- **Agrupación por Expediente Fraccionado**: Todos los contratos pertenecientes al proceso observado (`Contract.process_id == anomaly.process_id`) se marcan como alertados (`is_alert = true`) y su suma acumulada se contrasta contra el umbral de la modalidad correspondiente.
+
+### 3. Fundamentación Normativa Condicional (Ley 340-06 · Reglamento 416-23)
+- **Sobreprecio**: Art. 3 (Eficiencia y Economía) y Arts. 96–97 del Decreto 416-23 (Razonabilidad del Precio).
+- **Fraccionamiento**: Arts. 16 y 17 Párrafo I de la Ley 340-06, Art. 62 del Decreto 416-23 (Presunción de Fraccionamiento en el PACC) y Arts. 65–66 (Sanciones).
+- **Colusión**: Art. 3 nums. 2 y 6, Arts. 11 y 14 (Prohibiciones por Vinculación), Art. 66 Párrafo II (Inhabilitación del RPE de 1 a 5 años), Art. 5 de la Ley 42-08 (Defensa de la Competencia) y Ley 155-17 (Declaración Jurada de Beneficiario Final).
+
 ## Key Decisions
 - **Arquitectura Limpia en Monorepo**: Separación estricta de `domain`, `infrastructure`, `models`, `services` y `presentation` en `app/backend` y `app/frontend`.
 - **Bucle de Retroalimentación Cerrado (`DetectionConfig`)**: Las confirmaciones y descartes de los auditores ajustan dinámicamente los pesos y umbrales de detección sin requerir redespliegue de código.
 - **Doble Motor de Base de Datos Asíncrono**: Soporte transparente para `sqlite+aiosqlite` en desarrollo ligero y `postgresql+asyncpg` en contenedores y producción.
 
 ---
-_Last updated: 2026-10-20 by implementer (added consola-multi-rol-onboarding)_
+_Last updated: 2026-10-20 by implementer (added herramientas-auditoria-b2g, DGCP modality thresholds & Law 340-06 framework)_

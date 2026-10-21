@@ -50,14 +50,14 @@ Este módulo implementa las **6 pantallas especializadas del Paquete 2 (Consola 
 **Dependencies:** None
 **Tracker:** Pendiente
 
-### REQ-003: Configuración de Parámetros de Detección (`/app/configuracion-deteccion` — `#17`)
+### REQ-003: Configuración de Parámetros de Detección y Tabla de Umbrales DGCP (`/app/configuracion-deteccion` — `#17`)
 **Type:** Event-Driven
-**Rule:** WHEN un usuario autorizado consulta o actualiza los parámetros en `/app/configuracion-deteccion`, the system SHALL mostrar los umbrales vigentes de `DetectionConfig` (sensibilidad de variación de precios, umbral de severidad crítica, ventana de días para fraccionamiento y pesos por tipo de hallazgo) y permitir guardar los ajustes registrando el cambio en la bitácora de auditoría (`AuditLog`).
+**Rule:** WHEN un usuario autorizado consulta o actualiza los parámetros en `/app/configuracion-deteccion`, the system SHALL mostrar en dos secciones segmentadas los **13 parámetros persistidos en `DetectionConfig`**: (1) **Pesos y Sensibilidad del Motor** (`PRICE_ANOMALY_WEIGHT`, `FRAGMENTATION_WEIGHT`, `COLLUSION_WEIGHT`, `MIN_CRITICAL_SEVERITY`, `PRICE_VARIATION_PCT_THRESHOLD`, `FRAGMENTATION_WINDOW_DAYS`) y (2) **Tabla de Umbrales por Modalidad DGCP** (`THRESHOLD_CD_DOP` para `-CD-`, `THRESHOLD_CM_DOP` para `-CM-`, `THRESHOLD_CP_DOP` para `-CP-`, `THRESHOLD_PEIN_DOP` para `-PEIN-`/`-PEPU-`, `THRESHOLD_LPN_DOP` para `-LPN-`/`-LPI-`, `THRESHOLD_PEEN_DOP` para `-PEEN-`/`-PEUR-`, y `FRAGMENTATION_THRESHOLD_DOP` como tope general sin sigla), permitiendo guardar los ajustes en PostgreSQL y registrando el cambio en `AuditLog`.
 **Entities:** `DetectionConfig`, `AuditLog`
 **Error Handling:** Si un usuario sin permiso de configuración intenta modificar los umbrales, los controles se muestran en modo de solo lectura y el endpoint rechaza escrituras no autorizadas (`403`).
 
 **Acceptance Criteria:**
-- [x] Given un usuario con permiso de calibración/administración, when modifica un umbral en `/app/configuracion-deteccion` y guarda los cambios, then `PUT /api/auditor/detection-config` persiste los nuevos valores en `DetectionConfig` y devuelve la fecha de actualización.
+- [x] Given un usuario con permiso de calibración/administración (`PLATFORM_ADMIN`, `TENANT_ADMIN`, `CONTRALOR`), when modifica un peso o un tope de modalidad DGCP en `/app/configuracion-deteccion` y guarda los cambios, then `PUT /api/auditor/detection-config` persiste los nuevos valores en `DetectionConfig` (`0` valores hardcodeados en código) y actualiza inmediatamente el umbral evaluado en los gráficos de fraccionamiento.
 
 **Priority:** Must
 **Dependencies:** None
@@ -89,14 +89,14 @@ Este módulo implementa las **6 pantallas especializadas del Paquete 2 (Consola 
 **Dependencies:** REQ-001, REQ-004
 **Tracker:** Pendiente
 
-### REQ-006: Consola de Integraciones Institucionales (`/app/integraciones` — `#20`)
+### REQ-006: Consola de Integraciones Institucionales y API Externa `/api/integration/*` (`/app/integraciones` — `#20`)
 **Type:** Event-Driven
-**Rule:** WHEN el usuario accede a `/app/integraciones`, the system SHALL listar las credenciales de interoperabilidad y conectores institucionales activos de su organización, permitiendo generar una nueva credencial de acceso API (mostrando la llave completa una única vez al crearla y luego su prefijo enmascarado) o revocar una credencial existente con registro en `AuditLog`.
+**Rule:** WHEN el usuario accede a `/app/integraciones`, the system SHALL listar las credenciales de interoperabilidad activas de su organización, permitiendo a perfiles autorizados (`PLATFORM_ADMIN`, `TENANT_ADMIN` o `CONTRALOR` en planes `B2G_PRO`/`B2G_PREMIUM`/`PLATFORM_GLOBAL`) emitir nuevas llaves (`vdia_b2g_...`) o revocarlas con traza en `AuditLog`, y exponer los endpoints externos de interoperabilidad bajo `/api/integration/anomalies`, `/api/integration/reports/summary` y `/api/integration/resolutions` autenticados mediante cabecera `Authorization: Bearer <API_KEY>` o `X-Integration-Key`.
 **Entities:** `AuditLog`, `Tenant`
-**Error Handling:** Las organizaciones en `B2G_BASIC` visualizan el estado informativo de que la interoperabilidad automatizada mediante API forma parte del *Plan Institucional Avanzado*.
+**Error Handling:** Las organizaciones en `B2G_BASIC` visualizan el estado informativo de que la interoperabilidad automatizada requiere plan superior; las llaves inválidas o revocadas en `/api/integration/*` reciben `401 Unauthorized`.
 
 **Acceptance Criteria:**
-- [x] Given una cuenta con acceso a integraciones (`B2G_ADVANCED` o `PLATFORM_ADMIN`), when crea una nueva credencial con nombre descriptivo (ej. *"Conector SIGEF Institucional"*), then el backend registra la credencial, devuelve el token generado y permite revocarlo en un clic.
+- [x] Given una cuenta con acceso a integraciones (`B2G_PRO`, `B2G_PREMIUM` o `PLATFORM_ADMIN`), when crea una nueva credencial, then el backend almacena el hash SHA-256 en `AuditLog`, devuelve el token `vdia_b2g_...` por única vez y permite consumir `/api/integration/*` acotado automáticamente al tenant de la llave.
 
 **Priority:** Must
 **Dependencies:** None

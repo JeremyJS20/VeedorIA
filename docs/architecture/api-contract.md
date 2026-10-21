@@ -45,6 +45,19 @@
 | `PATCH` | `/api/auth/me/profile` | JWT | Autoservicio de actualización de nombre y unidad administrativa | autenticacion-rbac |
 | `POST` | `/api/auth/me/password` | JWT | Cambio de contraseña propia validando contraseña actual | autenticacion-rbac |
 | `POST` | `/api/auth/demo-switch` | Public (Demo) | Conmutador instantáneo de cuentas multi-organización para demostración | autenticacion-rbac |
+| `GET` | `/api/auditor/processes` | JWT (`ANOMALY_READ`) | Explorador paginado de procesos institucionales con KPIs y filtro de hallazgos | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/processes/{process_id}` | JWT (`ANOMALY_READ`) | Detalle interno de expediente (contratos adjudicados y anomalías) para `ProcessInspectorDrawer` | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/collusion-network` | JWT (`ANOMALY_READ`) | Red relacional de proveedores vinculados y co-adjudicaciones (con candado `B2G_BASIC`) | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/detection-config` | JWT (`ANOMALY_READ`) | Lectura de los 13 parámetros en BD (pesos, sensibilidad y 7 topes de modalidad DGCP) | herramientas-auditoria-b2g |
+| `PUT` | `/api/auditor/detection-config` | JWT (`PLATFORM_ADMIN`/`TENANT_ADMIN`/`CONTRALOR`) | Actualización en PostgreSQL de pesos y topes de modalidad DGCP con traza en `AuditLog` | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/resolutions` | JWT (`ANOMALY_READ`) | Historial paginado de dictámenes emitidos (`CONFIRMED` / `DISMISSED`) con auditor y motivo | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/reports/summary` | JWT (`ANOMALY_READ`) | Consolidado ejecutivo de cumplimiento con matriz legal condicional Ley 340-06 | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/integrations` | JWT (`ANOMALY_READ`) | Listado de llaves de interoperabilidad institucional y endpoints disponibles | herramientas-auditoria-b2g |
+| `POST` | `/api/auditor/integrations/keys` | JWT (`PLATFORM_ADMIN`/`TENANT_ADMIN`/`CONTRALOR`) | Emisión de nueva llave API (`vdia_b2g_...`) con hash SHA-256 en `AuditLog` | herramientas-auditoria-b2g |
+| `DELETE` | `/api/auditor/integrations/keys/{key_id}` | JWT (`PLATFORM_ADMIN`/`TENANT_ADMIN`/`CONTRALOR`) | Revocación inmediata de credencial de interoperabilidad institucional | herramientas-auditoria-b2g |
+| `GET` | `/api/integration/anomalies` | API Key (`vdia_b2g_...`) | Consulta externa ERP/SIGEF de hallazgos acotados al tenant de la llave | herramientas-auditoria-b2g |
+| `GET` | `/api/integration/reports/summary` | API Key (`vdia_b2g_...`) | Resumen ejecutivo externo de cumplimiento institucional | herramientas-auditoria-b2g |
+| `GET` | `/api/integration/resolutions` | API Key (`vdia_b2g_...`) | Historial externo de resoluciones de auditoría | herramientas-auditoria-b2g |
 
 ### `PATCH /api/anomalies/{anomaly_id}`
 - **Request (`AnomalyReviewPayload`)**:
@@ -145,4 +158,4 @@ curl -X POST http://localhost:3001/api/anomalies/detect
 | 2026-10-18 | `project-scanner` | Contrato inicial extraído de `main.py`, `routers/anomaly.py` y `routers/sync.py` |
 
 ---
-_Last updated: 2026-10-20 by implementer (added consola-multi-rol-onboarding endpoints)_
+_Last updated: 2026-10-20 by implementer (added herramientas-auditoria-b2g & /api/integration/* endpoints)_

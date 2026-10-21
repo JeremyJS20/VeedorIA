@@ -168,6 +168,48 @@ flowchart LR
 - **Auth**: JWT (`ANOMALY_READ` para lectura; `TENANT_ADMIN` o `PLATFORM_ADMIN` para crear/revocar llaves).
 - **Behavior**: Permite gestionar credenciales de interoperabilidad institucional (para conectar con SIGEF / portales internos de compras), mostrando el token completo una sola vez al momento de su creación (`vd_live_...`) y almacenando únicamente su prefijo enmascarado y huella SHA-256 en `AuditLog`. Si `plan_tier == "B2G_BASIC"`, informa que la interoperabilidad automatizada requiere el *Plan Institucional Avanzado*.
 
+## Metodología Analítica, Fórmulas de Detección y Marco Normativo (Ley 340-06 · Reg. 416-23)
+
+### A. Cálculo de Mediana y Sobreprecio por Rubro UNSPSC (`PRICE_ANOMALY`)
+1. **Agrupación por Catálogo UNSPSC**: Todos los renglones adjudicados (`Item`) con `unit_price > 0` se agrupan por su código estándar de las Naciones Unidas (`unspsc_code`). Se requieren al menos $4$ registros históricos (`len(prices) >= 4`) para evaluar la categoría.
+2. **Mediana Estadística del Mercado**: Se ordenan los precios unitarios del rubro $P_1 \le P_2 \le \dots \le P_n$ y se calcula la mediana (`np.median(prices)`), evitando el sesgo que producen valores extremos sobre la media aritmética.
+3. **Fórmula de Porcentaje de Sobreprecio**:
+   $$\text{Desviación \%} = \left( \frac{\text{Precio Unitario Adjudicado} - \text{Mediana UNSPSC}}{\text{Mediana UNSPSC}} \right) \times 100$$
+4. **Doble Filtro de Activación**:
+   - **Anomalía Estadística / ML**: Isolation Forest (`score < 0` cuando $n \ge 30$) o Z-Score ($\|z\| > 2.5$ cuando $4 \le n < 30$).
+   - **Corte Normativo**: $\text{Desviación \%} \ge \text{PRICE\_VARIATION\_PCT\_THRESHOLD}$ (configurable en `DetectionConfig`).
+5. **Muestreo Limpio en `get_anomaly_context` y `PriceScatter.tsx`**:
+   - Cuando un mismo contrato contiene decenas de renglones con el mismo código UNSPSC (ej. `HPIC-DAF-CM-2026-0025` con 60 ítems bajo `31341101`), `get_anomaly_context` identifica **únicamente el renglón específico auditado** (`is_anomaly = true` solo para ese ítem) y construye una muestra representativa de hasta **30 puntos** distribuida uniformemente a lo largo del rango de precios del rubro.
+   - Si el contrato auditado registra $>1$ renglón con el mismo código UNSPSC y precios dispersos, el inspector activa automáticamente el aviso amarillo de **Indicio de Agrupamiento Indebido CBS/UNSPSC (Art. 3 num. 3 Ley 340-06 — Principio de Transparencia)**.
+
+### B. Evaluación de Fraccionamiento y Umbrales por Modalidad DGCP (`FRAGMENTATION`)
+1. **Extracción de Modalidad desde la Data DGCP**: Los datasets abiertos de la DGCP no incluyen una columna de umbral, pero el código oficial del proceso (`dgcp_code`) incorpora la sigla de la modalidad de selección (`-CD-`, `-CM-`, `-CP-`, `-PEIN-`, `-PEPU-`, `-LPN-`, `-PEEN-`, `-PEUR-`).
+2. **Resolución 100% desde Base de Datos (`_resolve_dgcp_modality_threshold`)**: El servicio cruza la sigla extraída del proceso con los **7 parámetros configurables en la tabla `detection_config`**:
+   | Sigla en `dgcp_code` | Clave en `detection_config` | Modalidad Normativa (Ley 340-06 / Reg. 416-23) | Valor Base (DOP) |
+   |---|---|---|---|
+   | `-CD-` | `THRESHOLD_CD_DOP` | Compra por Debajo del Umbral (Art. 16 Num. 7) | `RD$ 250,000` |
+   | `-CM-` | `THRESHOLD_CM_DOP` | Compra Menor (Art. 16 Num. 6) | `RD$ 1,650,000` |
+   | `-CP-` | `THRESHOLD_CP_DOP` | Comparación de Precios (Art. 16 Num. 4) | `RD$ 6,500,000` |
+   | `-PEIN-` / `-PEPU-` | `THRESHOLD_PEIN_DOP` | Excepción Ordinaria / Arrendamiento (Arts. 38–45 Reg. 416-23) | `RD$ 8,000,000` |
+   | `-LPN-` / `-LPI-` | `THRESHOLD_LPN_DOP` | Licitación Pública (Art. 16 Num. 1) | `RD$ 15,000,000` |
+   | `-PEEN-` / `-PEEX-` / `-PEUR-` | `THRESHOLD_PEEN_DOP` | Emergencia / Urgencia Nacional (Art. 6 Párrafo Único) | `RD$ 25,000,000` |
+   | Sin sigla específica | `FRAGMENTATION_THRESHOLD_DOP` | Umbral General por Defecto (Art. 62 Reg. 416-23) | `RD$ 6,500,000` |
+3. **Agrupación Completa de Contratos del Proceso Fraccionado**: En `get_anomaly_context`, todos los contratos pertenecientes al expediente fraccionado (`Contract.process_id == anomaly.process_id`) se marcan con `is_alert = true` (barras rojas en `FragmentationBarChart.tsx`) y su suma acumulada (`fragmentation_combined_amount`) se compara contra el umbral de la modalidad (`fragmentation_threshold`).
+
+### C. Matriz Condicional de Fundamentación Jurídica (Ley 340-06 · Decreto 416-23)
+Tanto en `AnomalyDrawer.tsx` como en `ComplianceReportsPage.tsx`, el sistema presenta dinámicamente los artículos vulnerados y las observaciones preventivas en recuadro ámbar según la evidencia del caso:
+- **Sobreprecio (`PRICE_ANOMALY`)**: Art. 3 (Principio de Eficiencia y Economía — Ley 340-06) y Arts. 96–97 del Reglamento 416-23 (Razonabilidad del Precio y Estudio Previo en el SECP). Recuadro ámbar condicional cuando existen múltiples renglones bajo el mismo código UNSPSC en el contrato (*Mala Catalogación CBS-DGCP*).
+- **Fraccionamiento (`FRAGMENTATION`)**: Arts. 16 y 17 Párrafo I de la Ley 340-06, Art. 62 del Reglamento 416-23 y régimen sancionador de los Arts. 65 y 66. Recuadro ámbar condicional diferenciando procesos de excepción (`PEEN`/`PEEX`/`PEUR` — Art. 6 Párrafo Único) frente a entregas ordinarias del PACC.
+- **Colusión (`COLLUSION`)**: Art. 3 nums. 2 y 6, Arts. 11 y 14 (Prohibiciones e Inhabilidades), Art. 66 Párrafo II de la Ley 340-06 (inhabilitación del RPE de 1 a 5 años) y Art. 5 de la Ley 42-08 (Defensa de la Competencia). Recuadro ámbar condicional distinguiendo vínculos societarios directos (teléfono/dirección/dominio → cruce con **Declaración Jurada de Beneficiario Final — Ley 155-17**) frente a coincidencias nominales.
+
+### D. Inspección Interna sin Redirección al Portal Público y Jerarquía de Capas (`z-index`)
+- Ninguna acción de consulta dentro de `/app/*` redirige a `/public/*`: se implementaron los inspectores deslizables `ProcessInspectorDrawer` (`GET /api/auditor/processes/{process_id}`) y `SupplierInspectorDrawer` en `ConsoleInspectorDrawers.tsx`.
+- Jerarquía estricta de superposición visual:
+  - Drawers laterales (`AnomalyDrawer`, `ProcessInspectorDrawer`, `SupplierInspectorDrawer`): `fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm`
+  - Vista expandida de gráficos (`FullscreenOverlay.tsx`): `z-[150]`
+  - Notificaciones del sistema (`.toast-region` en `App.tsx` e `index.css`): `z-[9999] !important`
+  - Tooltips interactivos de D3 (`PriceScatter`, `FragmentationBarChart`, `CollusionNetwork` posicionados con `clientX`/`clientY`): `zIndex: 9999`
+
 ## Navigation & Route Protection (`DashboardLayout.tsx` y `App.tsx`)
 - En `DashboardLayout.tsx`, dentro de la sección **Veeduría y Auditoría** (visible para `GOV_INSTITUTION`, `GOV_OVERSIGHT` y `PLATFORM_ADMIN`), se habilitan como enlaces reales (reemplazando los antiguos ítems deshabilitados con candado):
   - **Panorama Ejecutivo** (`/app/dashboard`)
