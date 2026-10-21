@@ -5,12 +5,14 @@ permission:
   read: allow
   glob: allow
   grep: allow
+  edit: deny
   bash:
+    "*": deny
     "git status": allow
     "git log *": allow
     "git diff *": allow
     "git branch *": allow
-    "*": deny
+  task: deny
 ---
 
 # SDD Plan

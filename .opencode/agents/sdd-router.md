@@ -5,10 +5,12 @@ permission:
   read: allow
   glob: allow
   grep: allow
+  edit: ask
   bash:
+    "*": ask
     "git *": allow
     "sdd-sync.sh *": ask
-    "*": ask
+  task: deny
 ---
 
 # SDD Router

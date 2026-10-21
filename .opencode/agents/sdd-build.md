@@ -1,6 +1,10 @@
 ---
 description: SDD build agent — lifecycle gates, one-file-at-a-time, explicit approval, role enforcement, post-commit integrations. Override del built-in build agent.
 mode: primary
+permission:
+  bash:
+    "*": allow
+    "git push *": ask
 ---
 
 # SDD Build
