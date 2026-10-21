@@ -26,6 +26,7 @@ import {
 } from "../hooks/useAuthManagement"
 import { useAuth } from "../context/AuthContext"
 import { formatPlanLabel, formatTenantTypeLabel } from "../../domain/auth"
+import Modal from "../components/ui/Modal"
 
 export default function UsersManagementPage() {
   const { user: currentUser } = useAuth()
@@ -601,11 +602,31 @@ export default function UsersManagementPage() {
           )}
         </div>
       )}
-      {showNewUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[32rem] w-full p-6 shadow-2xl space-y-4">
-            <h2 className="font-display text-lg font-bold text-on-surface">Registrar Nuevo Usuario Institucional</h2>
-            <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
+      <Modal
+        open={showNewUserModal}
+        onClose={() => setShowNewUserModal(false)}
+        title="Registrar Nuevo Usuario Institucional"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowNewUserModal(false)}
+              className="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              form="new-user-form"
+              disabled={createUserMutation.isPending}
+              className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold cursor-pointer"
+            >
+              {createUserMutation.isPending ? "Creando..." : "Crear Usuario"}
+            </button>
+          </>
+        }
+      >
+        <form id="new-user-form" onSubmit={handleCreateUser} className="space-y-3 text-xs">
               <div>
                 <label className="block font-semibold mb-1">Nombre Completo</label>
                 <input
@@ -676,39 +697,46 @@ export default function UsersManagementPage() {
                   className="w-full px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/40 font-mono"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNewUserModal(false)}
-                  className="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={createUserMutation.isPending}
-                  className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold cursor-pointer"
-                >
-                  {createUserMutation.isPending ? "Creando..." : "Crear Usuario"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
-      {showNewTenantModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/40 rounded-2xl max-w-[34rem] w-full p-6 shadow-2xl space-y-4">
-            <div>
-              <h2 className="font-display text-lg font-bold text-on-surface">
-                Registrar Nueva Organización Suscriptora
-              </h2>
-              <p className="text-xs text-on-surface-variant mt-0.5">
-                Selecciona la institución o proveedor desde el catálogo de contrataciones públicas o regístrala manualmente si es nueva.
-              </p>
-            </div>
-            <form onSubmit={handleCreateTenant} className="space-y-3.5 text-xs">
+      <Modal
+        open={showNewTenantModal}
+        onClose={() => {
+          setShowNewTenantModal(false)
+          setManualEntry(false)
+          setCatalogQuery("")
+        }}
+        title="Registrar Nueva Organización Suscriptora"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setShowNewTenantModal(false)
+                setManualEntry(false)
+                setCatalogQuery("")
+              }}
+              className="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              form="new-tenant-form"
+              disabled={createTenantMutation.isPending || !newTenant.nombre.trim()}
+              className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold disabled:opacity-50 cursor-pointer"
+            >
+              {createTenantMutation.isPending ? "Guardando..." : "Crear Organización"}
+            </button>
+          </>
+        }
+      >
+        <p className="text-xs text-on-surface-variant mb-3">
+          Selecciona la institución o proveedor desde el catálogo de contrataciones públicas o regístrala
+          manualmente si es nueva.
+        </p>
+        <form id="new-tenant-form" onSubmit={handleCreateTenant} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">Segmento</label>
@@ -917,30 +945,8 @@ export default function UsersManagementPage() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowNewTenantModal(false)
-                    setManualEntry(false)
-                    setCatalogQuery("")
-                  }}
-                  className="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={createTenantMutation.isPending || !newTenant.nombre.trim()}
-                  className="px-4 py-2 rounded-xl bg-primary text-on-primary font-semibold disabled:opacity-50 cursor-pointer"
-                >
-                  {createTenantMutation.isPending ? "Guardando..." : "Crear Organización"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   )
 }

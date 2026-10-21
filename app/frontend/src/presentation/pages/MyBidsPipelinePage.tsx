@@ -12,6 +12,7 @@ import {
 import { useB2BBids, useUpsertBid, useDeleteBid } from "../hooks/useB2BSuite"
 import type { BidItem, BidStage } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import Modal from "../components/ui/Modal"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -463,100 +464,93 @@ export default function MyBidsPipelinePage() {
         </div>
       </div>
 
-      {editingBid && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface border border-outline-variant/35 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <Modal
+        open={editingBid !== null}
+        onClose={() => setEditingBid(null)}
+        title="Actualizar Licitación en Cartera"
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setEditingBid(null)}
+              className="px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface-variant hover:text-on-surface cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              disabled={upsertMutation.isPending}
+              className="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-95 cursor-pointer"
+            >
+              Guardar Cambios
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-xs font-mono text-primary">{editingBid?.process_code}</p>
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+              Etapa del Proceso
+            </label>
+            <select
+              value={editStage}
+              onChange={(e) => setEditStage(e.target.value as BidStage)}
+              className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface focus:outline-none focus:border-primary"
+            >
+              {STAGES_ORDER.map((st) => (
+                <option key={st} value={st}>
+                  {STAGE_LABELS[st]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <h3 className="font-display text-base font-bold text-on-surface">
-                Actualizar Licitación en Cartera
-              </h3>
-              <p className="text-xs font-mono text-primary mt-0.5">
-                {editingBid.process_code}
-              </p>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                Monto Oferta (RD$)
+              </label>
+              <input
+                type="number"
+                value={editAmount}
+                onChange={(e) => setEditAmount(Number(e.target.value))}
+                className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-mono font-bold text-on-surface focus:outline-none focus:border-primary"
+              />
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                  Etapa del Proceso
-                </label>
-                <select
-                  value={editStage}
-                  onChange={(e) => setEditStage(e.target.value as BidStage)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface focus:outline-none focus:border-primary"
-                >
-                  {STAGES_ORDER.map((st) => (
-                    <option key={st} value={st}>
-                      {STAGE_LABELS[st]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                    Monto Oferta (RD$)
-                  </label>
-                  <input
-                    type="number"
-                    value={editAmount}
-                    onChange={(e) => setEditAmount(Number(e.target.value))}
-                    className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-mono font-bold text-on-surface focus:outline-none focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                    Prioridad
-                  </label>
-                  <select
-                    value={editPriority}
-                    onChange={(e) =>
-                      setEditPriority(e.target.value as "ALTA" | "MEDIA" | "BAJA")
-                    }
-                    className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface focus:outline-none focus:border-primary"
-                  >
-                    <option value="ALTA">Alta</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="BAJA">Baja</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
-                  Notas Estratégicas Privadas
-                </label>
-                <textarea
-                  rows={3}
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs text-on-surface focus:outline-none focus:border-primary"
-                  placeholder="Observaciones de costos, plazos de entrega o garantías..."
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setEditingBid(null)}
-                className="px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface-variant hover:text-on-surface cursor-pointer"
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+                Prioridad
+              </label>
+              <select
+                value={editPriority}
+                onChange={(e) => setEditPriority(e.target.value as "ALTA" | "MEDIA" | "BAJA")}
+                className="w-full h-10 px-3.5 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs font-semibold text-on-surface focus:outline-none focus:border-primary"
               >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={upsertMutation.isPending}
-                className="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-95 cursor-pointer"
-              >
-                Guardar Cambios
-              </button>
+                <option value="ALTA">Alta</option>
+                <option value="MEDIA">Media</option>
+                <option value="BAJA">Baja</option>
+              </select>
             </div>
           </div>
+
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">
+              Notas Estratégicas Privadas
+            </label>
+            <textarea
+              rows={3}
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              className="w-full p-3 rounded-xl bg-surface-container-low border border-outline-variant/35 text-xs text-on-surface focus:outline-none focus:border-primary"
+              placeholder="Observaciones de costos, plazos de entrega o garantías..."
+            />
+          </div>
         </div>
-      )}
+      </Modal>
 
       {selectedProcessId !== null && (
         <ProcessInspectorDrawer

@@ -9,6 +9,10 @@ interface DrawerProps {
   children: ReactNode
   /** Clase de ancho máximo del panel; por defecto `max-w-xl`. */
   maxWidth?: string
+  /** Clases del contenedor del cuerpo (por defecto `p-5`). */
+  bodyClassName?: string
+  /** Acciones fijas al pie del panel. */
+  footer?: ReactNode
 }
 
 export default function Drawer({
@@ -18,6 +22,8 @@ export default function Drawer({
   subtitle,
   children,
   maxWidth = "max-w-xl",
+  bodyClassName = "p-5",
+  footer,
 }: DrawerProps) {
   useEffect(() => {
     if (!open) return
@@ -43,7 +49,7 @@ export default function Drawer({
         aria-hidden="true"
       />
       <aside
-        className={`relative h-full w-full ${maxWidth} bg-surface-container-lowest dark:bg-surface-container border-l border-outline-variant/35 shadow-2xl overflow-y-auto`}
+        className={`relative h-full w-full ${maxWidth} bg-surface-container-lowest dark:bg-surface-container border-l border-outline-variant/35 shadow-2xl overflow-y-auto flex flex-col`}
       >
         <div className="sticky top-0 z-10 bg-surface-container-lowest dark:bg-surface-container px-5 py-4 border-b border-outline-variant/20 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -64,7 +70,13 @@ export default function Drawer({
           </button>
         </div>
 
-        <div className="p-5">{children}</div>
+        <div className={`flex-1 ${bodyClassName}`}>{children}</div>
+
+        {footer && (
+          <div className="px-5 py-4 border-t border-outline-variant/20 bg-surface-container-lowest dark:bg-surface-container">
+            {footer}
+          </div>
+        )}
       </aside>
     </div>
   )

@@ -1,7 +1,8 @@
-﻿import { X, Building2, FileText, AlertTriangle, ArrowUpRight, CheckCircle2 } from "lucide-react"
+﻿import { Building2, FileText, AlertTriangle, ArrowUpRight, CheckCircle2 } from "lucide-react"
 import { useProcessDossier } from "../hooks/useAuditorB2G"
 import { usePublicSupplierProfile } from "../hooks/usePublicPortal"
 import type { Anomaly } from "../../domain/anomaly"
+import Drawer from "./ui/Drawer"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -19,34 +20,23 @@ export function ProcessInspectorDrawer({
   const { data, isLoading } = useProcessDossier(processId)
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
-    >
-      <aside
-        onClick={(e) => e.stopPropagation()}
-        className="w-full sm:w-[520px] lg:w-[580px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 shrink-0"
-      >
-      <div className="p-6 border-b border-outline-variant/25 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
+    <Drawer
+      open
+      onClose={onClose}
+      maxWidth="sm:w-[520px] lg:w-[580px]"
+      bodyClassName="overflow-y-auto p-6"
+      title={
+        <>
+          <span className="block text-[10px] font-bold text-outline uppercase tracking-widest">
             Expediente Institucional de Proceso
-          </p>
-          <h2 className="font-display font-bold text-primary text-lg mt-0.5 font-mono">
+          </span>
+          <span className="font-display font-bold text-primary text-lg font-mono">
             {data?.process_code || `PROC-${processId}`}
-          </h2>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant cursor-pointer"
-          aria-label="Cerrar panel"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          </span>
+        </>
+      }
+    >
+      <div className="space-y-6">
         {isLoading ? (
           <div className="py-12 text-center font-mono text-xs text-on-surface-variant">
             Cargando expediente del proceso...
@@ -190,8 +180,7 @@ export function ProcessInspectorDrawer({
           </>
         )}
       </div>
-      </aside>
-    </div>
+    </Drawer>
   )
 }
 
@@ -205,34 +194,23 @@ export function SupplierInspectorDrawer({
   const { data, isLoading } = usePublicSupplierProfile(rpe)
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
-    >
-      <aside
-        onClick={(e) => e.stopPropagation()}
-        className="w-full sm:w-[520px] lg:w-[580px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 shrink-0"
-      >
-      <div className="p-6 border-b border-outline-variant/25 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
+    <Drawer
+      open
+      onClose={onClose}
+      maxWidth="sm:w-[520px] lg:w-[580px]"
+      bodyClassName="overflow-y-auto p-6"
+      title={
+        <>
+          <span className="block text-[10px] font-bold text-outline uppercase tracking-widest">
             Ficha Forense de Proveedor del Estado
-          </p>
-          <h2 className="font-display font-bold text-primary text-lg mt-0.5">
+          </span>
+          <span className="font-display font-bold text-primary text-lg">
             {data?.name || `RPE #${rpe}`}
-          </h2>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant cursor-pointer"
-          aria-label="Cerrar panel"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          </span>
+        </>
+      }
+    >
+      <div className="space-y-6">
         {isLoading ? (
           <div className="py-12 text-center font-mono text-xs text-on-surface-variant">
             Consultando expediente del proveedor...
@@ -350,7 +328,6 @@ export function SupplierInspectorDrawer({
           </>
         )}
       </div>
-      </aside>
-    </div>
+    </Drawer>
   )
 }

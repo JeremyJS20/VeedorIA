@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Maximize2, X, Scale, AlertTriangle } from "lucide-react"
+import { Maximize2, Scale, AlertTriangle } from "lucide-react"
 import { toast } from "@heroui/react"
 import type { Anomaly, DismissalReason } from "../../domain/anomaly"
 import { useAnomalyContext, useReviewAnomaly } from "../hooks/useAnomalyQueries"
 import Button from "./ui/Button"
+import Drawer from "./ui/Drawer"
 import FullscreenOverlay from "./ui/FullscreenOverlay"
 import SeverityGauge from "./SeverityGauge"
 import PriceScatter from "./PriceScatter"
@@ -16,7 +17,6 @@ import SectionErrorBoundary from "./SectionErrorBoundary"
 interface AnomalyDrawerProps {
   anomaly: Anomaly
   onClose: () => void
-  className?: string
 }
 
 const SIGNAL_CONFIG: Record<string, { label: string; icon: string }> = {
@@ -36,7 +36,7 @@ function median(values: number[]) {
 
 type FullscreenChart = "price" | "fragmentation" | "collusion" | null
 
-export default function AnomalyDrawer({ anomaly, onClose, className = "" }: AnomalyDrawerProps) {
+export default function AnomalyDrawer({ anomaly, onClose }: AnomalyDrawerProps) {
   const { t } = useTranslation("dashboard")
   const [notes, setNotes] = useState("")
   const [dismissalReason, setDismissalReason] = useState<DismissalReason | "">("")
@@ -88,40 +88,42 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
   const isCollusion = anomaly.anomaly_type === "COLLUSION"
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex justify-end transition-opacity"
-    >
-      <aside
-        onClick={(e) => e.stopPropagation()}
-        className={`w-full sm:w-[540px] lg:w-[620px] h-screen bg-surface shadow-2xl flex flex-col border-l border-outline-variant/30 ${className}`}
-      >
-      <div className="p-6 border-b border-outline-variant/20 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] font-bold text-outline uppercase tracking-widest">
+    <Drawer
+      open
+      onClose={onClose}
+      maxWidth="sm:w-[540px] lg:w-[620px]"
+      bodyClassName="overflow-y-auto p-6"
+      title={
+        <>
+          <span className="block text-[10px] font-bold text-outline uppercase tracking-widest">
             {t("drawer.detail_title")}
-          </p>
-          <h2 className="font-display font-bold text-primary text-lg">
-            {t("drawer.case_label")} {ctx?.process_code || anomaly.contract_id?.toString().slice(0, 12).toUpperCase() || anomaly.id.slice(0, 12).toUpperCase()}
-          </h2>
-          <div className="flex items-center gap-3 mt-1">
-            {ctx?.supplier_name && (
-              <span className="text-xs font-semibold text-on-surface">{ctx.supplier_name}</span>
-            )}
-            {ctx?.institution_name && (
-              <span className="text-xs text-outline">· {ctx.institution_name}</span>
-            )}
-            {ctx?.amount != null && (
-              <span className="text-xs text-outline">· RD$ {ctx.amount.toLocaleString("es-DO", { minimumFractionDigits: 2 })}</span>
-            )}
-          </div>
-        </div>
-        <Button variant="ghost" size="sm" isIconOnly onClick={onClose} className="!p-2">
-          <X className="w-5 h-5" />
-        </Button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          </span>
+          <span className="font-display font-bold text-primary text-lg">
+            {t("drawer.case_label")}{" "}
+            {ctx?.process_code ||
+              anomaly.contract_id?.toString().slice(0, 12).toUpperCase() ||
+              anomaly.id.slice(0, 12).toUpperCase()}
+          </span>
+        </>
+      }
+      subtitle={
+        <>
+          {ctx?.supplier_name && (
+            <span className="text-xs font-semibold text-on-surface">{ctx.supplier_name}</span>
+          )}
+          {ctx?.institution_name && (
+            <span className="text-xs text-outline"> · {ctx.institution_name}</span>
+          )}
+          {ctx?.amount != null && (
+            <span className="text-xs text-outline">
+              {" "}
+              · RD$ {ctx.amount.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+            </span>
+          )}
+        </>
+      }
+    >
+      <div className="space-y-8">
         <div className="space-y-4">
           <h4 className="text-xs font-bold text-outline uppercase tracking-wide">
             {t("drawer.severity_index")}
@@ -455,7 +457,6 @@ export default function AnomalyDrawer({ anomaly, onClose, className = "" }: Anom
           <CollusionNetwork links={ctx.collusion_links} fullscreen />
         )}
       </FullscreenOverlay>
-      </aside>
-    </div>
+    </Drawer>
   )
 }

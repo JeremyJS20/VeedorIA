@@ -200,10 +200,6 @@ Entry format (one `## Name` per component):
 - Replaces: `fixed inset-0`
 - Allowed: `app/frontend/src/presentation/components/ui/Drawer.tsx`
 - Allowed: `app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx`
-- Allowed: `app/frontend/src/presentation/components/AnomalyDrawer.tsx`
-- Allowed: `app/frontend/src/presentation/components/ConsoleInspectorDrawers.tsx`
-- Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/UsersManagementPage.tsx`
 
 ## Drawer
 - Path: app/frontend/src/presentation/components/ui/Drawer.tsx
