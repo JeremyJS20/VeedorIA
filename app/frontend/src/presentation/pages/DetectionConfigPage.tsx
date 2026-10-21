@@ -38,7 +38,7 @@ export default function DetectionConfigPage() {
   const [activeTab, setActiveTab] = useState<"MOTOR" | "MODALIDADES">("MOTOR")
 
   const canEdit = Boolean(data?.can_edit)
-  const parameters = data?.parameters || []
+  const parameters = useMemo(() => data?.parameters ?? [], [data?.parameters])
 
   const weightsList = useMemo(() => parameters.filter((p) => p.category === "PESOS"), [parameters])
   const coreThresholdsList = useMemo(() => parameters.filter((p) => p.category === "UMBRALES"), [parameters])

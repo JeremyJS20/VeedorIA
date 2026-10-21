@@ -130,15 +130,20 @@ export function ProcessInspectorDrawer({
                               contract_id: anom.contract_id,
                               anomaly_type: anom.anomaly_type,
                               severity: anom.severity,
-                              confidence: anom.confidence,
-                              signals_count: anom.signals_count,
+                              score: anom.severity,
+                              reviewer_id: null,
+                              dismissal_reason: null,
+                              detection_metadata: null,
+                              updated_at: anom.created_at ?? new Date().toISOString(),
+                              confidence: anom.confidence ?? undefined,
+                              signals_count: anom.signals_count ?? undefined,
                               status: anom.status,
                               description: anom.description,
                               amount: anom.amount,
                               process_code: anom.process_code,
                               supplier_name: anom.supplier_name,
                               institution_name: anom.institution_name,
-                              created_at: anom.created_at,
+                              created_at: anom.created_at ?? new Date().toISOString(),
                             })
                           }
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-95 cursor-pointer"
