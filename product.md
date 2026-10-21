@@ -34,7 +34,7 @@
 | Herramientas de Auditoría B2G (`herramientas-auditoria-b2g`) | Explorador de procesos institucionales, red de colusión, parámetros de detección, historial de resoluciones, reportes de cumplimiento con matriz legal e interoperabilidad institucional vía llaves API (`vdia_b2g_...`) | 🟢 active |
 | Suite de Inteligencia Comercial B2B (`suite-licitaciones-b2b`) | Radar de oportunidades, pipeline de mis licitaciones, ficha forense de competidor, simulador de precios de oferta, explorador de sectores y gestión de plan, con candados de cuota `B2B_PYME` vs `B2B_CORPORATE` | 🟢 active |
 | Consola de Administración Global (`consola-admin-operaciones`) | Sincronización DGCP y cola asíncrona (#32), calibración global del motor (#33), bitácora inmutable con exportación checksummed (#35) y centro de soporte/salud de servicios (#36). Guard exclusivo `PLATFORM_ADMIN`, vista previa de roles (solo UI) y 18 endpoints `/api/admin/*` + `/api/support/*` | 🟢 active |
-| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral (`docs-backup-2/internal/complete_screen_map.md`). **Implementadas 32 vistas** en 4 paquetes (core + auditoría B2G + licitaciones B2B + consola admin); pendientes las pantallas restantes del mapa (#30, #31, #34 y siguientes) | 🟡 partial |
+| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral en la tabla **Screen Map Status** de este mismo documento. **29 implementadas · 3 parciales · 4 pendientes**. Quedan: ⬜ #3 Sankey de Gasto, #4 Comparador de Precios, #8 Descarga de Datos Abiertos, #34 Clientes y Licencias · 🟡 #28 Ajustes de Organización, #31 Dashboard de Salud, #33 Reentrenamiento ML | 🟡 partial |
 
 ## Screen Catalog (implemented)
 
@@ -134,6 +134,8 @@ Fuente: `docs-backup-2/internal/complete_screen_map.md`. ✅ implementada · �
 
 **Resumen**: ✅ 29 implementadas · 🟡 3 parciales · ⬜ 4 pendientes = **36**.
 Rutas extra fuera del mapa oficial: `/ranking` (`RankingPage`), `/app/roles` (`RolesMatrixPage`) y `/app/usuarios` (`UsersManagementPage`).
+
+> ⚠️ **Dos numeraciones distintas — no mezclarlas.** La columna `#` de la tabla anterior es el **mapa de 36 pantallas** (`specs/veedoria-core/intake.md`). El **roadmap SDD** de los specs (Paquetes 1–4) usa su propia numeración, y **`#31` colisiona**: en el mapa es *Dashboard de Salud del Sistema*; en el roadmap es el *Panorama Ejecutivo variante ADMIN* (`consola-multi-rol-onboarding`, REQ-005, ya implementado). Al citar un `#N` hay que decir a qué tabla pertenece.
 
 ## Tech Stack
 
