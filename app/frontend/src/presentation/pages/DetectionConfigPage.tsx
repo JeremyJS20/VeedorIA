@@ -4,6 +4,7 @@ import { ExternalLink, ShieldAlert, SlidersHorizontal } from "lucide-react"
 import { useDetectionConfig } from "../hooks/useAuditorB2G"
 import { useAuth } from "../context/AuthContext"
 import KpiCard from "../components/ui/KpiCard"
+import DataTable from "../components/ui/DataTable"
 
 const MODALITY_SIGLA_MAP: Record<string, { code: string; lawRef: string }> = {
   THRESHOLD_CD_DOP: { code: "-CD-", lawRef: "Art. 16 Num. 7 · Compra Debajo del Umbral" },
@@ -260,59 +261,79 @@ export default function DetectionConfigPage() {
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  <th className="py-3 px-5">Sigla en Proceso</th>
-                  <th className="py-3 px-5">Modalidad y Referencia Normativa</th>
-                  <th className="py-3 px-5 text-right">Valor Base (DOP)</th>
-                  <th className="py-3 px-5 text-right">Tope Vigente (DOP)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/20 text-xs">
-                {dgcpModalityList.map((param) => {
+          <DataTable
+            rows={dgcpModalityList}
+            rowKey={(param) => param.key}
+            emptyMessage="No hay topes de modalidad DGCP configurados."
+            columns={[
+              {
+                key: "sigla",
+                header: "Sigla en Proceso",
+                cellClassName: "whitespace-nowrap",
+                cell: (param) => {
                   const meta = MODALITY_SIGLA_MAP[param.key] || {
                     code: param.key,
                     lawRef: "Ley 340-06",
                   }
+                  return (
+                    <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary font-mono text-xs font-bold">
+                      {meta.code}
+                    </span>
+                  )
+                },
+              },
+              {
+                key: "modalidad",
+                header: "Modalidad y Referencia Normativa",
+                cell: (param) => {
+                  const meta = MODALITY_SIGLA_MAP[param.key] || {
+                    code: param.key,
+                    lawRef: "Ley 340-06",
+                  }
+                  return (
+                    <>
+                      <p className="font-bold text-on-surface">{param.label}</p>
+                      <p className="text-[11px] text-on-surface-variant mt-0.5">
+                        {meta.lawRef} — {param.description}
+                      </p>
+                    </>
+                  )
+                },
+              },
+              {
+                key: "valor_base",
+                header: "Valor Base (DOP)",
+                align: "right",
+                cellClassName: "font-mono text-on-surface-variant whitespace-nowrap",
+                cell: (param) => `RD$ ${param.default_value.toLocaleString("es-DO")}`,
+              },
+              {
+                key: "tope_vigente",
+                header: "Tope Vigente (DOP)",
+                align: "right",
+                cellClassName: "whitespace-nowrap",
+                cell: (param) => {
                   const modified = Math.abs(param.value - param.default_value) > 0.001
                   return (
-                    <tr key={param.key} className="hover:bg-surface-container-low/40 transition-colors">
-                      <td className="py-3.5 px-5 whitespace-nowrap">
-                        <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary font-mono text-xs font-bold">
-                          {meta.code}
+                    <>
+                      <span
+                        className={`font-mono text-xs font-bold ${
+                          modified ? "text-primary" : "text-on-surface"
+                        }`}
+                      >
+                        RD$ {param.value.toLocaleString("es-DO")}
+                      </span>
+                      {modified && (
+                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                          ajustado
                         </span>
-                      </td>
-                      <td className="py-3.5 px-5">
-                        <p className="font-bold text-on-surface">{param.label}</p>
-                        <p className="text-[11px] text-on-surface-variant mt-0.5">
-                          {meta.lawRef} — {param.description}
-                        </p>
-                      </td>
-                      <td className="py-3.5 px-5 text-right font-mono text-on-surface-variant whitespace-nowrap">
-                        RD$ {param.default_value.toLocaleString("es-DO")}
-                      </td>
-                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                        <span
-                          className={`font-mono text-xs font-bold ${
-                            modified ? "text-primary" : "text-on-surface"
-                          }`}
-                        >
-                          RD$ {param.value.toLocaleString("es-DO")}
-                        </span>
-                        {modified && (
-                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                            ajustado
-                          </span>
-                        )}
-                      </td>
-                    </tr>
+                      )}
+                    </>
                   )
-                })}
-              </tbody>
-            </table>
-          </div>
+                },
+              },
+            ]}
+          />
         </div>
       )}
     </div>

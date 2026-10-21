@@ -6,6 +6,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { useSubscriptionSummary, useUpdateSubscriptionPlan } from "../hooks/useB2BSuite"
+import DataTable from "../components/ui/DataTable"
 
 export default function SubscriptionBillingPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -321,32 +322,38 @@ export default function SubscriptionBillingPage() {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Evento</th>
-                <th className="py-3 px-5">Acción Ejecutada</th>
-                <th className="py-3 px-5">Usuario / Actor</th>
-                <th className="py-3 px-5 text-right">Fecha y Hora</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {history.map((h) => (
-                <tr key={h.event_id} className="hover:bg-surface-container-low/50 transition-colors">
-                  <td className="py-3.5 px-5 font-mono font-semibold text-primary">
-                    EVT-{h.event_id}
-                  </td>
-                  <td className="py-3.5 px-5 font-medium text-on-surface">{h.action}</td>
-                  <td className="py-3.5 px-5 font-mono text-on-surface-variant">{h.actor}</td>
-                  <td className="py-3.5 px-5 text-right font-mono text-on-surface-variant">
-                    {h.timestamp.slice(0, 19).replace("T", " ")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={history}
+          rowKey={(h) => h.event_id}
+          emptyMessage="Todavía no hay eventos de suscripción registrados."
+          columns={[
+            {
+              key: "evento",
+              header: "Evento",
+              cellClassName: "font-mono font-semibold text-primary",
+              cell: (h) => `EVT-${h.event_id}`,
+            },
+            {
+              key: "accion",
+              header: "Acción Ejecutada",
+              cellClassName: "font-medium text-on-surface",
+              cell: (h) => h.action,
+            },
+            {
+              key: "actor",
+              header: "Usuario / Actor",
+              cellClassName: "font-mono text-on-surface-variant",
+              cell: (h) => h.actor,
+            },
+            {
+              key: "fecha",
+              header: "Fecha y Hora",
+              align: "right",
+              cellClassName: "font-mono text-on-surface-variant",
+              cell: (h) => h.timestamp.slice(0, 19).replace("T", " "),
+            },
+          ]}
+        />
       </div>
     </div>
   )

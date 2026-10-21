@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import SectionContainer from "../components/SectionContainer"
+import DataTable from "../components/ui/DataTable"
 import { usePublicTenderDetail } from "../hooks/usePublicPortal"
 
 export default function TenderDetailPage() {
@@ -140,36 +141,54 @@ export default function TenderDetailPage() {
                     No hay desglose de ítems unitarios registrado para este contrato.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-sm">
-                      <thead>
-                        <tr className="border-b border-outline-variant/25 text-[11px] uppercase tracking-wider text-outline">
-                          <th className="py-3 pr-4">Descripción</th>
-                          <th className="py-3 px-4">UNSPSC</th>
-                          <th className="py-3 px-4 text-right">Cantidad</th>
-                          <th className="py-3 px-4 text-right">Precio Unitario</th>
-                          <th className="py-3 pl-4 text-right">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-outline-variant/15">
-                        {detail.items.map((it) => (
-                          <tr key={it.id} className="hover:bg-surface-container-low/60">
-                            <td className="py-3 pr-4 font-medium text-on-surface">{it.description}</td>
-                            <td className="py-3 px-4 font-mono text-xs text-outline">{it.unspsc_code}</td>
-                            <td className="py-3 px-4 text-right font-mono">
-                              {it.quantity.toLocaleString("es-DO")} {it.unit}
-                            </td>
-                            <td className="py-3 px-4 text-right font-mono">
-                              RD$ {it.unit_price.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </td>
-                            <td className="py-3 pl-4 text-right font-mono font-semibold text-on-surface">
-                              RD$ {it.total_amount.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <DataTable
+                    rows={detail.items}
+                    rowKey={(it) => it.id}
+                    emptyMessage="No hay desglose de ítems unitarios registrado para este contrato."
+                    columns={[
+                      {
+                        key: "descripcion",
+                        header: "Descripción",
+                        cellClassName: "font-medium text-on-surface",
+                        cell: (it) => it.description,
+                      },
+                      {
+                        key: "unspsc",
+                        header: "UNSPSC",
+                        cellClassName: "font-mono text-xs text-outline",
+                        cell: (it) => it.unspsc_code,
+                      },
+                      {
+                        key: "cantidad",
+                        header: "Cantidad",
+                        align: "right",
+                        cellClassName: "font-mono",
+                        cell: (it) => `${it.quantity.toLocaleString("es-DO")} ${it.unit}`,
+                      },
+                      {
+                        key: "precio",
+                        header: "Precio Unitario",
+                        align: "right",
+                        cellClassName: "font-mono",
+                        cell: (it) =>
+                          `RD$ ${it.unit_price.toLocaleString("es-DO", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`,
+                      },
+                      {
+                        key: "subtotal",
+                        header: "Subtotal",
+                        align: "right",
+                        cellClassName: "font-mono font-semibold text-on-surface",
+                        cell: (it) =>
+                          `RD$ ${it.total_amount.toLocaleString("es-DO", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`,
+                      },
+                    ]}
+                  />
                 )}
               </section>
             </>

@@ -4,6 +4,7 @@ import { Lock, Calendar } from "lucide-react"
 import { useMarketIntelligence } from "../hooks/useAuthManagement"
 import { useAuth } from "../context/AuthContext"
 import { resolvePlanLock } from "../../domain/previewProfiles"
+import DataTable from "../components/ui/DataTable"
 
 function formatDop(amount: number): string {
   return new Intl.NumberFormat("es-DO", {
@@ -361,47 +362,52 @@ export default function MarketIntelligencePage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  <th className="py-3 px-5">Código de Proceso</th>
-                  <th className="py-3 px-5">Objeto de Contratación</th>
-                  <th className="py-3 px-5">Institución Compradora</th>
-                  <th className="py-3 px-5">Proveedor Adjudicado</th>
-                  <th className="py-3 px-5 text-right">Monto Adjudicado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/20 text-xs">
-                {(market?.recent_processes || []).map((proc) => (
-                  <tr
-                    key={proc.process_code}
-                    className="hover:bg-surface-container-low/50 transition-colors"
-                  >
-                    <td className="py-3.5 px-5 font-mono font-semibold text-primary whitespace-nowrap">
-                      {proc.process_code}
-                      <div className="text-[11px] font-normal text-on-surface-variant inline-flex items-center gap-1 ml-0 block">
-                        <Calendar className="w-3 h-3" />
-                        <span>{proc.signed_date}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 font-medium text-on-surface max-w-[360px]">
-                      <p className="line-clamp-2">{proc.title}</p>
-                    </td>
-                    <td className="py-3.5 px-5 text-on-surface-variant max-w-[240px] truncate">
-                      {proc.institution_name}
-                    </td>
-                    <td className="py-3.5 px-5 text-on-surface max-w-[240px] truncate font-medium">
-                      {proc.supplier_name}
-                    </td>
-                    <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface whitespace-nowrap">
-                      {formatDop(proc.amount_dop)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            rows={market?.recent_processes ?? []}
+            rowKey={(proc) => proc.process_code}
+            emptyMessage="No hay procesos recientes para el rubro seleccionado."
+            columns={[
+              {
+                key: "proceso",
+                header: "Código de Proceso",
+                cellClassName: "font-mono font-semibold text-primary whitespace-nowrap",
+                cell: (proc) => (
+                  <>
+                    {proc.process_code}
+                    <div className="text-[11px] font-normal text-on-surface-variant flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>{proc.signed_date}</span>
+                    </div>
+                  </>
+                ),
+              },
+              {
+                key: "objeto",
+                header: "Objeto de Contratación",
+                cellClassName: "font-medium text-on-surface max-w-[360px]",
+                cell: (proc) => <p className="line-clamp-2">{proc.title}</p>,
+              },
+              {
+                key: "institucion",
+                header: "Institución Compradora",
+                cellClassName: "text-on-surface-variant max-w-[240px] truncate",
+                cell: (proc) => proc.institution_name,
+              },
+              {
+                key: "proveedor",
+                header: "Proveedor Adjudicado",
+                cellClassName: "text-on-surface max-w-[240px] truncate font-medium",
+                cell: (proc) => proc.supplier_name,
+              },
+              {
+                key: "monto",
+                header: "Monto Adjudicado",
+                align: "right",
+                cellClassName: "font-mono font-bold text-on-surface whitespace-nowrap",
+                cell: (proc) => formatDop(proc.amount_dop),
+              },
+            ]}
+          />
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { useB2BOpportunities, useUpsertBid } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import DataTable from "../components/ui/DataTable"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -289,142 +290,147 @@ export default function OpportunitiesRadarPage() {
               </span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    <th className="py-3 px-5">Afinidad</th>
-                    <th className="py-3 px-5">Proceso y Objeto de Contratación</th>
-                    <th className="py-3 px-5">Institución Compradora</th>
-                    <th className="py-3 px-5">Rubro UNSPSC</th>
-                    <th className="py-3 px-5 text-right">Monto Estimado</th>
-                    <th className="py-3 px-5 text-center">Competencia</th>
-                    <th className="py-3 px-5 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/20 text-xs">
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={7} className="py-12 text-center font-mono text-on-surface-variant">
-                        Analizando convocatorias y calculando afinidad por rubro UNSPSC...
-                      </td>
-                    </tr>
-                  ) : items.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="py-12 text-center text-on-surface-variant">
-                        No se encontraron oportunidades con los filtros seleccionados.
-                      </td>
-                    </tr>
-                  ) : (
-                    items.map((row) => (
-                      <tr
-                        key={row.process_id}
-                        className="hover:bg-surface-container-low/50 transition-colors"
+            <DataTable
+              rows={items}
+              rowKey={(row) => row.process_id}
+              isLoading={isLoading}
+              emptyMessage="No se encontraron oportunidades con los filtros seleccionados."
+              columns={[
+                {
+                  key: "afinidad",
+                  header: "Afinidad",
+                  cellClassName: "whitespace-nowrap",
+                  cell: (row) => (
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-mono font-bold text-xs ${
+                        row.affinity_score >= 85
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                          : row.affinity_score >= 70
+                            ? "bg-primary/15 text-primary"
+                            : "bg-surface-container-high text-on-surface-variant"
+                      }`}
+                    >
+                      {row.affinity_score}%
+                    </span>
+                  ),
+                },
+                {
+                  key: "proceso",
+                  header: "Proceso y Objeto de Contratación",
+                  cellClassName: "max-w-[340px]",
+                  cell: (row) => (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProcessId(row.process_id)}
+                        className="font-mono font-bold text-primary hover:underline text-left block cursor-pointer"
                       >
-                        <td className="py-3.5 px-5 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-mono font-bold text-xs ${
-                              row.affinity_score >= 85
-                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                                : row.affinity_score >= 70
-                                  ? "bg-primary/15 text-primary"
-                                  : "bg-surface-container-high text-on-surface-variant"
-                            }`}
-                          >
-                            {row.affinity_score}%
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 max-w-[340px]">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProcessId(row.process_id)}
-                            className="font-mono font-bold text-primary hover:underline text-left block cursor-pointer"
-                          >
-                            {row.process_code}
-                          </button>
-                          <p className="font-medium text-on-surface line-clamp-2 mt-0.5">
-                            {row.title}
-                          </p>
-                          <span className="text-[11px] text-on-surface-variant font-mono">
-                            {row.modality} · {row.published_date}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 text-on-surface-variant max-w-[220px] truncate">
-                          {row.institution_name}
-                        </td>
-                        <td className="py-3.5 px-5 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-lg bg-surface-container-low border border-outline-variant/30 font-mono text-[11px] font-semibold text-on-surface">
-                            UNSPSC {row.unspsc_family}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface whitespace-nowrap">
-                          {formatDop(row.reference_amount_dop)}
-                        </td>
-                        <td className="py-3.5 px-5 text-center whitespace-nowrap">
-                          <span
-                            className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-md ${
-                              row.competition_level === "BAJA"
-                                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                                : row.competition_level === "MEDIA"
-                                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                                  : "bg-red-500/15 text-red-700 dark:text-red-300"
-                            }`}
-                          >
-                            {row.competition_level} ({row.historical_competitors_count} ofer.)
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                navigate(
-                                  `/app/simulador-precios?unspsc=${row.unspsc_family}&amt=${row.reference_amount_dop}`
-                                )
-                              }
-                              className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                              title="Simular precio competitivo para este rubro"
-                            >
-                              <Calculator className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={row.in_watchlist || upsertBidMutation.isPending}
-                              onClick={() => handleQuickSave(row)}
-                              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                                row.in_watchlist
-                                  ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 cursor-default"
-                                  : "bg-primary/10 text-primary hover:bg-primary/20"
-                              }`}
-                            >
-                              {row.in_watchlist ? (
-                                <>
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  <span>En Pipeline</span>
-                                </>
-                              ) : (
-                                <>
-                                  <BookmarkPlus className="w-3.5 h-3.5" />
-                                  <span>Guardar</span>
-                                </>
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedProcessId(row.process_id)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
-                            >
-                              <span>Expediente</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        {row.process_code}
+                      </button>
+                      <p className="font-medium text-on-surface line-clamp-2 mt-0.5">{row.title}</p>
+                      <span className="text-[11px] text-on-surface-variant font-mono">
+                        {row.modality} · {row.published_date}
+                      </span>
+                    </>
+                  ),
+                },
+                {
+                  key: "institucion",
+                  header: "Institución Compradora",
+                  cellClassName: "text-on-surface-variant max-w-[220px] truncate",
+                  cell: (row) => row.institution_name,
+                },
+                {
+                  key: "rubro",
+                  header: "Rubro UNSPSC",
+                  cellClassName: "whitespace-nowrap",
+                  cell: (row) => (
+                    <span className="px-2.5 py-1 rounded-lg bg-surface-container-low border border-outline-variant/30 font-mono text-[11px] font-semibold text-on-surface">
+                      UNSPSC {row.unspsc_family}
+                    </span>
+                  ),
+                },
+                {
+                  key: "monto",
+                  header: "Monto Estimado",
+                  align: "right",
+                  cellClassName: "font-mono font-bold text-on-surface whitespace-nowrap",
+                  cell: (row) => formatDop(row.reference_amount_dop),
+                },
+                {
+                  key: "competencia",
+                  header: "Competencia",
+                  align: "center",
+                  cellClassName: "whitespace-nowrap",
+                  cell: (row) => (
+                    <span
+                      className={`inline-block text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-md ${
+                        row.competition_level === "BAJA"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                          : row.competition_level === "MEDIA"
+                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                            : "bg-red-500/15 text-red-700 dark:text-red-300"
+                      }`}
+                    >
+                      {row.competition_level} ({row.historical_competitors_count} ofer.)
+                    </span>
+                  ),
+                },
+                {
+                  key: "acciones",
+                  header: "Acciones",
+                  align: "right",
+                  cellClassName: "whitespace-nowrap",
+                  cell: (row) => (
+                    <div className="inline-flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            `/app/simulador-precios?unspsc=${row.unspsc_family}&amt=${row.reference_amount_dop}`
+                          )
+                        }
+                        className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                        title="Simular precio competitivo para este rubro"
+                        aria-label="Simular precio competitivo para este rubro"
+                      >
+                        <Calculator className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={row.in_watchlist || upsertBidMutation.isPending}
+                        onClick={() => handleQuickSave(row)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          row.in_watchlist
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 cursor-default"
+                            : "bg-primary/10 text-primary hover:bg-primary/20"
+                        }`}
+                      >
+                        {row.in_watchlist ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>En Pipeline</span>
+                          </>
+                        ) : (
+                          <>
+                            <BookmarkPlus className="w-3.5 h-3.5" />
+                            <span>Guardar</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProcessId(row.process_id)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
+                      >
+                        <span>Expediente</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </div>
         </div>
       </div>
