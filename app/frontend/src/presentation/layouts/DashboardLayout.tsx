@@ -30,7 +30,10 @@ import {
   RefreshCw,
   ScrollText,
   LifeBuoy,
+  Eye,
+  Check,
 } from "lucide-react"
+import { PREVIEW_PROFILES } from "../../domain/previewProfiles"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
 import isotipoLight from "../../assets/veedoria_isotipo_light.webp"
@@ -45,7 +48,7 @@ export default function DashboardLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
-  const { user, logout, hasPermission } = useAuth()
+  const { user, realUser, previewProfile, isPreviewing, setPreviewCode, logout, hasPermission } = useAuth()
   const isDark = resolvedTheme === "dark"
 
   const [collapsed, setCollapsed] = useState(false)
@@ -398,15 +401,7 @@ export default function DashboardLayout() {
               )}
 
               {[
-                ...(user?.rol?.codigo === "PLATFORM_ADMIN"
-                  ? []
-                  : [
-                      {
-                        to: "/app/configuracion-deteccion",
-                        label: "Parámetros de Detección",
-                        icon: SlidersHorizontal,
-                      },
-                    ]),
+                { to: "/app/configuracion-deteccion", label: "Parámetros de Detección", icon: SlidersHorizontal },
                 { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
               ].map((navItem) => (
                 <NavLink
@@ -760,6 +755,58 @@ export default function DashboardLayout() {
                     <Sun className="w-4 h-4 mr-3" />
                     {t(isDark ? "header.light_mode" : "header.dark_mode")}
                   </button>
+                  {realUser?.rol?.codigo === "PLATFORM_ADMIN" && (
+                    <>
+                      <div className="border-t border-outline-variant/15 my-1" />
+                      <div className="px-4 py-2">
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-outline mb-1.5">
+                          <Eye className="w-3 h-3" />
+                          Ver la consola como
+                        </p>
+                        <div className="space-y-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewCode(null)
+                              setProfileOpen(false)
+                            }}
+                            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] transition-colors cursor-pointer ${
+                              !isPreviewing
+                                ? "bg-primary/10 text-primary font-semibold"
+                                : "text-on-surface-variant hover:bg-surface-container-low"
+                            }`}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                            <span className="flex-1 text-left truncate">Mi rol real (Admin general)</span>
+                            {!isPreviewing && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          </button>
+                          {PREVIEW_PROFILES.map((profile) => {
+                            const active = previewProfile?.code === profile.code
+                            return (
+                              <button
+                                key={profile.code}
+                                type="button"
+                                title={profile.description}
+                                onClick={() => {
+                                  setPreviewCode(profile.code)
+                                  setProfileOpen(false)
+                                }}
+                                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] transition-colors cursor-pointer ${
+                                  active
+                                    ? "bg-primary/10 text-primary font-semibold"
+                                    : "text-on-surface-variant hover:bg-surface-container-low"
+                                }`}
+                              >
+                                <UserCircle className="w-3.5 h-3.5 shrink-0" />
+                                <span className="flex-1 text-left truncate">{profile.label}</span>
+                                {active && <Check className="w-3.5 h-3.5 shrink-0" />}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="border-t border-outline-variant/15 my-1" />
                   <button
                     type="button"
@@ -776,6 +823,24 @@ export default function DashboardLayout() {
         </header>
 
         <div className="flex-1 overflow-y-auto">
+          {isPreviewing && previewProfile && (
+            <div className="sticky top-0 z-40 px-4 sm:px-6 py-2 bg-amber-500/15 border-b border-amber-500/30 backdrop-blur-sm flex flex-wrap items-center justify-between gap-2">
+              <p className="flex items-center gap-2 text-[11px] font-semibold text-amber-800 dark:text-amber-200">
+                <Eye className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  Vista previa como <strong>{previewProfile.label}</strong> · la navegación y los permisos
+                  reflejan ese rol, pero la sesión y los datos siguen siendo de tu usuario administrador.
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setPreviewCode(null)}
+                className="shrink-0 h-7 px-2.5 rounded-lg bg-amber-600 text-white text-[11px] font-bold hover:opacity-90"
+              >
+                Volver a mi rol
+              </button>
+            </div>
+          )}
           <Outlet />
         </div>
       </main>

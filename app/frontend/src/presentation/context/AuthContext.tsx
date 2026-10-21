@@ -1,14 +1,36 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import apiClient, { AUTH_TOKEN_KEY } from "../../infrastructure/apiClient"
 import type { AuthUser, LoginResponse } from "../../domain/auth"
+import {
+  buildPreviewUser,
+  findPreviewProfile,
+  type PreviewProfile,
+} from "../../domain/previewProfiles"
+
+const PREVIEW_KEY = "veedoria_preview_role"
 
 interface AuthContextValue {
+  /** Usuario efectivo: si hay vista previa activa, es el perfil simulado. */
   user: AuthUser | null
+  /** Usuario real autenticado (nunca simulado). */
+  realUser: AuthUser | null
   token: string | null
   isLoading: boolean
   isAuthenticated: boolean
+  /** Perfil de vista previa activo (solo PLATFORM_ADMIN). */
+  previewProfile: PreviewProfile | null
+  isPreviewing: boolean
+  setPreviewCode: (code: string | null) => void
   login: (correo: string, password: string) => Promise<AuthUser>
   setSession: (accessToken: string, authUser: AuthUser) => void
   logout: () => Promise<void>
@@ -21,25 +43,39 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY))
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(() => Boolean(localStorage.getItem(AUTH_TOKEN_KEY)))
+  const [realUser, setRealUser] = useState<AuthUser | null>(null)
+  const [previewCode, setPreviewCodeState] = useState<string | null>(() =>
+    localStorage.getItem(PREVIEW_KEY)
+  )
+  const [isLoading, setIsLoading] = useState<boolean>(() =>
+    Boolean(localStorage.getItem(AUTH_TOKEN_KEY))
+  )
+
+  const setPreviewCode = useCallback((code: string | null) => {
+    if (code) {
+      localStorage.setItem(PREVIEW_KEY, code)
+    } else {
+      localStorage.removeItem(PREVIEW_KEY)
+    }
+    setPreviewCodeState(code)
+  }, [])
 
   const refreshUser = useCallback(async (): Promise<AuthUser | null> => {
     const storedToken = localStorage.getItem(AUTH_TOKEN_KEY)
     if (!storedToken) {
-      setUser(null)
+      setRealUser(null)
       setToken(null)
       setIsLoading(false)
       return null
     }
     try {
       const { data } = await apiClient.get<{ success: boolean; data: AuthUser }>("/auth/me")
-      setUser(data.data)
+      setRealUser(data.data)
       setToken(storedToken)
       return data.data
     } catch {
       localStorage.removeItem(AUTH_TOKEN_KEY)
-      setUser(null)
+      setRealUser(null)
       setToken(null)
       return null
     } finally {
@@ -55,13 +91,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .get<{ success: boolean; data: AuthUser }>("/auth/me")
       .then(({ data }) => {
         if (!active) return
-        setUser(data.data)
+        setRealUser(data.data)
         setToken(storedToken)
       })
       .catch(() => {
         if (!active) return
         localStorage.removeItem(AUTH_TOKEN_KEY)
-        setUser(null)
+        setRealUser(null)
         setToken(null)
       })
       .finally(() => {
@@ -76,10 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (accessToken: string, authUser: AuthUser) => {
       localStorage.setItem(AUTH_TOKEN_KEY, accessToken)
       setToken(accessToken)
-      setUser(authUser)
+      setRealUser(authUser)
+      setPreviewCode(null)
       queryClient.clear()
     },
-    [queryClient],
+    [queryClient, setPreviewCode]
   )
 
   const login = useCallback(
@@ -91,11 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const payload = data.data
       localStorage.setItem(AUTH_TOKEN_KEY, payload.access_token)
       setToken(payload.access_token)
-      setUser(payload.user)
+      setRealUser(payload.user)
+      setPreviewCode(null)
       queryClient.clear()
       return payload.user
     },
-    [queryClient],
+    [queryClient, setPreviewCode]
   )
 
   const logout = useCallback(async () => {
@@ -105,27 +143,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore network error on logout
     } finally {
       localStorage.removeItem(AUTH_TOKEN_KEY)
+      localStorage.removeItem(PREVIEW_KEY)
+      setPreviewCodeState(null)
       setToken(null)
-      setUser(null)
+      setRealUser(null)
       queryClient.clear()
     }
   }, [queryClient])
+
+  const previewProfile = useMemo(() => {
+    if (realUser?.rol?.codigo !== "PLATFORM_ADMIN") return null
+    return findPreviewProfile(previewCode)
+  }, [realUser, previewCode])
+
+  const user = useMemo(() => {
+    if (!realUser) return null
+    if (!previewProfile) return realUser
+    return buildPreviewUser(realUser, previewProfile)
+  }, [realUser, previewProfile])
 
   const hasPermission = useCallback(
     (permissionCode: string): boolean => {
       if (!user) return false
       return user.permisos.includes(permissionCode)
     },
-    [user],
+    [user]
   )
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        realUser,
         token,
         isLoading,
         isAuthenticated: Boolean(user && token),
+        previewProfile,
+        isPreviewing: Boolean(previewProfile),
+        setPreviewCode,
         login,
         setSession,
         logout,
