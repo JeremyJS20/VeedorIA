@@ -2,6 +2,8 @@ import { useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Lock, Calendar } from "lucide-react"
 import { useMarketIntelligence } from "../hooks/useAuthManagement"
+import { useAuth } from "../context/AuthContext"
+import { resolvePlanLock } from "../../domain/previewProfiles"
 
 function formatDop(amount: number): string {
   return new Intl.NumberFormat("es-DO", {
@@ -34,6 +36,17 @@ export default function MarketIntelligencePage() {
   const priceTrend = market?.price_trend || []
   const maxTrendPrice = Math.max(...priceTrend.map((p) => p.avg_unit_price), 1)
   const wpr = market?.winning_price_range
+
+  const { user, isPreviewing } = useAuth()
+  const priceBandLocked = resolvePlanLock(Boolean(wpr?.locked), "market_advanced", {
+    isPreviewing,
+    planTier: user?.tenant?.plan_tier,
+  })
+  const supplierShareLocked = resolvePlanLock(
+    Boolean(market?.supplier_share.locked),
+    "market_advanced",
+    { isPreviewing, planTier: user?.tenant?.plan_tier }
+  )
 
   const sectionMeta = {
     precios: {
@@ -186,7 +199,7 @@ export default function MarketIntelligencePage() {
               </p>
             </div>
 
-            {wpr?.locked ? (
+            {priceBandLocked ? (
               <div className="py-12 px-5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-center space-y-2">
                 <Lock className="w-6 h-6 text-amber-600 mx-auto" />
                 <p className="text-xs font-bold text-on-surface">
@@ -194,7 +207,7 @@ export default function MarketIntelligencePage() {
                 </p>
                 <p className="text-xs text-on-surface-variant">
                   Disponible en{" "}
-                  <span className="font-semibold text-primary">{wpr.required_plan_label}</span>{" "}
+                  <span className="font-semibold text-primary">{wpr?.required_plan_label ?? "Plan Proveedor Corporativo"}</span>{" "}
                   para simular ofertas competitivas.
                 </p>
               </div>
@@ -254,7 +267,7 @@ export default function MarketIntelligencePage() {
               </p>
             </div>
 
-            {market?.supplier_share.locked ? (
+            {supplierShareLocked ? (
               <div className="py-12 px-5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-center space-y-2">
                 <Lock className="w-6 h-6 text-amber-600 mx-auto" />
                 <p className="text-xs font-bold text-on-surface">
@@ -263,7 +276,7 @@ export default function MarketIntelligencePage() {
                 <p className="text-xs text-on-surface-variant">
                   Actualice al{" "}
                   <span className="font-semibold text-primary">
-                    {market.supplier_share.required_plan_label}
+                    {market?.supplier_share.required_plan_label ?? "Plan Proveedor Corporativo"}
                   </span>{" "}
                   para desbloquear la cuota de mercado y RPE de sus competidores.
                 </p>

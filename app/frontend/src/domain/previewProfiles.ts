@@ -95,8 +95,7 @@ export function findPreviewProfile(code: string | null): PreviewProfile | null {
   return PREVIEW_PROFILES.find((profile) => profile.code === code) ?? null
 }
 
-export function buildPreviewUser(realUser: AuthUser, profile: PreviewProfile): AuthUser {
-  return {
+export function buildPreviewUser(realUser: AuthUser, profile: PreviewProfile): AuthUser {  return {
     ...realUser,
     nombre: `Vista previa · ${profile.label}`,
     rol: {
@@ -118,4 +117,41 @@ export function buildPreviewUser(realUser: AuthUser, profile: PreviewProfile): A
     permisos: profile.permisos,
     permisos_rol: profile.permisos,
   }
+}
+
+/**
+ * Capacidades cuyo candado decide el backend a partir del plan del token.
+ * En vista previa el token sigue siendo del administrador, así que el flag del
+ * API refleja SU plan; aquí se recalcula con el plan simulado.
+ */
+export type PlanCapability = "collusion" | "forensic" | "market_advanced"
+
+/** Planes que NO incluyen la capacidad (espejo de la matriz de `security-model.md`). */
+const PLANS_WITHOUT_CAPABILITY: Record<PlanCapability, readonly string[]> = {
+  // Grafo de colusión completo: bloqueado en el plan institucional básico.
+  collusion: ["B2G_BASIC"],
+  // Ficha forense de competidor (precios por rubro UNSPSC + flags): bloqueada en PyME.
+  forensic: ["B2B_PYME"],
+  // Subsecciones avanzadas de inteligencia de mercado: bloqueadas en PyME.
+  market_advanced: ["B2B_PYME"],
+}
+
+export interface PlanLockContext {
+  isPreviewing: boolean
+  planTier?: string | null
+}
+
+/**
+ * Resuelve si una capacidad está bloqueada por plan.
+ * Fuera de la vista previa devuelve el flag del backend sin tocarlo.
+ */
+export function resolvePlanLock(
+  lockedFromApi: boolean,
+  capability: PlanCapability,
+  context: PlanLockContext
+): boolean {
+  if (!context.isPreviewing) return lockedFromApi
+  const tier = context.planTier ?? ""
+  if (!tier) return lockedFromApi
+  return PLANS_WITHOUT_CAPABILITY[capability].includes(tier)
 }

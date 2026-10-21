@@ -8,6 +8,8 @@ import {
 } from "lucide-react"
 import { useCollusionNetwork } from "../hooks/useAuditorB2G"
 import { SupplierInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import { useAuth } from "../context/AuthContext"
+import { resolvePlanLock } from "../../domain/previewProfiles"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -21,6 +23,14 @@ export default function CollusionNetworkPage() {
   const navigate = useNavigate()
   const [selectedRpe, setSelectedRpe] = useState<string | null>(null)
   const { data, isLoading } = useCollusionNetwork()
+  const { user, isPreviewing } = useAuth()
+
+  // El candado lo calcula el backend con el plan del token; en vista previa se
+  // recalcula con el plan simulado para no mostrar un grafo desbloqueado de más.
+  const planLocked = resolvePlanLock(Boolean(data?.locked), "collusion", {
+    isPreviewing,
+    planTier: user?.tenant?.plan_tier,
+  })
 
   if (isLoading) {
     return (
@@ -45,7 +55,7 @@ export default function CollusionNetworkPage() {
     )
   }
 
-  if (data?.locked) {
+  if (planLocked) {
     return (
       <div className="p-6 sm:p-8 max-w-[80rem] mx-auto space-y-6">
         <div>

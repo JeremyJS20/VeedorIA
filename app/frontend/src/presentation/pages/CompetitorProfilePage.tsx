@@ -8,6 +8,8 @@ import {
 } from "lucide-react"
 import { useCompetitorsList, useCompetitorProfile } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import { useAuth } from "../context/AuthContext"
+import { resolvePlanLock } from "../../domain/previewProfiles"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -33,6 +35,11 @@ export default function CompetitorProfilePage() {
   const supplier = profile?.supplier
   const kpis = profile?.kpis
   const forensic = profile?.forensic_intelligence
+  const { user, isPreviewing } = useAuth()
+  const forensicLocked = resolvePlanLock(Boolean(forensic?.locked), "forensic", {
+    isPreviewing,
+    planTier: user?.tenant?.plan_tier,
+  })
   const topInstitutions = profile?.top_institutions || []
   const recentContracts = profile?.recent_contracts || []
 
@@ -198,7 +205,7 @@ export default function CompetitorProfilePage() {
                     </p>
                   </div>
 
-                  {forensic?.locked ? (
+                  {forensicLocked ? (
                     <div className="py-12 px-5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-center space-y-3 my-auto">
                       <Lock className="w-6 h-6 text-amber-600 mx-auto" />
                       <p className="text-xs font-bold text-on-surface">
@@ -207,7 +214,7 @@ export default function CompetitorProfilePage() {
                       <p className="text-xs text-on-surface-variant max-w-md mx-auto">
                         Actualice al{" "}
                         <span className="font-semibold text-primary">
-                          {forensic.required_plan_label}
+                          {forensic?.required_plan_label ?? "Plan Proveedor Corporativo"}
                         </span>{" "}
                         para desbloquear el comparativo de precios unitarios por rubro UNSPSC y las banderas forenses de este competidor.
                       </p>

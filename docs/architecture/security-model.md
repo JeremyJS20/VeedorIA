@@ -89,7 +89,7 @@ sequenceDiagram
 | Perfiles | `TENANT_ADMIN` (`GOV_INSTITUTION` · B2G Premium), `AUDITOR` (`GOV_OVERSIGHT` · B2G Enterprise), `PROVEEDOR` (`B2B_SUPPLIER` · B2B Corporativo) |
 | Efecto | Recalcula sidebar, `RequireAuth` y `hasPermission` con el rol simulado; las páginas muestran el estado de "Acceso Restringido" donde corresponda |
 | Persistencia | `localStorage["veedoria_preview_role"]`; se limpia al hacer login o logout |
-| Reglas derivadas del backend | Los flags calculados en servidor (p. ej. `can_edit` de parámetros) se combinan con el rol efectivo para que la vista previa sea de solo lectura |
+| Reglas derivadas del backend | Los flags calculados en servidor se combinan con el rol efectivo: `can_edit` de parámetros exige `PLATFORM_ADMIN` y los candados por plan (`collusion`, `forensic`, `market_advanced`) se recalculan con `resolvePlanLock()` a partir del plan simulado; fuera de la vista previa se devuelve el flag del backend sin tocarlo |
 | Auditoría | Sin entradas en `audit_log`: no hay cambio de identidad ni operación de escritura |
 
 ⚠️ La vista previa **no otorga ni revoca permisos reales**: el backend sigue autorizando con el rol del token.
