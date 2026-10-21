@@ -210,6 +210,29 @@ Entry format (one `## Name` per component):
 - Use when: right-side detail panel (record detail, ticket, audit entry) with sticky header and ESC/backdrop close
 - Replaces: -
 
+## DataTable
+- Path: app/frontend/src/presentation/components/ui/DataTable.tsx
+- Use when: any table of records with columns, loading skeleton and empty state; pass `columns`, `rows`, `rowKey` and `emptyMessage`
+- Replaces: `<table`
+- Allowed: `app/frontend/src/presentation/pages/AuditLogPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/AuditResolutionsPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/B2GIntegrationsPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/CollusionNetworkPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/CompetitorProfilePage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/ComplianceReportsPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/DetectionConfigPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/InstitutionalProcessesPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/MarketIntelligencePage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/OpportunitiesRadarPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/OverviewDashboardPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/PriceSimulatorPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/RankingPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/RolesMatrixPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/SubscriptionBillingPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/TenderDetailPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/UsersManagementPage.tsx`
+
 ---
 
 ## Adoption debt (available but not yet enforced)
@@ -222,6 +245,7 @@ today would fail on legacy pages; the counts below are the migration target for 
 | `KpiCard` | ~40 KPI cards with `border-l-4` across 10 pages (`AuditorPage`, `AuditResolutionsPage`, `B2BIntegrationsPage`, `CollusionNetworkPage`, `CompetitorProfilePage`, `ComplianceReportsPage`, `InstitutionalProcessesPage`, `MarketIntelligencePage`, `OpportunitiesRadarPage`, `MyBidsPipelinePage`) |
 | `StatusChip` | status chips hand-built in `AuditLogPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2BIntegrationsPage`, `RolesMatrixPage` |
 | `Modal` / `Drawer` | 4 overlays grandfathered in `Allowed` until migrated: `MyBidsPipelinePage` (1), `UsersManagementPage` (2), `AnomalyDrawer` (1), `ConsoleInspectorDrawers` (2). `FullscreenOverlay` is a different component (fullscreen chart) and stays. |
+| `DataTable` | 18 legacy files grandfathered in `Allowed` (see the component's list). Migrados ya: `SyncOperationsPage` (2 tablas), `AuditLogPage` (1), `SupportCenterPage` (1). |
 
 ## Missing composites (known duplication — do not re-implement; plan the extraction)
 
@@ -229,6 +253,5 @@ These are NOT components yet. Until they exist, a new screen must ask before wri
 
 | Need | Current duplication | Proposal |
 |------|--------------------|----------|
-| Table of records (header, empty state, pagination) | `<table` hand-written in 9 pages (`SyncOperationsPage`, `AuditLogPage`, `SupportCenterPage`, `UsersManagementPage`, `DetectionConfigPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `RolesMatrixPage`, `ComplianceReportsPage`) | `ui/DataTable` + `ui/Pagination` |
-| Filter bar (inputs + selects + clear) | repeated grid of labelled inputs in `AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage` | `ui/FilterBar` |
+| Filter bar (inputs + selects + clear) | repeated grid of labelled inputs in `AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage` | `ui/FilterField` (label + control) — el contenedor grid varía por página |
 | Buttons bypassing `ui/Button` | `btn btn-primary btn-lg btn-full-width` hand-written 8× in `LoginPage`, `RegisterPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `InvitationGatewayPage` (needs `isDisabled` migration) | reuse `ui/Button` |

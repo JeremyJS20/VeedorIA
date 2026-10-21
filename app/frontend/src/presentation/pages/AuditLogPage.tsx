@@ -12,6 +12,7 @@ import {
 import { useAuditLogs, useExportAuditLogs } from "../hooks/useAdminOps"
 import type { AuditLogFilters, AuditLogRow } from "../hooks/useAdminOps"
 import Drawer from "../components/ui/Drawer"
+import DataTable from "../components/ui/DataTable"
 
 const KNOWN_ACTIONS = [
   "ANOMALY_REVIEW",
@@ -305,78 +306,80 @@ export default function AuditLogPage() {
           </span>
         </div>
 
-        {isLoading ? (
-          <div className="p-5 space-y-2">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <div key={n} className="h-10 rounded-xl bg-surface-container-high animate-pulse" />
-            ))}
-          </div>
-        ) : (data?.items?.length ?? 0) === 0 ? (
-          <p className="p-8 text-center text-xs text-on-surface-variant">
-            No hay entradas que coincidan con los filtros seleccionados.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-on-surface-variant bg-surface-container-high/60">
-                  <th className="px-4 py-2.5 font-bold">Fecha</th>
-                  <th className="px-4 py-2.5 font-bold">Acción</th>
-                  <th className="px-4 py-2.5 font-bold">Actor</th>
-                  <th className="px-4 py-2.5 font-bold">Entidad</th>
-                  <th className="px-4 py-2.5 font-bold">IP</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Detalle</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/15">
-                {data?.items?.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-surface-container-high/40 transition-colors cursor-pointer"
-                    onClick={() => setSelected(row)}
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap font-mono text-[11px] text-on-surface-variant">
-                      {formatDateTime(row.timestamp)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex px-2 py-1 rounded-lg bg-primary/10 text-primary font-mono text-[10px] font-bold">
-                        {row.action_type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-on-surface">{row.user_email ?? "—"}</span>
-                        <span className="font-mono text-[10px] text-on-surface-variant">
-                          {row.user_id ?? "sistema"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-on-surface-variant">
-                      {row.entity_type ?? "—"}
-                      {row.entity_id ? ` · ${row.entity_id}` : ""}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-on-surface-variant">
-                      {row.ip_address ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setSelected(row)
-                        }}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant hover:text-primary"
-                      >
-                        <Eye className="w-3 h-3" />
-                        Ver
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable
+          rows={data?.items ?? []}
+          rowKey={(row) => row.id}
+          isLoading={isLoading}
+          emptyMessage="No hay entradas que coincidan con los filtros seleccionados."
+          onRowClick={(row) => setSelected(row)}
+          columns={[
+            {
+              key: "timestamp",
+              header: "Fecha",
+              cell: (row) => (
+                <span className="whitespace-nowrap font-mono text-[11px] text-on-surface-variant">
+                  {formatDateTime(row.timestamp)}
+                </span>
+              ),
+            },
+            {
+              key: "action_type",
+              header: "Acción",
+              cell: (row) => (
+                <span className="inline-flex px-2 py-1 rounded-lg bg-primary/10 text-primary font-mono text-[10px] font-bold">
+                  {row.action_type}
+                </span>
+              ),
+            },
+            {
+              key: "actor",
+              header: "Actor",
+              cell: (row) => (
+                <div className="flex flex-col">
+                  <span className="text-on-surface">{row.user_email ?? "—"}</span>
+                  <span className="font-mono text-[10px] text-on-surface-variant">
+                    {row.user_id ?? "sistema"}
+                  </span>
+                </div>
+              ),
+            },
+            {
+              key: "entity",
+              header: "Entidad",
+              cell: (row) => (
+                <span className="font-mono text-[11px] text-on-surface-variant">
+                  {row.entity_type ?? "—"}
+                  {row.entity_id ? ` · ${row.entity_id}` : ""}
+                </span>
+              ),
+            },
+            {
+              key: "ip_address",
+              header: "IP",
+              cell: (row) => (
+                <span className="font-mono text-[11px] text-on-surface-variant">{row.ip_address ?? "—"}</span>
+              ),
+            },
+            {
+              key: "detail",
+              header: "Detalle",
+              align: "right",
+              cell: (row) => (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setSelected(row)
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant hover:text-primary"
+                >
+                  <Eye className="w-3 h-3" />
+                  Ver
+                </button>
+              ),
+            },
+          ]}
+        />
 
         <div className="px-5 py-3 border-t border-outline-variant/20 flex items-center justify-between">
           <button

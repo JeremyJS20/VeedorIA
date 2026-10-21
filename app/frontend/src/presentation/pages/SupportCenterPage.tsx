@@ -24,6 +24,7 @@ import type { HealthStatus, SupportTicket } from "../hooks/useAdminOps"
 import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
 import Modal from "../components/ui/Modal"
 import Drawer from "../components/ui/Drawer"
+import DataTable from "../components/ui/DataTable"
 
 const HEALTH_LABELS: Record<string, string> = {
   OK: "Operativo",
@@ -417,53 +418,58 @@ export default function SupportCenterPage() {
           </div>
         </div>
 
-        {adminTickets.isLoading ? (
-          <div className="p-5 space-y-2">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-10 rounded-xl bg-surface-container-high animate-pulse" />
-            ))}
-          </div>
-        ) : (adminTickets.data?.items?.length ?? 0) === 0 ? (
-          <p className="p-6 text-xs text-on-surface-variant">No hay tickets en la bandeja con estos filtros.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-on-surface-variant bg-surface-container-high/60">
-                  <th className="px-4 py-2.5 font-bold">Código</th>
-                  <th className="px-4 py-2.5 font-bold">Asunto</th>
-                  <th className="px-4 py-2.5 font-bold">Módulo</th>
-                  <th className="px-4 py-2.5 font-bold">Prioridad</th>
-                  <th className="px-4 py-2.5 font-bold">Estado</th>
-                  <th className="px-4 py-2.5 font-bold">Creado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/15">
-                {adminTickets.data?.items?.map((ticket) => (
-                  <tr
-                    key={ticket.id}
-                    onClick={() => openTicket(ticket)}
-                    className="hover:bg-surface-container-high/40 transition-colors cursor-pointer"
-                  >
-                    <td className="px-4 py-3 font-mono text-[11px] text-primary font-bold">{ticket.code}</td>
-                    <td className="px-4 py-3 text-on-surface max-w-[22rem] truncate">{ticket.subject}</td>
-                    <td className="px-4 py-3 text-on-surface-variant">{ticket.module}</td>
-                    <td className="px-4 py-3 text-on-surface-variant">{ticket.priority}</td>
-                    <td className="px-4 py-3">
-                      <StatusChip
-                        tone={ticketTone(ticket.status)}
-                        label={TICKET_LABELS[ticket.status] ?? ticket.status}
-                      />
-                    </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-on-surface-variant">
-                      {formatDateTime(ticket.created_at)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable
+          rows={adminTickets.data?.items ?? []}
+          rowKey={(ticket) => ticket.id}
+          isLoading={adminTickets.isLoading}
+          skeletonRows={3}
+          emptyMessage="No hay tickets en la bandeja con estos filtros."
+          onRowClick={(ticket) => openTicket(ticket)}
+          columns={[
+            {
+              key: "code",
+              header: "Código",
+              cell: (ticket) => (
+                <span className="font-mono text-[11px] text-primary font-bold">{ticket.code}</span>
+              ),
+            },
+            {
+              key: "subject",
+              header: "Asunto",
+              cellClassName: "max-w-[22rem]",
+              cell: (ticket) => <span className="text-on-surface block truncate">{ticket.subject}</span>,
+            },
+            {
+              key: "module",
+              header: "Módulo",
+              cell: (ticket) => <span className="text-on-surface-variant">{ticket.module}</span>,
+            },
+            {
+              key: "priority",
+              header: "Prioridad",
+              cell: (ticket) => <span className="text-on-surface-variant">{ticket.priority}</span>,
+            },
+            {
+              key: "status",
+              header: "Estado",
+              cell: (ticket) => (
+                <StatusChip
+                  tone={ticketTone(ticket.status)}
+                  label={TICKET_LABELS[ticket.status] ?? ticket.status}
+                />
+              ),
+            },
+            {
+              key: "created_at",
+              header: "Creado",
+              cell: (ticket) => (
+                <span className="font-mono text-[11px] text-on-surface-variant">
+                  {formatDateTime(ticket.created_at)}
+                </span>
+              ),
+            },
+          ]}
+        />
       </section>
 
       {/* Base de conocimiento */}

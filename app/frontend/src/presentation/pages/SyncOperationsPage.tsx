@@ -15,6 +15,7 @@ import type { SyncLogRow, SyncTriggerPayload } from "../hooks/useAdminOps"
 import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
 import KpiCard from "../components/ui/KpiCard"
 import Modal from "../components/ui/Modal"
+import DataTable from "../components/ui/DataTable"
 
 function statusLabel(status: string): string {
   if (status === "running") return "En ejecución"
@@ -307,72 +308,86 @@ export default function SyncOperationsPage() {
           <h2 className="text-sm font-bold text-on-surface">Histórico de sincronizaciones</h2>
           <span className="text-[11px] font-mono text-on-surface-variant">{data?.syncs?.length ?? 0} registros</span>
         </div>
-        {isLoading ? (
-          <div className="p-5 space-y-2">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-10 rounded-xl bg-surface-container-high animate-pulse" />
-            ))}
-          </div>
-        ) : (data?.syncs?.length ?? 0) === 0 ? (
-          <p className="p-6 text-xs text-on-surface-variant">Todavía no hay corridas de sincronización registradas.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-on-surface-variant bg-surface-container-high/60">
-                  <th className="px-4 py-2.5 font-bold">Inicio</th>
-                  <th className="px-4 py-2.5 font-bold">Tipo</th>
-                  <th className="px-4 py-2.5 font-bold">Estado</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Registros</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Duración</th>
-                  <th className="px-4 py-2.5 font-bold">Disparador</th>
-                  <th className="px-4 py-2.5 font-bold">Detalle</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Acción</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/15">
-                {data?.syncs?.map((row) => (
-                  <tr key={row.id} className="hover:bg-surface-container-high/40 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap text-on-surface-variant">
-                      {formatDateTime(row.started_at)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-on-surface">{row.sync_type}</td>
-                    <td className="px-4 py-3">
-                      <SyncStatusChip status={row.status} />
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">{formatNumber(row.records_synced)}</td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {row.duration_s === null ? "—" : `${row.duration_s} s`}
-                    </td>
-                    <td className="px-4 py-3 text-on-surface-variant">{row.triggered_by}</td>
-                    <td className="px-4 py-3 max-w-[18rem]">
-                      {row.error_message ? (
-                        <span className="text-rose-600 dark:text-rose-400 line-clamp-2">{row.error_message}</span>
-                      ) : (
-                        <span className="text-on-surface-variant">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {row.status === "failed" ? (
-                        <button
-                          type="button"
-                          onClick={() => openModal(row)}
-                          disabled={!canTrigger}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant hover:text-primary disabled:opacity-40"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          Relanzar
-                        </button>
-                      ) : (
-                        <span className="text-on-surface-variant">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable
+          rows={data?.syncs ?? []}
+          rowKey={(row) => row.id}
+          isLoading={isLoading}
+          skeletonRows={3}
+          emptyMessage="Todavía no hay corridas de sincronización registradas."
+          columns={[
+            {
+              key: "started_at",
+              header: "Inicio",
+              cell: (row) => (
+                <span className="whitespace-nowrap text-on-surface-variant">
+                  {formatDateTime(row.started_at)}
+                </span>
+              ),
+            },
+            {
+              key: "sync_type",
+              header: "Tipo",
+              cell: (row) => <span className="font-mono text-[11px] text-on-surface">{row.sync_type}</span>,
+            },
+            {
+              key: "status",
+              header: "Estado",
+              cell: (row) => <SyncStatusChip status={row.status} />,
+            },
+            {
+              key: "records_synced",
+              header: "Registros",
+              align: "right",
+              cell: (row) => <span className="font-mono">{formatNumber(row.records_synced)}</span>,
+            },
+            {
+              key: "duration_s",
+              header: "Duración",
+              align: "right",
+              cell: (row) => (
+                <span className="font-mono">{row.duration_s === null ? "—" : `${row.duration_s} s`}</span>
+              ),
+            },
+            {
+              key: "triggered_by",
+              header: "Disparador",
+              cell: (row) => <span className="text-on-surface-variant">{row.triggered_by}</span>,
+            },
+            {
+              key: "error_message",
+              header: "Detalle",
+              cellClassName: "max-w-[18rem]",
+              cell: (row) =>
+                row.error_message ? (
+                  <span className="text-rose-600 dark:text-rose-400 line-clamp-2">{row.error_message}</span>
+                ) : (
+                  <span className="text-on-surface-variant">—</span>
+                ),
+            },
+            {
+              key: "action",
+              header: "Acción",
+              align: "right",
+              cell: (row) =>
+                row.status === "failed" ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      openModal(row)
+                    }}
+                    disabled={!canTrigger}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant hover:text-primary disabled:opacity-40"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Relanzar
+                  </button>
+                ) : (
+                  <span className="text-on-surface-variant">—</span>
+                ),
+            },
+          ]}
+        />
       </section>
 
       {/* Últimas detecciones */}
@@ -383,46 +398,52 @@ export default function SyncOperationsPage() {
             {data?.detections?.length ?? 0} registros
           </span>
         </div>
-        {(data?.detections?.length ?? 0) === 0 ? (
-          <p className="p-6 text-xs text-on-surface-variant">Sin corridas de detección registradas.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-on-surface-variant bg-surface-container-high/60">
-                  <th className="px-4 py-2.5 font-bold">Inicio</th>
-                  <th className="px-4 py-2.5 font-bold">Estado</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Hallazgos</th>
-                  <th className="px-4 py-2.5 font-bold text-right">Duración</th>
-                  <th className="px-4 py-2.5 font-bold">Detalle</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/15">
-                {data?.detections?.map((row) => (
-                  <tr key={row.id} className="hover:bg-surface-container-high/40 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap text-on-surface-variant">
-                      {formatDateTime(row.started_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <SyncStatusChip status={row.status} />
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">{formatNumber(row.records_synced)}</td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {row.duration_s === null ? "—" : `${row.duration_s} s`}
-                    </td>
-                    <td className="px-4 py-3 max-w-[24rem]">
-                      {row.error_message ? (
-                        <span className="text-rose-600 dark:text-rose-400 line-clamp-2">{row.error_message}</span>
-                      ) : (
-                        <span className="text-on-surface-variant">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <DataTable
+          rows={data?.detections ?? []}
+          rowKey={(row) => row.id}
+          emptyMessage="Sin corridas de detección registradas."
+          columns={[
+            {
+              key: "started_at",
+              header: "Inicio",
+              cell: (row) => (
+                <span className="whitespace-nowrap text-on-surface-variant">
+                  {formatDateTime(row.started_at)}
+                </span>
+              ),
+            },
+            {
+              key: "status",
+              header: "Estado",
+              cell: (row) => <SyncStatusChip status={row.status} />,
+            },
+            {
+              key: "records_synced",
+              header: "Hallazgos",
+              align: "right",
+              cell: (row) => <span className="font-mono">{formatNumber(row.records_synced)}</span>,
+            },
+            {
+              key: "duration_s",
+              header: "Duración",
+              align: "right",
+              cell: (row) => (
+                <span className="font-mono">{row.duration_s === null ? "—" : `${row.duration_s} s`}</span>
+              ),
+            },
+            {
+              key: "error_message",
+              header: "Detalle",
+              cellClassName: "max-w-[24rem]",
+              cell: (row) =>
+                row.error_message ? (
+                  <span className="text-rose-600 dark:text-rose-400 line-clamp-2">{row.error_message}</span>
+                ) : (
+                  <span className="text-on-surface-variant">—</span>
+                ),
+            },
+          ]}
+        />
       </section>
 
       <Modal
