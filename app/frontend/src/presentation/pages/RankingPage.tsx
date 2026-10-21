@@ -4,6 +4,7 @@ import { Search } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import SectionContainer from "../components/SectionContainer"
+import DataTable from "../components/ui/DataTable"
 import { usePublicRanking } from "../hooks/usePublicPortal"
 
 export default function RankingPage() {
@@ -94,69 +95,84 @@ export default function RankingPage() {
               </div>
             </div>
 
-            {isLoading ? (
-              <div className="py-12 text-center text-outline text-sm">Cargando instituciones...</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-outline-variant/25 text-[11px] uppercase tracking-wider text-outline">
-                      <th className="py-3 pr-3">#</th>
-                      <th className="py-3 px-3">Institución</th>
-                      <th className="py-3 px-3 text-right">Contratos</th>
-                      <th className="py-3 px-3 text-right">Volumen Contratado</th>
-                      <th className="py-3 px-3 text-right">Hallazgos</th>
-                      <th className="py-3 px-3">Cumplimiento</th>
-                      <th className="py-3 pl-3 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/15">
-                    {items.map((row, idx) => (
-                      <tr key={row.institution_id} className="hover:bg-surface-container-low/60">
-                        <td className="py-3.5 pr-3 font-mono text-xs text-outline">{idx + 1}</td>
-                        <td className="py-3.5 px-3 font-medium text-on-surface">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/public/institution/${row.institution_id}`)}
-                            className="text-left hover:text-primary hover:underline cursor-pointer"
-                          >
-                            {row.institution_name}
-                          </button>
-                        </td>
-                        <td className="py-3.5 px-3 text-right font-mono">{row.contracts_count}</td>
-                        <td className="py-3.5 px-3 text-right font-mono">
-                          RD$ {row.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                        </td>
-                        <td className="py-3.5 px-3 text-right font-mono text-error">
-                          {row.anomalies_count}
-                        </td>
-                        <td className="py-3.5 px-3 font-mono text-xs font-semibold">
-                          {row.transparency_score}%
-                        </td>
-                        <td className="py-3.5 pl-3 text-right">
-                          <div className="inline-flex gap-3 text-xs font-semibold">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/public/institution/${row.institution_id}`)}
-                              className="text-primary hover:underline cursor-pointer"
-                            >
-                              Perfil
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/public?institution_id=${row.institution_id}`)}
-                              className="text-on-surface-variant hover:text-primary hover:underline cursor-pointer"
-                            >
-                              Contratos
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              rows={items}
+              rowKey={(row) => row.institution_id}
+              isLoading={isLoading}
+              emptyMessage="No hay instituciones para el filtro seleccionado."
+              columns={[
+                {
+                  key: "posicion",
+                  header: "#",
+                  cellClassName: "font-mono text-xs text-outline",
+                  cell: (_row) => items.indexOf(_row) + 1,
+                },
+                {
+                  key: "institucion",
+                  header: "Institución",
+                  cellClassName: "font-medium text-on-surface",
+                  cell: (row) => (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/public/institution/${row.institution_id}`)}
+                      className="text-left hover:text-primary hover:underline cursor-pointer"
+                    >
+                      {row.institution_name}
+                    </button>
+                  ),
+                },
+                {
+                  key: "contratos",
+                  header: "Contratos",
+                  align: "right",
+                  cellClassName: "font-mono",
+                  cell: (row) => row.contracts_count,
+                },
+                {
+                  key: "volumen",
+                  header: "Volumen Contratado",
+                  align: "right",
+                  cellClassName: "font-mono",
+                  cell: (row) => `RD$ ${row.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`,
+                },
+                {
+                  key: "hallazgos",
+                  header: "Hallazgos",
+                  align: "right",
+                  cellClassName: "font-mono text-error",
+                  cell: (row) => row.anomalies_count,
+                },
+                {
+                  key: "cumplimiento",
+                  header: "Cumplimiento",
+                  cellClassName: "font-mono text-xs font-semibold",
+                  cell: (row) => `${row.transparency_score}%`,
+                },
+                {
+                  key: "acciones",
+                  header: "Acciones",
+                  align: "right",
+                  cell: (row) => (
+                    <div className="inline-flex gap-3 text-xs font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/public/institution/${row.institution_id}`)}
+                        className="text-primary hover:underline cursor-pointer"
+                      >
+                        Perfil
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/public?institution_id=${row.institution_id}`)}
+                        className="text-on-surface-variant hover:text-primary hover:underline cursor-pointer"
+                      >
+                        Contratos
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </section>
         </SectionContainer>
       </main>

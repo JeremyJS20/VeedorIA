@@ -219,9 +219,7 @@ Entry format (one `## Name` per component):
 - Allowed: `app/frontend/src/presentation/pages/MarketIntelligencePage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/OpportunitiesRadarPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/OverviewDashboardPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/PriceSimulatorPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/RankingPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/RolesMatrixPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/SubscriptionBillingPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/TenderDetailPage.tsx`

@@ -5,6 +5,8 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { useDashboardOverview } from "../hooks/useAuthManagement"
+import DataTable from "../components/ui/DataTable"
+import StatusChip from "../components/ui/StatusChip"
 
 function formatCurrencyDop(val: number): string {
   if (!val || val <= 0) return "—"
@@ -139,78 +141,76 @@ export default function OverviewDashboardPage() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Referencia</th>
-                <th className="py-3 px-5">Descripción</th>
-                <th className="py-3 px-5">Entidad / Origen</th>
-                <th className="py-3 px-5">Detalle</th>
-                {variant !== "ADMIN" && (
-                  <th className="py-3 px-5 text-right">Monto Adjudicado</th>
-                )}
-                <th className="py-3 px-5 text-right">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {(overview?.rows || []).map((row) => {
-                const badgeStyle = {
-                  critical:
-                    "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/25",
-                  warning:
-                    "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25",
-                  low: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25",
-                }[row.status_tone]
-
-                return (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-surface-container-low/50 transition-colors"
-                  >
-                    <td className="py-3.5 px-5 font-mono font-semibold text-primary whitespace-nowrap">
-                      {row.process_code}
-                      <div className="text-[11px] font-normal text-on-surface-variant">
-                        {row.date_label}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-5 font-medium text-on-surface max-w-[360px]">
-                      <p className="line-clamp-2">{row.title}</p>
-                    </td>
-                    <td className="py-3.5 px-5 text-on-surface-variant max-w-[240px] truncate">
-                      {row.secondary_label}
-                    </td>
-                    <td className="py-3.5 px-5">
-                      {row.locked ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px] font-semibold">
-                          <Lock className="w-3 h-3" />
-                          <span>{row.required_plan_label || "Plan Avanzado"}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs font-medium text-on-surface-variant">
-                          {row.detail_badge}
-                        </span>
-                      )}
-                    </td>
-                    {variant !== "ADMIN" && (
-                      <td className="py-3.5 px-5 text-right font-mono font-semibold text-on-surface whitespace-nowrap">
-                        {row.locked ? "Restringido" : formatCurrencyDop(row.amount_dop)}
-                      </td>
-                    )}
-                    <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${badgeStyle}`}
-                      >
-                        {row.status_tone === "low" && <CheckCircle2 className="w-3 h-3" />}
-                        <span>{row.status_badge}</span>
-                      </span>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={overview?.rows ?? []}
+          rowKey={(row) => row.id}
+          emptyMessage="Todavía no hay expedientes para mostrar en este panorama."
+          columns={[
+            {
+              key: "referencia",
+              header: "Referencia",
+              cellClassName: "font-mono font-semibold text-primary whitespace-nowrap",
+              cell: (row) => (
+                <>
+                  {row.process_code}
+                  <div className="text-[11px] font-normal text-on-surface-variant">{row.date_label}</div>
+                </>
+              ),
+            },
+            {
+              key: "descripcion",
+              header: "Descripción",
+              cellClassName: "font-medium text-on-surface max-w-[360px]",
+              cell: (row) => <p className="line-clamp-2">{row.title}</p>,
+            },
+            {
+              key: "entidad",
+              header: "Entidad / Origen",
+              cellClassName: "text-on-surface-variant max-w-[240px] truncate",
+              cell: (row) => row.secondary_label,
+            },
+            {
+              key: "detalle",
+              header: "Detalle",
+              cell: (row) =>
+                row.locked ? (
+                  <StatusChip
+                    tone="warning"
+                    label={row.required_plan_label || "Plan Avanzado"}
+                    icon={Lock}
+                    iconClassName="w-3 h-3"
+                  />
+                ) : (
+                  <span className="text-xs font-medium text-on-surface-variant">{row.detail_badge}</span>
+                ),
+            },
+            ...(variant !== "ADMIN"
+              ? [
+                  {
+                    key: "monto",
+                    header: "Monto Adjudicado",
+                    align: "right" as const,
+                    cellClassName: "font-mono font-semibold text-on-surface whitespace-nowrap",
+                    cell: (row: NonNullable<typeof overview>["rows"][number]) =>
+                      row.locked ? "Restringido" : formatCurrencyDop(row.amount_dop),
+                  },
+                ]
+              : []),
+            {
+              key: "estado",
+              header: "Estado",
+              align: "right",
+              cell: (row) => (
+                <StatusChip
+                  tone={row.status_tone === "critical" ? "danger" : row.status_tone === "warning" ? "warning" : "success"}
+                  label={row.status_badge}
+                  icon={row.status_tone === "low" ? CheckCircle2 : undefined}
+                  iconClassName="w-3 h-3"
+                />
+              ),
+            },
+          ]}
+        />
       </div>
     </div>
   )
