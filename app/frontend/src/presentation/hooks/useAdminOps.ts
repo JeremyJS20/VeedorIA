@@ -152,9 +152,27 @@ export interface HealthComponent {
   latency_ms: number
 }
 
+/** Componente en falla dentro de un evento del monitor (sin `label` ni latencia). */
+export interface HealthFailingComponent {
+  key: string
+  status: HealthStatus
+  detail: string
+}
+
+export interface HealthTransition {
+  action: "HEALTH_DEGRADED" | "HEALTH_RECOVERED" | string
+  status: HealthStatus
+  previous: HealthStatus | null
+  failing: HealthFailingComponent[]
+  timestamp: string
+}
+
 export interface ServicesHealth {
   checked_at: string
+  status: HealthStatus
   components: HealthComponent[]
+  /** Última transición registrada por el monitor; `null` si nunca hubo cambio. */
+  last_transition: HealthTransition | null
 }
 
 export type TicketStatus = "ABIERTO" | "EN_PROGRESO" | "RESUELTO" | "CERRADO" | string
@@ -412,7 +430,7 @@ export function useExportAuditLogs() {
 // ==========================================
 // Hook: salud de servicios
 // ==========================================
-export function useServicesHealth() {
+export function useServicesHealth(enabled = true) {
   return useQuery({
     queryKey: ["admin", "health", "services"],
     queryFn: async () => {
@@ -420,6 +438,9 @@ export function useServicesHealth() {
       return unwrap<ServicesHealth>(res.data)
     },
     refetchInterval: 30000,
+    // El endpoint exige PLATFORM_ADMIN: sin esto el layout dispararía 403 en
+    // cada página para el resto de los roles.
+    enabled,
   })
 }
 

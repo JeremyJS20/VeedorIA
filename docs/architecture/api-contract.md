@@ -79,7 +79,7 @@
 | `POST` | `/api/admin/detection/run` | JWT (`PLATFORM_ADMIN`) | Re-ejecuta el motor en background (`202 Accepted`, `409 DETECTION_ALREADY_RUNNING`) | consola-admin-operaciones |
 | `GET` | `/api/admin/audit-logs` | JWT (`PLATFORM_ADMIN`) | Bitácora paginada con filtros por acción, actor, entidad y rango de fechas (#35) | consola-admin-operaciones |
 | `GET` | `/api/admin/audit-logs/export` | JWT (`PLATFORM_ADMIN`) | Exportación `csv`/`json` (máx. 10 000 filas) con cabecera `X-Checksum-SHA256` y auditoría `AUDIT_LOG_EXPORT` | consola-admin-operaciones |
-| `GET` | `/api/admin/health/services` | JWT (`PLATFORM_ADMIN`) | Estado de los 6 componentes (API, BD, Redis/worker, última sync, última detección, scheduler) (#36) | consola-admin-operaciones |
+| `GET` | `/api/admin/health/services` | JWT (`PLATFORM_ADMIN`) | Estado de los 6 componentes (API, BD, Redis/worker, última sync, última detección, scheduler) con `status` agregado y `last_transition` del monitor de salud (#36) | consola-admin-operaciones |
 | `GET` | `/api/admin/support/tickets` | JWT (`PLATFORM_ADMIN`) | Bandeja de soporte paginada con filtros por estado, categoría y texto | consola-admin-operaciones |
 | `GET` | `/api/admin/support/tickets/{ticket_id}` | JWT (`PLATFORM_ADMIN`) | Detalle del ticket con su hilo de mensajes | consola-admin-operaciones |
 | `PATCH` | `/api/admin/support/tickets/{ticket_id}` | JWT (`PLATFORM_ADMIN`) | Cambio de estado, asignación y respuesta; reapertura de `CERRADO` auditada como `TICKET_REOPENED` | consola-admin-operaciones |

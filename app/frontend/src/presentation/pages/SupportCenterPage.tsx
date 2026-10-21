@@ -243,6 +243,23 @@ export default function SupportCenterPage() {
     return { total: components.length, down, degraded }
   }, [health.data])
 
+  // El monitor registra la transición con las claves técnicas; acá se traducen a
+  // las etiquetas de los componentes para que la alerta se lea sin abrir la bitácora.
+  const lastTransition = useMemo(() => {
+    const transition = health.data?.last_transition
+    if (!transition) return null
+    const labels = new Map(
+      (health.data?.components ?? []).map((component) => [component.key, component.label])
+    )
+    return {
+      recovered: transition.status === "OK",
+      detail: transition.failing
+        .map((component) => labels.get(component.key) ?? component.key)
+        .join(", "),
+      timestamp: transition.timestamp,
+    }
+  }, [health.data])
+
   return (
     <div className="p-6 sm:p-8 max-w-[85rem] mx-auto space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -290,6 +307,16 @@ export default function SupportCenterPage() {
               <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
                 {componentSummary.down} caído(s) · {componentSummary.degraded} degradado(s)
               </span>
+            )}
+            {lastTransition && (
+              <StatusChip
+                tone={lastTransition.recovered ? "success" : "danger"}
+                label={
+                  lastTransition.recovered
+                    ? `Recuperado · ${formatDateTime(lastTransition.timestamp)}`
+                    : `Última alerta: ${lastTransition.detail || "servicios degradados"} · ${formatDateTime(lastTransition.timestamp)}`
+                }
+              />
             )}
           </div>
           <div className="flex items-center gap-3">

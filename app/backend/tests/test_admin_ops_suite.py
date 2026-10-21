@@ -559,6 +559,43 @@ async def test_services_health_isolates_redis_failure(
     assert statuses["last_detection"] == "OK"
     assert statuses["scheduler"] in {"OK", "DEGRADED"}
     assert all(component["latency_ms"] >= 0 for component in components)
+    assert data["status"] == "DOWN"
+    # Sin historial todavía: el job de monitoreo no corrió en este test.
+    assert data["last_transition"] is None
+
+
+async def test_services_health_exposes_last_transition(
+    client: AsyncClient, db_session: AsyncSession, seeded: None
+):
+    """El badge de Soporte se alimenta del último evento del monitor."""
+    db_session.add(
+        AuditLog(
+            action_type="HEALTH_DEGRADED",
+            user_id=None,
+            entity_type="service_health",
+            entity_id="services",
+            old_value={"status": "OK"},
+            new_value={
+                "status": "DOWN",
+                "previous": "OK",
+                "failing": [
+                    {"key": "redis_worker", "status": "DOWN", "detail": "sin latido"}
+                ],
+            },
+        )
+    )
+    await db_session.commit()
+    headers = await _login(client, ADMIN_EMAIL)
+
+    response = await client.get("/api/admin/health/services", headers=headers)
+
+    assert response.status_code == 200
+    transition = response.json()["data"]["last_transition"]
+    assert transition["action"] == "HEALTH_DEGRADED"
+    assert transition["status"] == "DOWN"
+    assert transition["previous"] == "OK"
+    assert transition["failing"][0]["key"] == "redis_worker"
+    assert transition["timestamp"]
 
 
 # ── Task 2.4: tickets de autoservicio y bandeja admin ──────────────────────

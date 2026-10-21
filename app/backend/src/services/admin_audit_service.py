@@ -484,5 +484,16 @@ class AdminAuditService:
 
         return {
             "checked_at": utcnow_naive().isoformat(),
+            "status": worst_status(components),
             "components": components,
         }
+
+
+def worst_status(components: list[dict]) -> str:
+    """Estado agregado: `DOWN` gana sobre `DEGRADED`, y `DEGRADED` sobre `OK`."""
+    statuses = {component["status"] for component in components}
+    if "DOWN" in statuses:
+        return "DOWN"
+    if "DEGRADED" in statuses:
+        return "DEGRADED"
+    return "OK"

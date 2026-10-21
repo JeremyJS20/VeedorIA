@@ -27,6 +27,10 @@ from src.presentation.routers.support_router import router as support_router
 from src.presentation.routers.sync import router as sync_router
 from src.presentation.runners import run_detection, run_sync
 from src.services.auth_service import ensure_auth_seed
+from src.services.health_monitor_service import (
+    CHECK_INTERVAL_MINUTES,
+    HealthMonitorService,
+)
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
@@ -70,6 +74,25 @@ async def _daily_sync() -> None:
         logger.warning("Scheduled sync skipped: %s", e)
 
 
+async def _service_health_check() -> None:
+    """Registra la transición de salud de servicios.
+
+    Corre cada `CHECK_INTERVAL_MINUTES`. El scheduler no debe morir por un chequeo
+    fallido (una base caída es justamente el caso que hay que reportar), así que se
+    atrapa todo y se deja constancia en el log.
+    """
+    try:
+        async with async_session_maker() as session:
+            event = await HealthMonitorService(session).evaluate_and_record()
+    except Exception as exc:  # noqa: BLE001 — el job no puede tumbar el scheduler
+        logger.warning("Service health check failed: %s", exc)
+        return
+    if event:
+        logger.info(
+            "Service health transition: %s → %s", event["previous"], event["status"]
+        )
+
+
 def _ensure_veedoria_handler() -> None:
     veedoria_logger = logging.getLogger("veedoria")
     veedoria_logger.setLevel(getattr(logging, settings.log_level))
@@ -110,6 +133,13 @@ async def lifespan(app: FastAPI):
         "cron",
         hour=6, minute=30,
         id="daily_anomaly_detection",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _service_health_check,
+        "interval",
+        minutes=CHECK_INTERVAL_MINUTES,
+        id="service_health_check",
         replace_existing=True,
     )
     if settings.environment == "development":

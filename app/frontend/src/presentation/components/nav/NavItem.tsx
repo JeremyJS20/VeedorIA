@@ -6,6 +6,8 @@ interface NavItemProps {
   label: string
   icon: LucideIcon
   collapsed: boolean
+  /** Punto de aviso en el ítem. Visible también con la barra colapsada. */
+  badge?: "alert"
 }
 
 /** Barra vertical que marca el ítem activo. */
@@ -17,7 +19,7 @@ export function NavRail({ collapsed }: { collapsed: boolean }) {
   )
 }
 
-export default function NavItem({ to, label, icon: Icon, collapsed }: NavItemProps) {
+export default function NavItem({ to, label, icon: Icon, collapsed, badge }: NavItemProps) {
   return (
     <NavLink
       to={to}
@@ -34,6 +36,17 @@ export default function NavItem({ to, label, icon: Icon, collapsed }: NavItemPro
           {isActive && <NavRail collapsed={collapsed} />}
           <Icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
           {!collapsed && <span className="text-[13px] flex-1 truncate">{label}</span>}
+          {badge === "alert" && (
+            <>
+              <span className="sr-only">Servicios degradados</span>
+              <span
+                aria-hidden
+                className={`absolute w-2 h-2 rounded-full bg-error ${
+                  collapsed ? "top-1 right-1" : "top-1/2 -translate-y-1/2 right-3"
+                }`}
+              />
+            </>
+          )}
         </>
       )}
     </NavLink>

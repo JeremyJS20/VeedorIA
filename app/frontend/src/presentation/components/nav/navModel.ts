@@ -35,7 +35,14 @@ export interface NavSubLink {
  */
 export type NavEntry =
   | { kind: "heading"; label: string }
-  | { kind: "link"; to: string; label: string; icon: LucideIcon }
+  | {
+      kind: "link"
+      to: string
+      label: string
+      icon: LucideIcon
+      /** Punto de aviso: hoy solo lo usa el badge de salud de servicios. */
+      badge?: "alert"
+    }
   | {
       kind: "accordion"
       id: string
@@ -59,6 +66,8 @@ export interface NavContext {
   tenantType?: string
   roleCode?: string
   hasPermission: (code: string) => boolean
+  /** Al menos un componente de salud fuera de `OK`. */
+  servicesDegraded?: boolean
 }
 
 /** Rutas que no viven en el sidebar pero sí necesitan título de migaja. */
@@ -78,7 +87,12 @@ export const EXTRA_PAGE_TITLES: Record<string, string> = {
  * - `canAnalytics` añade la inteligencia de mercado cuando existe el permiso.
  * - `isPlatformAdmin` habilita la operación y la gobernanza de plataforma.
  */
-export function buildNavGroups({ tenantType, roleCode, hasPermission }: NavContext): NavGroup[] {
+export function buildNavGroups({
+  tenantType,
+  roleCode,
+  hasPermission,
+  servicesDegraded,
+}: NavContext): NavGroup[] {
   const isPlatformAdmin = roleCode === "PLATFORM_ADMIN"
   const isB2GOrPlatform =
     tenantType === "GOV_INSTITUTION" ||
@@ -187,7 +201,15 @@ export function buildNavGroups({ tenantType, roleCode, hasPermission }: NavConte
         { kind: "link", to: "/app/sincronizacion", label: "Sincronización DGCP", icon: RefreshCw },
         { kind: "link", to: "/app/calibracion", label: "Ajuste del Motor (escritura)", icon: Gauge },
         { kind: "link", to: "/app/bitacora", label: "Bitácora del Sistema", icon: ScrollText },
-        { kind: "link", to: "/app/soporte", label: "Centro de Soporte", icon: LifeBuoy },
+        {
+          kind: "link",
+          to: "/app/soporte",
+          label: "Centro de Soporte",
+          icon: LifeBuoy,
+          // El punto es la razón de ser del monitor: sin él, una caída nocturna
+          // solo se descubre abriendo Soporte.
+          badge: servicesDegraded ? "alert" : undefined,
+        },
       ],
     })
   }

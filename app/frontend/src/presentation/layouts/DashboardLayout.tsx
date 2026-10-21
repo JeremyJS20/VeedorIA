@@ -23,6 +23,7 @@ import NavSection from "../components/nav/NavSection"
 import NavAccordion from "../components/nav/NavAccordion"
 import { buildNavGroups, buildPageTitles } from "../components/nav/navModel"
 import { useAuth } from "../context/AuthContext"
+import { useServicesHealth } from "../hooks/useAdminOps"
 import isotipoLight from "../../assets/veedoria_isotipo_light.webp"
 import isotipoDark from "../../assets/veedoria_isotipo_dark.webp"
 
@@ -68,10 +69,18 @@ export default function DashboardLayout() {
     .join("")
     .toUpperCase()
 
+  // El endpoint de salud exige PLATFORM_ADMIN y el guard del backend evalúa el
+  // token, no la UI: por eso se consulta con el rol real y no con el perfil de
+  // vista previa.
+  const servicesHealth = useServicesHealth(realUser?.rol?.codigo === "PLATFORM_ADMIN")
+  const servicesDegraded =
+    servicesHealth.data != null && servicesHealth.data.status !== "OK"
+
   const navGroups = buildNavGroups({
     tenantType: user?.tenant?.tipo,
     roleCode: user?.rol?.codigo,
     hasPermission,
+    servicesDegraded,
   })
 
   const pageTitles = buildPageTitles(navGroups)
@@ -159,6 +168,7 @@ export default function DashboardLayout() {
                     label={entry.label}
                     icon={entry.icon}
                     collapsed={collapsed}
+                    badge={entry.badge}
                   />
                 )
               })}

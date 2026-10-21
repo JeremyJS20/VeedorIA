@@ -27,6 +27,7 @@ from src.services.admin_ops_errors import (
 )
 from src.services.admin_support_service import AdminSupportService
 from src.services.admin_sync_service import AdminSyncService
+from src.services.health_monitor_service import HealthMonitorService
 
 logger = logging.getLogger("veedoria.presentation.routers.admin_ops")
 
@@ -82,6 +83,12 @@ def get_admin_sync_service(db: AsyncSession = Depends(get_db)) -> AdminSyncServi
 
 def get_admin_audit_service(db: AsyncSession = Depends(get_db)) -> AdminAuditService:
     return AdminAuditService(db=db)
+
+
+def get_health_monitor_service(
+    db: AsyncSession = Depends(get_db),
+) -> HealthMonitorService:
+    return HealthMonitorService(db=db)
 
 
 def get_admin_support_service(
@@ -267,8 +274,10 @@ async def export_audit_logs(
 async def get_services_health(
     current_user: dict = Depends(get_current_user),
     service: AdminAuditService = Depends(get_admin_audit_service),
+    monitor: HealthMonitorService = Depends(get_health_monitor_service),
 ):
     data = await service.get_services_health(current_user)
+    data["last_transition"] = await monitor.last_transition()
     return ApiResponse(success=True, data=data)
 
 

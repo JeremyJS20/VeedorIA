@@ -22,7 +22,7 @@ graph TB
     API --> SyncSvc["SyncService\nIngesta OCDS / DGCP"]
     API --> DB[("PostgreSQL / SQLite\nSQLModel + AsyncSession")]
     API --> Redis[("Redis 7\nCola arq")]
-    Scheduler["APScheduler\nCron Diario (06:00 / 06:30)"] --> Redis
+    Scheduler["APScheduler\nCron diario (06:00 / 06:30)\n+ health check cada 5 min"] --> Redis
     Redis --> Worker["arq Worker\nBackground Sync & Detection"]
     Worker --> SyncSvc
     Worker --> AnomalySvc
@@ -190,7 +190,8 @@ graph TB
 
 ### 4. Soporte y Salud (`/app/soporte`)
 
-- `GET /api/admin/health/services` consolida 6 componentes (`api`, `database`, `redis_worker`, `last_sync`, `last_detection`, `scheduler`) con estado `OK`/`DEGRADED`/`DOWN`, detalle y latencia.
+- `GET /api/admin/health/services` consolida 6 componentes (`api`, `database`, `redis_worker`, `last_sync`, `last_detection`, `scheduler`) con estado `OK`/`DEGRADED`/`DOWN`, detalle y latencia, más el estado agregado (`status`, peor caso) y la última transición registrada (`last_transition`).
+- **Alerta de transición de salud**: `HealthMonitorService` corre en el scheduler cada 5 minutos (job `service_health_check`) y compara el estado agregado contra el último evento `entity_type = service_health` de `audit_log`. Escribe **solo cuando cambia** (`HEALTH_DEGRADED` / `HEALTH_RECOVERED`), con `user_id = NULL` por ser un evento de sistema, y solo alerta en el primer arranque si la plataforma ya viene degradada. El canal por defecto es la propia Bitácora; `_dispatch()` queda como punto de extensión para un webhook (Slack/Teams) sin tocar la detección. La UI consume ese estado en el badge del sidebar (`navModel.ts` → `badge: "alert"`, visible también colapsado) y en el chip de `/app/soporte`.
 - Ciclo de vida del ticket: `ABIERTO → EN_PROGRESO → RESUELTO → CERRADO`, con reapertura auditada como `TICKET_REOPENED` (limpia `closed_at`). Las respuestas sobre un ticket `CERRADO` se rechazan con `409 TICKET_CLOSED`.
 - `/api/support/tickets` es autoservicio aislado por `reporter_id`; la bandeja `/api/admin/support/tickets` es exclusiva de `PLATFORM_ADMIN`.
 
@@ -203,4 +204,4 @@ graph TB
 - **Calibración Basada en Dictámenes Humanos**: el umbral recomendado no se fija a mano: se elige maximizando F1 sobre las anomalías ya confirmadas/descartadas, y toda aplicación queda auditada con el diff.
 
 ---
-_Last updated: 2026-10-21 by implementer (added consola-admin-operaciones: arq runbook, calibration methodology, immutable audit log & support lifecycle)_
+_Last updated: 2026-10-21 by implementer (added the service-health transition monitor: scheduled job, audit_log channel, sidebar badge)_
