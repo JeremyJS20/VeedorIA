@@ -8,10 +8,10 @@ import {
   FileJson,
   Loader2,
   Search,
-  X,
 } from "lucide-react"
 import { useAuditLogs, useExportAuditLogs } from "../hooks/useAdminOps"
 import type { AuditLogFilters, AuditLogRow } from "../hooks/useAdminOps"
+import Drawer from "../components/ui/Drawer"
 
 const KNOWN_ACTIONS = [
   "ANOMALY_REVIEW",
@@ -404,86 +404,71 @@ export default function AuditLogPage() {
         </div>
       </section>
 
-      {/* Drawer de detalle */}
-      {selected && (
-        <div className="fixed inset-0 z-[130] flex justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
-          <aside className="relative h-full w-full max-w-xl bg-surface-container-lowest dark:bg-surface-container border-l border-outline-variant/35 shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 bg-surface-container-lowest dark:bg-surface-container px-5 py-4 border-b border-outline-variant/20 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-on-surface">{selected.action_type}</h3>
-                <p className="text-[11px] font-mono text-on-surface-variant mt-0.5">
-                  #{selected.id} · {formatDateTime(selected.timestamp)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-5">
-              <div className="grid grid-cols-2 gap-3 text-[11px]">
-                {[
-                  { label: "Actor", value: selected.user_email ?? selected.user_id ?? "sistema" },
-                  { label: "IP", value: selected.ip_address ?? "—" },
-                  { label: "Entidad", value: selected.entity_type ?? "—" },
-                  { label: "ID entidad", value: selected.entity_id ?? "—" },
-                ].map((item) => (
-                  <div key={item.label} className="rounded-xl border border-outline-variant/25 p-3">
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-outline">
-                      {item.label}
-                    </span>
-                    <span className="font-mono text-on-surface break-all">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-
-              {diffRows.length > 0 ? (
-                <div className="space-y-2">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-outline">
-                    Cambios detectados ({diffRows.length})
-                  </h4>
-                  <div className="overflow-x-auto rounded-xl border border-outline-variant/25">
-                    <table className="w-full text-[11px]">
-                      <thead>
-                        <tr className="bg-surface-container-high/60 text-left">
-                          <th className="px-3 py-2 font-bold text-on-surface-variant">Campo</th>
-                          <th className="px-3 py-2 font-bold text-on-surface-variant">Antes</th>
-                          <th className="px-3 py-2 font-bold text-on-surface-variant">Después</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-outline-variant/15">
-                        {diffRows.map((row) => (
-                          <tr key={row.key}>
-                            <td className="px-3 py-2 font-mono text-on-surface">{row.key}</td>
-                            <td className="px-3 py-2 font-mono text-rose-600 dark:text-rose-400 break-all">
-                              {renderValue(row.before)}
-                            </td>
-                            <td className="px-3 py-2 font-mono text-emerald-600 dark:text-emerald-400 break-all">
-                              {renderValue(row.after)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+      <Drawer
+        open={selected !== null}
+        onClose={() => setSelected(null)}
+        title={selected?.action_type ?? ""}
+        subtitle={selected ? `#${selected.id} · ${formatDateTime(selected.timestamp)}` : undefined}
+      >
+        {selected && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              {[
+                { label: "Actor", value: selected.user_email ?? selected.user_id ?? "sistema" },
+                { label: "IP", value: selected.ip_address ?? "—" },
+                { label: "Entidad", value: selected.entity_type ?? "—" },
+                { label: "ID entidad", value: selected.entity_id ?? "—" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-outline-variant/25 p-3">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-outline">
+                    {item.label}
+                  </span>
+                  <span className="font-mono text-on-surface break-all">{item.value}</span>
                 </div>
-              ) : (
-                <p className="text-[11px] text-on-surface-variant">
-                  Sin diff estructurado: la entrada contiene valores planos o solo uno de los lados.
-                </p>
-              )}
-
-              <DiffBlock label="old_value" value={selected.old_value} />
-              <DiffBlock label="new_value" value={selected.new_value} />
+              ))}
             </div>
-          </aside>
-        </div>
-      )}
+
+            {diffRows.length > 0 ? (
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-outline">
+                  Cambios detectados ({diffRows.length})
+                </h4>
+                <div className="overflow-x-auto rounded-xl border border-outline-variant/25">
+                  <table className="w-full text-[11px]">
+                    <thead>
+                      <tr className="bg-surface-container-high/60 text-left">
+                        <th className="px-3 py-2 font-bold text-on-surface-variant">Campo</th>
+                        <th className="px-3 py-2 font-bold text-on-surface-variant">Antes</th>
+                        <th className="px-3 py-2 font-bold text-on-surface-variant">Después</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/15">
+                      {diffRows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="px-3 py-2 font-mono text-on-surface">{row.key}</td>
+                          <td className="px-3 py-2 font-mono text-rose-600 dark:text-rose-400 break-all">
+                            {renderValue(row.before)}
+                          </td>
+                          <td className="px-3 py-2 font-mono text-emerald-600 dark:text-emerald-400 break-all">
+                            {renderValue(row.after)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-on-surface-variant">
+                Sin diff estructurado: la entrada contiene valores planos o solo uno de los lados.
+              </p>
+            )}
+
+            <DiffBlock label="old_value" value={selected.old_value} />
+            <DiffBlock label="new_value" value={selected.new_value} />
+          </div>
+        )}
+      </Drawer>
     </div>
   )
 }

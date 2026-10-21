@@ -9,12 +9,12 @@ import {
   Play,
   RefreshCw,
   RotateCcw,
-  X,
 } from "lucide-react"
 import { useQueueStatus, useSyncOverview, useTriggerSync } from "../hooks/useAdminOps"
 import type { SyncLogRow, SyncTriggerPayload } from "../hooks/useAdminOps"
 import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
 import KpiCard from "../components/ui/KpiCard"
+import Modal from "../components/ui/Modal"
 
 function statusLabel(status: string): string {
   if (status === "running") return "En ejecución"
@@ -425,130 +425,114 @@ export default function SyncOperationsPage() {
         )}
       </section>
 
-      {/* Modal de disparo */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/45" onClick={() => !trigger.isPending && setModalOpen(false)} />
-          <div className="relative w-full max-w-lg rounded-2xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/20">
-              <h3 className="text-sm font-bold text-on-surface">Nueva sincronización DGCP</h3>
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                disabled={trigger.isPending}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-5 space-y-4 text-xs">
-              <div className="space-y-1.5">
-                <span className="font-bold text-on-surface">Modalidad</span>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: false, label: "Incremental" },
-                    { value: true, label: "Completa" },
-                  ].map((option) => (
-                    <button
-                      key={String(option.value)}
-                      type="button"
-                      onClick={() => setForm({ ...form, full: option.value })}
-                      className={`h-10 rounded-xl border text-xs font-semibold transition-colors ${
-                        form.full === option.value
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-outline-variant/35 text-on-surface-variant hover:border-primary/40"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {form.full && (
-                <div className="space-y-1.5">
-                  <span className="font-bold text-on-surface">Fases incluidas</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {PHASES.map((phase) => {
-                      const skipped = Boolean(form[phase.key])
-                      return (
-                        <label
-                          key={phase.key}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/30 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!skipped}
-                            onChange={(event) =>
-                              setForm({ ...form, [phase.key]: !event.target.checked })
-                            }
-                            className="accent-primary"
-                          />
-                          <span className="text-[11px] text-on-surface">{phase.label}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="space-y-1.5 block">
-                  <span className="font-bold text-on-surface">Días hacia atrás</span>
-                  <input
-                    type="number"
-                    min={1}
-                    value={form.days_back ?? 90}
-                    onChange={(event) =>
-                      setForm({ ...form, days_back: Number(event.target.value) || 1 })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface font-mono"
-                  />
-                </label>
-                <label className="space-y-1.5 block">
-                  <span className="font-bold text-on-surface">Rate limit (req/s)</span>
-                  <input
-                    type="number"
-                    min={0.5}
-                    step={0.5}
-                    value={form.rate_limit}
-                    onChange={(event) =>
-                      setForm({ ...form, rate_limit: Number(event.target.value) || 1 })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface font-mono"
-                  />
-                </label>
-              </div>
-
-              <p className="text-[11px] text-on-surface-variant">
-                Solo puede existir una sincronización en ejecución a la vez. El job se encola en arq y recibirás
-                el identificador de la tarea.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-outline-variant/20">
-              <button
-                type="button"
-                onClick={() => setModalOpen(false)}
-                disabled={trigger.isPending}
-                className="h-10 px-4 rounded-xl border border-outline-variant/35 text-xs font-semibold text-on-surface-variant hover:text-on-surface"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={submit}
-                disabled={trigger.isPending}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-on-primary text-xs font-bold disabled:opacity-50"
-              >
-                {trigger.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                {trigger.isPending ? "Encolando…" : "Confirmar y encolar"}
-              </button>
+      <Modal
+        open={modalOpen}
+        onClose={() => {
+          if (!trigger.isPending) setModalOpen(false)
+        }}
+        title="Nueva sincronización DGCP"
+        closeOnBackdrop={!trigger.isPending}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              disabled={trigger.isPending}
+              className="h-10 px-4 rounded-xl border border-outline-variant/35 text-xs font-semibold text-on-surface-variant hover:text-on-surface"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={trigger.isPending}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-on-primary text-xs font-bold disabled:opacity-50"
+            >
+              {trigger.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {trigger.isPending ? "Encolando…" : "Confirmar y encolar"}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-xs">
+          <div className="space-y-1.5">
+            <span className="font-bold text-on-surface">Modalidad</span>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: false, label: "Incremental" },
+                { value: true, label: "Completa" },
+              ].map((option) => (
+                <button
+                  key={String(option.value)}
+                  type="button"
+                  onClick={() => setForm({ ...form, full: option.value })}
+                  className={`h-10 rounded-xl border text-xs font-semibold transition-colors ${
+                    form.full === option.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-outline-variant/35 text-on-surface-variant hover:border-primary/40"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
+
+          {form.full && (
+            <div className="space-y-1.5">
+              <span className="font-bold text-on-surface">Fases incluidas</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {PHASES.map((phase) => {
+                  const skipped = Boolean(form[phase.key])
+                  return (
+                    <label
+                      key={phase.key}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/30 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={!skipped}
+                        onChange={(event) => setForm({ ...form, [phase.key]: !event.target.checked })}
+                        className="accent-primary"
+                      />
+                      <span className="text-[11px] text-on-surface">{phase.label}</span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="space-y-1.5 block">
+              <span className="font-bold text-on-surface">Días hacia atrás</span>
+              <input
+                type="number"
+                min={1}
+                value={form.days_back ?? 90}
+                onChange={(event) => setForm({ ...form, days_back: Number(event.target.value) || 1 })}
+                className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface font-mono"
+              />
+            </label>
+            <label className="space-y-1.5 block">
+              <span className="font-bold text-on-surface">Rate limit (req/s)</span>
+              <input
+                type="number"
+                min={0.5}
+                step={0.5}
+                value={form.rate_limit}
+                onChange={(event) => setForm({ ...form, rate_limit: Number(event.target.value) || 1 })}
+                className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface font-mono"
+              />
+            </label>
+          </div>
+
+          <p className="text-[11px] text-on-surface-variant">
+            Solo puede existir una sincronización en ejecución a la vez. El job se encola en arq y recibirás el
+            identificador de la tarea.
+          </p>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

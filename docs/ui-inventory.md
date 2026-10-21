@@ -194,6 +194,22 @@ Entry format (one `## Name` per component):
 - Use when: KPI/metric card at the top of a console page (label, value, hint, optional icon and accent)
 - Replaces: -
 
+## Modal
+- Path: app/frontend/src/presentation/components/ui/Modal.tsx
+- Use when: any dialog with title, body and optional footer actions; handles ESC, backdrop close, scroll lock, `role="dialog"` and `aria-modal`
+- Replaces: `fixed inset-0`
+- Allowed: `app/frontend/src/presentation/components/ui/Drawer.tsx`
+- Allowed: `app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx`
+- Allowed: `app/frontend/src/presentation/components/AnomalyDrawer.tsx`
+- Allowed: `app/frontend/src/presentation/components/ConsoleInspectorDrawers.tsx`
+- Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/UsersManagementPage.tsx`
+
+## Drawer
+- Path: app/frontend/src/presentation/components/ui/Drawer.tsx
+- Use when: right-side detail panel (record detail, ticket, audit entry) with sticky header and ESC/backdrop close
+- Replaces: -
+
 ---
 
 ## Adoption debt (available but not yet enforced)
@@ -205,6 +221,7 @@ today would fail on legacy pages; the counts below are the migration target for 
 |-----------|------------------------------|
 | `KpiCard` | ~40 KPI cards with `border-l-4` across 10 pages (`AuditorPage`, `AuditResolutionsPage`, `B2BIntegrationsPage`, `CollusionNetworkPage`, `CompetitorProfilePage`, `ComplianceReportsPage`, `InstitutionalProcessesPage`, `MarketIntelligencePage`, `OpportunitiesRadarPage`, `MyBidsPipelinePage`) |
 | `StatusChip` | status chips hand-built in `AuditLogPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2BIntegrationsPage`, `RolesMatrixPage` |
+| `Modal` / `Drawer` | 4 overlays grandfathered in `Allowed` until migrated: `MyBidsPipelinePage` (1), `UsersManagementPage` (2), `AnomalyDrawer` (1), `ConsoleInspectorDrawers` (2). `FullscreenOverlay` is a different component (fullscreen chart) and stays. |
 
 ## Missing composites (known duplication — do not re-implement; plan the extraction)
 
@@ -213,6 +230,5 @@ These are NOT components yet. Until they exist, a new screen must ask before wri
 | Need | Current duplication | Proposal |
 |------|--------------------|----------|
 | Table of records (header, empty state, pagination) | `<table` hand-written in 9 pages (`SyncOperationsPage`, `AuditLogPage`, `SupportCenterPage`, `UsersManagementPage`, `DetectionConfigPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `RolesMatrixPage`, `ComplianceReportsPage`) | `ui/DataTable` + `ui/Pagination` |
-| Modal / side drawer shell | `fixed inset-0` hand-written in 6 places (`SyncOperationsPage`, `CalibrationConsolePage`, `AuditLogPage`, `SupportCenterPage`, `AnomalyDrawer`, `ConsoleInspectorDrawers`) | `ui/Modal` + `ui/Drawer` (focus trap, ESC, scroll lock) |
 | Filter bar (inputs + selects + clear) | repeated grid of labelled inputs in `AuditLogPage`, `SupportCenterPage`, `AuditResolutionsPage`, `MyBidsPipelinePage` | `ui/FilterBar` |
 | Buttons bypassing `ui/Button` | `btn btn-primary btn-lg btn-full-width` hand-written 8× in `LoginPage`, `RegisterPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `InvitationGatewayPage` (needs `isDisabled` migration) | reuse `ui/Button` |

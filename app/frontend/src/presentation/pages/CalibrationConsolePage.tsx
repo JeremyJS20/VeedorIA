@@ -9,7 +9,6 @@ import {
   Save,
   SlidersHorizontal,
   Sparkles,
-  X,
 } from "lucide-react"
 import {
   useApplyCalibration,
@@ -20,6 +19,7 @@ import {
   useUpdateDetectionConfig,
 } from "../hooks/useAdminOps"
 import type { CalibrationTypeAnalysis, DetectionParameter } from "../hooks/useAdminOps"
+import Modal from "../components/ui/Modal"
 
 const CATEGORY_LABELS: Record<string, string> = {
   PESOS: "Pesos de scoring",
@@ -492,88 +492,77 @@ export default function CalibrationConsolePage() {
         </div>
       </section>
 
-      {/* Confirmar reset */}
-      {confirmReset && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/45" onClick={() => setConfirmReset(false)} />
-          <div className="relative w-full max-w-md rounded-2xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 shadow-2xl p-5 space-y-4">
-            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
-              <AlertTriangle className="w-4 h-4" />
-              <h3 className="text-sm font-bold">Restaurar valores por defecto</h3>
-            </div>
-            <p className="text-xs text-on-surface-variant">
-              Se restaurarán los 13 parámetros del motor a su valor por defecto y la acción quedará registrada en
-              la bitácora. ¿Deseas continuar?
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmReset(false)}
-                className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={runReset}
-                className="h-9 px-3 rounded-xl bg-primary text-on-primary text-[11px] font-bold"
-              >
-                Restaurar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        title="Restaurar valores por defecto"
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setConfirmReset(false)}
+              className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={runReset}
+              className="h-9 px-3 rounded-xl bg-primary text-on-primary text-[11px] font-bold"
+            >
+              Restaurar
+            </button>
+          </>
+        }
+      >
+        <p className="text-xs text-on-surface-variant">
+          Se restaurarán los 13 parámetros del motor a su valor por defecto y la acción quedará registrada en la
+          bitácora. ¿Deseas continuar?
+        </p>
+      </Modal>
 
-      {/* Confirmar aplicación de umbral */}
-      {confirmApply && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/45" onClick={() => setConfirmApply(null)} />
-          <div className="relative w-full max-w-md rounded-2xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-on-surface">Aplicar umbral recomendado</h3>
-              <button
-                type="button"
-                onClick={() => setConfirmApply(null)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="text-xs text-on-surface-variant space-y-2">
-              <p>
-                {ANOMALY_LABELS[confirmApply.anomaly_type] ?? confirmApply.anomaly_type}: se cambiará{" "}
-                <span className="font-mono text-on-surface">
-                  {CALIBRATION_KEY_BY_TYPE[confirmApply.anomaly_type]}
-                </span>{" "}
-                de <span className="font-mono text-on-surface">{formatNumber(confirmApply.current_threshold)}</span>{" "}
-                a{" "}
-                <span className="font-mono text-primary font-bold">
-                  {formatNumber(confirmApply.recommended_threshold)}
-                </span>
-                .
-              </p>
-              <p>El cambio se persiste en detection_config y queda auditado con el diff.</p>
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmApply(null)}
-                className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={runApply}
-                className="h-9 px-3 rounded-xl bg-primary text-on-primary text-[11px] font-bold"
-              >
-                Aplicar
-              </button>
-            </div>
+      <Modal
+        open={confirmApply !== null}
+        onClose={() => setConfirmApply(null)}
+        title="Aplicar umbral recomendado"
+        size="sm"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setConfirmApply(null)}
+              className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={runApply}
+              className="h-9 px-3 rounded-xl bg-primary text-on-primary text-[11px] font-bold"
+            >
+              Aplicar
+            </button>
+          </>
+        }
+      >
+        {confirmApply && (
+          <div className="text-xs text-on-surface-variant space-y-2">
+            <p>
+              {ANOMALY_LABELS[confirmApply.anomaly_type] ?? confirmApply.anomaly_type}: se cambiará{" "}
+              <span className="font-mono text-on-surface">
+                {CALIBRATION_KEY_BY_TYPE[confirmApply.anomaly_type]}
+              </span>{" "}
+              de <span className="font-mono text-on-surface">{formatNumber(confirmApply.current_threshold)}</span> a{" "}
+              <span className="font-mono text-primary font-bold">
+                {formatNumber(confirmApply.recommended_threshold)}
+              </span>
+              .
+            </p>
+            <p>El cambio se persiste en detection_config y queda auditado con el diff.</p>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   )
 }

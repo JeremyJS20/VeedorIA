@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Send,
   Ticket,
-  X,
 } from "lucide-react"
 import {
   useAdminTicket,
@@ -23,6 +22,8 @@ import {
 } from "../hooks/useAdminOps"
 import type { HealthStatus, SupportTicket } from "../hooks/useAdminOps"
 import StatusChip, { type StatusTone } from "../components/ui/StatusChip"
+import Modal from "../components/ui/Modal"
+import Drawer from "../components/ui/Drawer"
 
 const HEALTH_LABELS: Record<string, string> = {
   OK: "Operativo",
@@ -489,250 +490,221 @@ export default function SupportCenterPage() {
         </div>
       </section>
 
-      {/* Modal crear ticket */}
-      {createOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/45" onClick={() => setCreateOpen(false)} />
-          <div className="relative w-full max-w-lg rounded-2xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant/35 shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant/20">
-              <h3 className="text-sm font-bold text-on-surface">Nuevo ticket de soporte</h3>
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high"
+      <Modal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Nuevo ticket de soporte"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={submitCreate}
+              disabled={createTicket.isPending}
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-xl bg-primary text-on-primary text-[11px] font-bold disabled:opacity-40"
+            >
+              {createTicket.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              Enviar ticket
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-xs">
+          <label className="space-y-1.5 block">
+            <span className="font-bold text-on-surface">Asunto</span>
+            <input
+              value={form.subject}
+              onChange={(event) => setForm({ ...form, subject: event.target.value })}
+              className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="space-y-1.5 block">
+              <span className="font-bold text-on-surface">Categoría</span>
+              <select
+                value={form.category}
+                onChange={(event) => setForm({ ...form, category: event.target.value })}
+                className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
               >
-                <X className="w-4 h-4" />
-              </button>
+                {CATEGORIES.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1.5 block">
+              <span className="font-bold text-on-surface">Módulo</span>
+              <select
+                value={form.module}
+                onChange={(event) => setForm({ ...form, module: event.target.value })}
+                className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
+              >
+                {MODULES.map((module) => (
+                  <option key={module.value} value={module.value}>
+                    {module.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="space-y-1.5 block">
+            <span className="font-bold text-on-surface">Prioridad</span>
+            <select
+              value={form.priority}
+              onChange={(event) => setForm({ ...form, priority: event.target.value })}
+              className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
+            >
+              {PRIORITIES.map((priority) => (
+                <option key={priority.value} value={priority.value}>
+                  {priority.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1.5 block">
+            <span className="font-bold text-on-surface">Descripción</span>
+            <textarea
+              rows={4}
+              value={form.description}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface resize-none"
+            />
+          </label>
+        </div>
+      </Modal>
+
+      <Drawer
+        open={selectedId !== null}
+        onClose={() => setSelectedId(null)}
+        title={selected.data?.subject ?? "Cargando ticket…"}
+        subtitle={`${selected.data?.code ?? "—"} · ${formatDateTime(selected.data?.created_at ?? null)}`}
+      >
+        {selected.isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="h-16 rounded-xl bg-surface-container-high animate-pulse" />
+            ))}
+          </div>
+        ) : selected.data ? (
+          <div className="space-y-5 text-xs">
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              {[
+                { label: "Estado", value: selected.data.status.replace("_", " ") },
+                { label: "Prioridad", value: selected.data.priority },
+                { label: "Módulo", value: selected.data.module },
+                { label: "Categoría", value: selected.data.category },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-outline-variant/25 p-3">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-outline">
+                    {item.label}
+                  </span>
+                  <span className="text-on-surface">{item.value}</span>
+                </div>
+              ))}
             </div>
-            <div className="p-5 space-y-3 text-xs">
-              <label className="space-y-1.5 block">
-                <span className="font-bold text-on-surface">Asunto</span>
-                <input
-                  value={form.subject}
-                  onChange={(event) => setForm({ ...form, subject: event.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
-                />
-              </label>
+
+            <div className="rounded-xl border border-outline-variant/25 p-3">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-outline mb-1">
+                Descripción
+              </span>
+              <p className="text-[11px] text-on-surface whitespace-pre-wrap">{selected.data.description}</p>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-outline">
+                Conversación ({selected.data.messages.length})
+              </h4>
+              {selected.data.messages.length === 0 ? (
+                <p className="text-[11px] text-on-surface-variant">Sin respuestas registradas.</p>
+              ) : (
+                <div className="space-y-2">
+                  {selected.data.messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className="rounded-xl border border-outline-variant/25 bg-surface-container-high/40 p-3 space-y-1"
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant">
+                        <span>Usuario #{message.author_id}</span>
+                        <span>{formatDateTime(message.created_at)}</span>
+                      </div>
+                      <p className="text-[11px] text-on-surface whitespace-pre-wrap">{message.body}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 border-t border-outline-variant/20 pt-4">
               <div className="grid grid-cols-2 gap-3">
                 <label className="space-y-1.5 block">
-                  <span className="font-bold text-on-surface">Categoría</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline">Estado</span>
                   <select
-                    value={form.category}
-                    onChange={(event) => setForm({ ...form, category: event.target.value })}
-                    className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
+                    value={statusDraft}
+                    onChange={(event) => setStatusDraft(event.target.value)}
+                    className="w-full h-9 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-[11px] text-on-surface"
                   >
-                    {CATEGORIES.map((category) => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
+                    {["ABIERTO", "EN_PROGRESO", "RESUELTO", "CERRADO"].map((value) => (
+                      <option key={value} value={value}>
+                        {value.replace("_", " ")}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="space-y-1.5 block">
-                  <span className="font-bold text-on-surface">Módulo</span>
-                  <select
-                    value={form.module}
-                    onChange={(event) => setForm({ ...form, module: event.target.value })}
-                    className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
-                  >
-                    {MODULES.map((module) => (
-                      <option key={module.value} value={module.value}>
-                        {module.label}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline">
+                    Asignado a (ID de usuario)
+                  </span>
+                  <input
+                    value={assigneeDraft}
+                    onChange={(event) => setAssigneeDraft(event.target.value)}
+                    placeholder="6"
+                    className="w-full h-9 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container font-mono text-[11px] text-on-surface"
+                  />
                 </label>
               </div>
+
               <label className="space-y-1.5 block">
-                <span className="font-bold text-on-surface">Prioridad</span>
-                <select
-                  value={form.priority}
-                  onChange={(event) => setForm({ ...form, priority: event.target.value })}
-                  className="w-full h-10 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface"
-                >
-                  {PRIORITIES.map((priority) => (
-                    <option key={priority.value} value={priority.value}>
-                      {priority.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-1.5 block">
-                <span className="font-bold text-on-surface">Descripción</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-outline">Respuesta</span>
                 <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={(event) => setForm({ ...form, description: event.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-on-surface resize-none"
+                  rows={3}
+                  value={replyDraft}
+                  onChange={(event) => setReplyDraft(event.target.value)}
+                  disabled={selected.data.status === "CERRADO"}
+                  placeholder={
+                    selected.data.status === "CERRADO"
+                      ? "El ticket está cerrado: reábrelo cambiando el estado para responder."
+                      : "Escribe una respuesta para el solicitante…"
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-[11px] text-on-surface resize-none disabled:opacity-50"
                 />
               </label>
-            </div>
-            <div className="flex justify-end gap-2 px-5 py-4 border-t border-outline-variant/20">
+
               <button
                 type="button"
-                onClick={() => setCreateOpen(false)}
-                className="h-9 px-3 rounded-xl border border-outline-variant/35 text-[11px] font-semibold text-on-surface-variant"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={submitCreate}
-                disabled={createTicket.isPending}
+                onClick={submitUpdate}
+                disabled={updateTicket.isPending}
                 className="inline-flex items-center gap-2 h-9 px-3.5 rounded-xl bg-primary text-on-primary text-[11px] font-bold disabled:opacity-40"
               >
-                {createTicket.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                Enviar ticket
+                {updateTicket.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                Guardar cambios
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Drawer de ticket */}
-      {selectedId !== null && (
-        <div className="fixed inset-0 z-[130] flex justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedId(null)} />
-          <aside className="relative h-full w-full max-w-xl bg-surface-container-lowest dark:bg-surface-container border-l border-outline-variant/35 shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 bg-surface-container-lowest dark:bg-surface-container px-5 py-4 border-b border-outline-variant/20 flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-bold text-on-surface">
-                  {selected.data?.subject ?? "Cargando ticket…"}
-                </h3>
-                <p className="text-[11px] font-mono text-on-surface-variant mt-0.5">
-                  {selected.data?.code ?? "—"} · {formatDateTime(selected.data?.created_at ?? null)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedId(null)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {selected.isLoading ? (
-              <div className="p-5 space-y-2">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="h-16 rounded-xl bg-surface-container-high animate-pulse" />
-                ))}
-              </div>
-            ) : selected.data ? (
-              <div className="p-5 space-y-5 text-xs">
-                <div className="grid grid-cols-2 gap-3 text-[11px]">
-                  {[
-                    { label: "Estado", value: selected.data.status.replace("_", " ") },
-                    { label: "Prioridad", value: selected.data.priority },
-                    { label: "Módulo", value: selected.data.module },
-                    { label: "Categoría", value: selected.data.category },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-xl border border-outline-variant/25 p-3">
-                      <span className="block text-[10px] font-bold uppercase tracking-wider text-outline">
-                        {item.label}
-                      </span>
-                      <span className="text-on-surface">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="rounded-xl border border-outline-variant/25 p-3">
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-outline mb-1">
-                    Descripción
-                  </span>
-                  <p className="text-[11px] text-on-surface whitespace-pre-wrap">{selected.data.description}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-outline">
-                    Conversación ({selected.data.messages.length})
-                  </h4>
-                  {selected.data.messages.length === 0 ? (
-                    <p className="text-[11px] text-on-surface-variant">Sin respuestas registradas.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {selected.data.messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className="rounded-xl border border-outline-variant/25 bg-surface-container-high/40 p-3 space-y-1"
-                        >
-                          <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant">
-                            <span>Usuario #{message.author_id}</span>
-                            <span>{formatDateTime(message.created_at)}</span>
-                          </div>
-                          <p className="text-[11px] text-on-surface whitespace-pre-wrap">{message.body}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-3 border-t border-outline-variant/20 pt-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="space-y-1.5 block">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-outline">Estado</span>
-                      <select
-                        value={statusDraft}
-                        onChange={(event) => setStatusDraft(event.target.value)}
-                        className="w-full h-9 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-[11px] text-on-surface"
-                      >
-                        {["ABIERTO", "EN_PROGRESO", "RESUELTO", "CERRADO"].map((value) => (
-                          <option key={value} value={value}>
-                            {value.replace("_", " ")}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-1.5 block">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-outline">
-                        Asignado a (ID de usuario)
-                      </span>
-                      <input
-                        value={assigneeDraft}
-                        onChange={(event) => setAssigneeDraft(event.target.value)}
-                        placeholder="6"
-                        className="w-full h-9 px-2.5 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container font-mono text-[11px] text-on-surface"
-                      />
-                    </label>
-                  </div>
-
-                  <label className="space-y-1.5 block">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-outline">Respuesta</span>
-                    <textarea
-                      rows={3}
-                      value={replyDraft}
-                      onChange={(event) => setReplyDraft(event.target.value)}
-                      disabled={selected.data.status === "CERRADO"}
-                      placeholder={
-                        selected.data.status === "CERRADO"
-                          ? "El ticket está cerrado: reábrelo cambiando el estado para responder."
-                          : "Escribe una respuesta para el solicitante…"
-                      }
-                      className="w-full px-3 py-2 rounded-xl border border-outline-variant/35 bg-surface-container-lowest dark:bg-surface-container text-[11px] text-on-surface resize-none disabled:opacity-50"
-                    />
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={submitUpdate}
-                    disabled={updateTicket.isPending}
-                    className="inline-flex items-center gap-2 h-9 px-3.5 rounded-xl bg-primary text-on-primary text-[11px] font-bold disabled:opacity-40"
-                  >
-                    {updateTicket.isPending ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Send className="w-3.5 h-3.5" />
-                    )}
-                    Guardar cambios
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="p-5 text-xs text-rose-600 dark:text-rose-400">No fue posible cargar el ticket.</p>
-            )}
-          </aside>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-rose-600 dark:text-rose-400">No fue posible cargar el ticket.</p>
+        )}
+      </Drawer>
     </div>
   )
 }
