@@ -495,7 +495,7 @@ class AuditorB2GService:
         await self.db.commit()
 
         role_code = current_user.get("rol", {}).get("codigo", "")
-        can_edit = role_code in ("PLATFORM_ADMIN", "TENANT_ADMIN", "CONTRALOR")
+        can_edit = role_code == "PLATFORM_ADMIN"
 
         parameters = []
         for key, meta in DEFAULT_DETECTION_CONFIG.items():
@@ -529,7 +529,7 @@ class AuditorB2GService:
 
     async def update_detection_config(self, current_user: dict, updates: dict[str, float]) -> dict:
         role_code = current_user.get("rol", {}).get("codigo", "")
-        if role_code not in ("PLATFORM_ADMIN", "TENANT_ADMIN", "CONTRALOR"):
+        if role_code != "PLATFORM_ADMIN":
             raise PermissionError("FORBIDDEN_CONFIG_EDIT")
 
         existing_rows = (await self.db.execute(select(DetectionConfig))).scalars().all()

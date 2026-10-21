@@ -398,7 +398,15 @@ export default function DashboardLayout() {
               )}
 
               {[
-                { to: "/app/configuracion-deteccion", label: "Parámetros de Detección", icon: SlidersHorizontal },
+                ...(user?.rol?.codigo === "PLATFORM_ADMIN"
+                  ? []
+                  : [
+                      {
+                        to: "/app/configuracion-deteccion",
+                        label: "Parámetros de Detección",
+                        icon: SlidersHorizontal,
+                      },
+                    ]),
                 { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
               ].map((navItem) => (
                 <NavLink

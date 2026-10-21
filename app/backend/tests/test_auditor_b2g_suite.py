@@ -135,6 +135,20 @@ async def test_auditor_b2g_full_suite(client: AsyncClient, db_session: AsyncSess
     assert updated_map["THRESHOLD_CP_DOP"] == 7000000.0
     assert updated_map["PRICE_ANOMALY_WEIGHT"] == 1.3
 
+    # REQ-003: la edición global queda restringida a PLATFORM_ADMIN (solo lectura para el resto)
+    resp_cfg_readonly = await client.get(
+        "/api/auditor/detection-config", headers=minerd_headers
+    )
+    assert resp_cfg_readonly.status_code == 200
+    assert resp_cfg_readonly.json()["data"]["can_edit"] is False
+
+    resp_cfg_forbidden = await client.put(
+        "/api/auditor/detection-config",
+        headers=minerd_headers,
+        json={"parameters": {"PRICE_ANOMALY_WEIGHT": 1.9}},
+    )
+    assert resp_cfg_forbidden.status_code == 403
+
     # Verify Anomaly Context dynamically reflects the updated DB threshold for -CP-
     resp_anom_ctx = await client.get("/api/anomalies/anom-frag-501/context")
     assert resp_anom_ctx.status_code == 200
