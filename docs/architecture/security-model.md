@@ -39,9 +39,13 @@ sequenceDiagram
 | `GET /api/anomalies/stats` | ✅ | ✅ |
 | `GET /api/anomalies/{id}` | ✅ | ✅ |
 | `GET /api/anomalies/{id}/context` | ✅ | ✅ |
-| `PATCH /api/anomalies/{id}` | ✅ | `[VERIFY]` Restringir con guard JWT |
-| `POST /api/anomalies/detect` | ✅ | `[VERIFY]` Restringir con guard JWT |
-| `POST /api/sync/dgcp` | ✅ | `[VERIFY]` Restringir con guard JWT |
+| `PATCH /api/anomalies/{id}` | ✅ (`ANOMALY_REVIEW`) | 🚫 `401` sin token · `403` sin permiso |
+| `POST /api/anomalies/detect` | ✅ (`DETECTION_RUN`) | 🚫 `401` sin token · `403` sin permiso |
+| `POST /api/sync/dgcp` | ✅ | ⚠️ **Pendiente**: hoy no tiene dependencia de auth (ver §Hallazgos abiertos) |
+
+### Hallazgos abiertos
+
+- **`POST /api/sync/dgcp` sin autenticación** (`src/presentation/routers/sync.py`): el handler no declara ninguna dependencia de auth, así que un cliente anónimo puede encolar una sincronización contra la API de la DGCP y fijar `rate_limit`, `full` y los `skip_*` por query param. Se dejó como estaba a propósito hasta confirmar que ningún invocador externo (cron, monitoreo) lo llame sin token. El cierre esperado es JWT + `PLATFORM_ADMIN`, igual que el resto de `/api/admin/sync/*`.
 
 ## Matriz Consolidada de Organizaciones, Planes de Suscripción y Permisos Multi-Tenant
 
@@ -144,6 +148,7 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 | 2026-10-18 | `project-scanner` | Línea base de seguridad extraída de `pyproject.toml`, `user.py`, `audit_log.py` y `main.py` |
 | 2026-10-21 | `implementer` (Paquete 3) | Añadidos los 6 endpoints/pantallas de `suite-licitaciones-b2b` a la matriz por ruta; guard de segmento B2B (`/api/b2b/*` para `B2B_SUPPLIER`, `GOV_OVERSIGHT`, `PLATFORM` o permiso `B2B_ANALYTICS`); candados de cuota `B2B_PYME` (3 rubros / 10 pizarras — `403 PLAN_QUOTA_EXCEEDED`), ficha forense `locked` en PyME y cambio de plan restringido a roles de administración (`TENANT_ADMIN`/`PLATFORM_ADMIN`/`PROVEEDOR`); trazabilidad `B2B_BID_UPSERT` / `B2B_BID_DELETE` / `B2B_SECTORS_UPDATE` / `B2B_PLAN_CHANGE` en `audit_log` |
 | 2026-10-21 | `implementer` (Paquete 4) | Añadidas las 4 rutas de la consola de administración con guard exclusivo `PLATFORM_ADMIN`; `PUT /api/auditor/detection-config` restringido a `PLATFORM_ADMIN` (`can_edit: false` para `TENANT_ADMIN`/`CONTRALOR`); documentada la vista previa de roles como funcionalidad **solo UI** sin impersonación; `/api/support/tickets` aislado por `reporter_id` |
+| 2026-10-21 | `implementer` (hardening de escritura) | Cerrados los dos `[VERIFY]` de escritura anónima: `POST /api/anomalies/detect` pasa a JWT + `DETECTION_RUN` y `PATCH /api/anomalies/{id}` a JWT + `ANOMALY_REVIEW`, con el `reviewer_id` tomado del token en vez del body (antes el cliente podía atribuir un dictamen a otro y, autenticado, se escribía el correo en una FK a `user.id`). Las lecturas siguen públicas por diseño. Queda abierto `POST /api/sync/dgcp` (§Hallazgos abiertos) |
 
 ---
-_Last updated: 2026-10-21 by implementer (added consola-admin-operaciones guards, detection-config scope & role preview model)_
+_Last updated: 2026-10-21 by implementer (closed anonymous write on anomalies; sync trigger still open)_

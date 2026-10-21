@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +14,11 @@ from src.domain.schemas.anomaly import (
 from src.domain.types import ApiResponse
 from src.infrastructure.dependencies import get_db
 from src.models.sync_log import SyncLog
-from src.presentation.dependencies import get_anomaly_service, get_optional_user
+from src.presentation.dependencies import (
+    get_anomaly_service,
+    get_optional_user,
+    require_permission,
+)
 from src.presentation.runners import run_detection
 from src.services.anomaly_service import AnomalyService
 
@@ -33,24 +37,11 @@ def _resolve_tenant_institution_id(
     return requested_institution_id
 
 
-def _enforce_permission_if_authenticated(current_user: dict | None, perm_code: str) -> None:
-    if current_user is not None:
-        if perm_code not in current_user.get("permisos", []):
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "FORBIDDEN_INSUFFICIENT_ROLE_OR_PLAN",
-                    "message": f"Su rol o el plan actual de su organización no incluye el permiso '{perm_code}'.",
-                },
-            )
-
-
 @router.post("/detect", status_code=202)
 async def detect_anomalies(
     session: AsyncSession = Depends(get_db),
-    current_user: dict | None = Depends(get_optional_user),
+    _current_user: dict = Depends(require_permission("DETECTION_RUN")),
 ) -> ApiResponse:
-    _enforce_permission_if_authenticated(current_user, "DETECTION_RUN")
     stmt = select(SyncLog).where(
         SyncLog.status == "running",
         SyncLog.process_type == "detection",
@@ -137,13 +128,13 @@ async def review_anomaly(
     anomaly_id: str,
     payload: AnomalyReviewPayload,
     service: AnomalyService = Depends(get_anomaly_service),
-    current_user: dict | None = Depends(get_optional_user),
+    current_user: dict = Depends(require_permission("ANOMALY_REVIEW")),
 ) -> ApiResponse[AnomalyResponse]:
-    _enforce_permission_if_authenticated(current_user, "ANOMALY_REVIEW")
-    reviewer_id = str(current_user["correo"]) if current_user else payload.reviewer_id
     anomaly = await service.review_anomaly(
         anomaly_id=anomaly_id,
-        reviewer_id=reviewer_id,
+        # El dictamen se atribuye siempre al portador del token: el cliente no
+        # elige el reviewer (antes salía del payload y era falsificable).
+        reviewer_id=str(current_user["id"]),
         status=payload.status,
         notes=payload.notes,
         dismissal_reason=payload.dismissal_reason,

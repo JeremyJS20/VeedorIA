@@ -31,7 +31,6 @@ export type DismissalReason = "FALSE_POSITIVE" | "DUPLICATE" | "DATA_ERROR" | "A
 
 export interface AnomalyReviewPayload {
   status: "CONFIRMED" | "DISMISSED"
-  reviewer_id: string
   notes?: string
   dismissal_reason?: DismissalReason
 }

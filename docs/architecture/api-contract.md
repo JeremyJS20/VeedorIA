@@ -16,12 +16,12 @@
 | `GET` | `/` | Public | Redirección automática a la documentación interactiva `/redoc` | core |
 | `POST` | `/api/sync/dgcp` | `[VERIFY]` Public / Internal | Dispara sincronización asíncrona (incremental o completa) con la API de Datos Abiertos DGCP (`202 Accepted`) | sync |
 | `GET` | `/api/sync/status` | Public | Retorna el estado de la última sincronización y el historial reciente de `sync_log` (sync y detection) | sync |
-| `POST` | `/api/anomalies/detect` | `[VERIFY]` Public / Internal | Encola una corrida de detección de anomalías en background vía `arq` (`202 Accepted`) | anomalies |
+| `POST` | `/api/anomalies/detect` | JWT (`DETECTION_RUN`) | Encola una corrida de detección de anomalías en background vía `arq` (`202 Accepted`). `AUDITOR` / `TENANT_ADMIN` / `PLATFORM_ADMIN` | anomalies |
 | `GET` | `/api/anomalies` | Public | Lista paginada de anomalías con filtros por `anomaly_type`, `status` y `min_severity` | anomalies |
 | `GET` | `/api/anomalies/stats` | Public | Estadísticas agregadas de anomalías por tipo, estado y severidad | anomalies |
 | `GET` | `/api/anomalies/{anomaly_id}` | Public | Obtiene el detalle de una anomalía específica por su UUID | anomalies |
 | `GET` | `/api/anomalies/{anomaly_id}/context` | Public | Obtiene el contexto enriquecido de la anomalía (precios de mercado, línea de tiempo institucional, enlaces de colusión) | anomalies |
-| `PATCH` | `/api/anomalies/{anomaly_id}` | `anomalies:review` | Registra la revisión de un auditor (`CONFIRMED` / `DISMISSED`), motivo de descarte y actualiza pesos en `DetectionConfig` | anomalies |
+| `PATCH` | `/api/anomalies/{anomaly_id}` | JWT (`ANOMALY_REVIEW`) | Registra la revisión de un auditor (`CONFIRMED` / `DISMISSED`), motivo de descarte y actualiza pesos en `DetectionConfig`. El `reviewer_id` sale del token, no del body | anomalies |
 | `GET` | `/api/public/tenders` | Public | Buscador ciudadano multi-token `AND` con ranking de relevancia y filtros | buscador-ciudadano |
 | `GET` | `/api/public/tenders/{id}` | Public | Expediente público de contratación, ítems UNSPSC y hallazgos traducidos | buscador-ciudadano |
 | `GET` | `/api/public/institutions` | Public | Catálogo de instituciones con conteo de contratos | buscador-ciudadano |
@@ -96,10 +96,10 @@
 - **Trazabilidad**: toda acción sensible (sync, detección, calibración, reset, export, tickets) escribe un `AuditLog` con `timestamp` naive-UTC.
 
 ### `PATCH /api/anomalies/{anomaly_id}`
+- **Auth**: JWT con permiso `ANOMALY_REVIEW`. El revisor que queda registrado es el del token; el body no lo acepta.
 - **Request (`AnomalyReviewPayload`)**:
   ```json
   {
-    "reviewer_id": "uuid-auditor",
     "status": "CONFIRMED",
     "notes": "Sobreprecio verificado frente a histórico UNSPSC",
     "dismissal_reason": null

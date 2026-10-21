@@ -34,7 +34,6 @@ class AnomalyListResponse(BaseModel):
 
 class AnomalyReviewPayload(BaseModel):
     status: str = Field(..., pattern=r"^(CONFIRMED|DISMISSED)$")
-    reviewer_id: str = Field(..., min_length=1)
     notes: str | None = Field(None, min_length=10)
     dismissal_reason: str | None = Field(None, pattern=r"^(FALSE_POSITIVE|DUPLICATE|DATA_ERROR|ALREADY_KNOWN)$")
 

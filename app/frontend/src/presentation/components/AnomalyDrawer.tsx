@@ -43,7 +43,6 @@ export default function AnomalyDrawer({ anomaly, onClose }: AnomalyDrawerProps) 
   const [fullscreenChart, setFullscreenChart] = useState<FullscreenChart>(null)
   const reviewMutation = useReviewAnomaly()
   const { data: ctx, isLoading: ctxLoading } = useAnomalyContext(anomaly.id)
-  const reviewerId = localStorage.getItem("user_id") || "00000000-0000-0000-0000-000000000000"
 
   const DISMISSAL_REASONS: { value: DismissalReason; labelKey: string }[] = [
     { value: "FALSE_POSITIVE", labelKey: "drawer.dismiss_reason_FALSE_POSITIVE" },
@@ -67,7 +66,6 @@ export default function AnomalyDrawer({ anomaly, onClose }: AnomalyDrawerProps) 
         id: anomaly.id,
         payload: {
           status,
-          reviewer_id: reviewerId,
           notes: notes.trim() || undefined,
           dismissal_reason: dismissalReason || undefined,
         },
