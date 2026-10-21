@@ -58,6 +58,16 @@
 | `GET` | `/api/integration/anomalies` | API Key (`vdia_b2g_...`) | Consulta externa ERP/SIGEF de hallazgos acotados al tenant de la llave | herramientas-auditoria-b2g |
 | `GET` | `/api/integration/reports/summary` | API Key (`vdia_b2g_...`) | Resumen ejecutivo externo de cumplimiento institucional | herramientas-auditoria-b2g |
 | `GET` | `/api/integration/resolutions` | API Key (`vdia_b2g_...`) | Historial externo de resoluciones de auditoría | herramientas-auditoria-b2g |
+| `GET` | `/api/b2b/opportunities` | JWT (segmento `B2B_SUPPLIER`/`GOV_OVERSIGHT`/`PLATFORM` o permiso `B2B_ANALYTICS`) | Radar de Oportunidades (#23) con KPIs, filtros por rubro/institución/modalidad y solo alta afinidad | suite-licitaciones-b2b |
+| `GET` | `/api/b2b/bids` | JWT (ídem) | Seguimiento de Mis Licitaciones (#24) con KPIs de pipeline y tasas de envío/adjudicación | suite-licitaciones-b2b |
+| `POST` / `PUT` / `DELETE` | `/api/b2b/bids[/{bid_id}]` | JWT (ídem) | CRUD del watchlist persistido en `audit_log` (`B2B_WATCHLIST:{tenant}`) con cuota de 10 activos en `B2B_PYME` | suite-licitaciones-b2b |
+| `GET` | `/api/b2b/competitors` | JWT (ídem) | Ranking de competidores por historial de contratos con búsqueda por RPE/nombre | suite-licitaciones-b2b |
+| `GET` | `/api/b2b/competitors/{rnc}` | JWT (ídem) | Ficha Forense y Comercial de Competidor (#25); inteligencia forense (precios compartidos por rubro + flags de anomalías) bloqueada en `B2B_PYME` | suite-licitaciones-b2b |
+| `GET` | `/api/b2b/price-simulator/catalog` | JWT (ídem) | Catálogo de rubros UNSPSC con muestras disponibles para simulación | suite-licitaciones-b2b |
+| `POST` | `/api/b2b/price-simulator` | JWT (ídem) | Simulador de Precios de Oferta (#26): cuartiles P25/P50/P75, índice de competitividad, probabilidad de adjudicación y banda de riesgo legal | suite-licitaciones-b2b |
+| `GET` / `PUT` | `/api/b2b/sectors` | JWT (ídem) | Explorador de Sectores e Instituciones Compradoras (#27) + actualización de rubros monitoreados (cuota de 3 rubros en `B2B_PYME`) | suite-licitaciones-b2b |
+| `GET` | `/api/b2b/subscription` | JWT | Gestión de Plan y Suscripción (#29): uso actual vs. cuotas, catálogo de planes e historial de cambios | suite-licitaciones-b2b |
+| `PUT` | `/api/b2b/subscription` | JWT (`TENANT_ADMIN`/`PLATFORM_ADMIN`/`PROVEEDOR`) | Cambio de plan (`B2B_PYME` ↔ `B2B_CORPORATE`) con traza de auditoría `B2B_PLAN_CHANGE` | suite-licitaciones-b2b |
 
 ### `PATCH /api/anomalies/{anomaly_id}`
 - **Request (`AnomalyReviewPayload`)**:
@@ -83,6 +93,29 @@
     "message": null
   }
   ```
+
+### `POST /api/b2b/price-simulator` (Simulador de Precios Competitivos — #26)
+- **Request**:
+  ```json
+  { "unspsc_family": "7214", "proposed_unit_price_dop": 1900.0, "quantity": 100, "institution_id": null }
+  ```
+- **Distribución de mercado** (muestra hasta 300 contratos del rubro, orden desc. por fecha):
+  $$\text{P25}, \text{P50 (Mediana)}, \text{P75} = \text{percentiles}_{[0.25,\ 0.50,\ 0.75]}\ (P_1..P_n)$$
+- **Desviación vs. mediana**: $\text{delta\%} = \frac{P_\text{oferta} - P_{50}}{P_{50}} \times 100$
+- **Bandas de riesgo y pronóstico** (con asesoría legal citando Ley 340-06 / Decreto 416-23 Arts. 96–97):
+
+| Banda | Condición | Índice de competitividad | Prob. adjudicación |
+|-------|-----------|--------------------------|--------------------|
+| `BAJA_TEMERARIA` | $P_\text{oferta} < 0.70 \times P_{25}$ | 15–45 | 8–32 % |
+| `OPTIMA_COMPETITIVA` | $0.70 \cdot P_{25} \le P_\text{oferta} \le P_{50}$ | 82–96 | 74–88.5 % |
+| `ZONA_MEDIA_MERCADO` | $P_{50} < P_\text{oferta} \le P_{75}$ | 50–78 | 38–68 % |
+| `RIESGO_SOBREPRECIO` | $P_\text{oferta} > P_{75}$ | 10–48 | 5–34 % |
+
+### Candados de plan en `/api/b2b/*` (REQ-002, REQ-003, REQ-005, REQ-006)
+- **Cuota rubros monitoreados**: `B2B_PYME` = 3 / `B2B_CORPORATE` = ilimitado (`403 PLAN_QUOTA_EXCEEDED`).
+- **Cuota licitaciones activas**: `B2B_PYME` = 10 / `B2B_CORPORATE` = ilimitado.
+- **Inteligencia forense de competidor**: bloqueada (`locked: true`) en `B2B_PYME`; en `B2B_CORPORATE` expone precios medianos por rubro UNSPSC del competidor vs. mediana del mercado (`price_delta_pct`) y flags de anomalías del RNC.
+- **Los WATCHLIST de seguimiento y el cambio de rubros se persisten de forma inmutable en `audit_log`** (`entity_type = B2B_WATCHLIST:{tenant}` / `B2B_SECTORS:{tenant}` / `B2B_SUBSCRIPTION:{tenant}`).
 
 ## Authentication
 - **Método configurado**: JWT (`PyJWT` `^2.9.0`) + hashing de contraseñas con `bcrypt` `^4.2.0`.
@@ -156,6 +189,7 @@ curl -X POST http://localhost:3001/api/anomalies/detect
 | Date | Feature | Change |
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Contrato inicial extraído de `main.py`, `routers/anomaly.py` y `routers/sync.py` |
+| 2026-10-21 | `implementer` (Paquete 3) | Añadidos los 11 endpoints de la Suite de Licitaciones B2B (`/api/b2b/*`, REQ-001..REQ-006), bandas del Simulador de Precios y candados de plan `B2B_PYME`/`B2B_CORPORATE` |
 
 ---
-_Last updated: 2026-10-20 by implementer (added herramientas-auditoria-b2g & /api/integration/* endpoints)_
+_Last updated: 2026-10-21 by implementer (added suite-licitaciones-b2b /api/b2b/* endpoints)_

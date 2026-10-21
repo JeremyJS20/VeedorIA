@@ -68,6 +68,12 @@ sequenceDiagram
 | `/app/reportes` (`GET /api/auditor/reports/summary`) | ✅ Nacional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | 🚫 `403` | 🚫 `403` |
 | `/app/integraciones` (`GET/POST/DELETE /api/auditor/integrations/*`) | ✅ Emisión y Revocación | ✅ Emisión y Revocación | 🔒 Emisión bloqueada por plan | 🚫 `403` | 🚫 `403` |
 | `/app/mercado` (`GET /api/market/intelligence`) | ✅ Completo | 🚫 Redirigido a B2G | 🚫 Redirigido a B2G | ✅ 3 Subsecciones completas | 🔒 Subsecciones avanzadas con candado |
+| `/app/oportunidades` (`GET /api/b2b/opportunities`) | ✅ Nacional (multi-tenant) | ✅ Supervisión | ✅ Supervisión | ✅ Radar + watchlist completo | 🔒 Cuotas: 3 rubros / 10 pizarras activas |
+| `/app/mis-licitaciones` (`GET/POST/PUT/DELETE /api/b2b/bids*`) | ✅ Nacional | ✅ Supervisión (consulta) | ✅ Supervisión (consulta) | ✅ Watchlist ilimitado | 🔒 Máx. 10 pizarras activas (`403 PLAN_QUOTA_EXCEEDED`) |
+| `/app/competidor/:rnc` (`GET /api/b2b/competitors/{rnc}`) | ✅ Nacional | ✅ Supervisión | ✅ Supervisión | ✅ Inteligencia forense (precios por rubro UNSPSC + flags de anomalías) | 🔒 Ficha forense `locked: true` (requiere `B2B_CORPORATE`) |
+| `/app/simulador-precios` (`POST /api/b2b/price-simulator`) | ✅ Nacional | ✅ Supervisión | ✅ Supervisión | ✅ Cuartiles P25/P50/P75 + asesoría legal completa | ✅ Banda legal + cuartiles disponibles |
+| `/app/sectores` (`GET/PUT /api/b2b/sectors`) | ✅ Nacional | ✅ Supervisión (consulta) | ✅ Supervisión (consulta) | ✅ Monitoreo de rubros ilimitado | 🔒 Máx. 3 rubros UNSPSC (`403 PLAN_QUOTA_EXCEEDED`) |
+| `/app/suscripcion` (`GET/PUT /api/b2b/subscription`) | ✅ Nacional + cambio de plan (`PLATFORM_ADMIN`) | 👁️ Según rol del usuario b2g (p. ej. `CONTRALOR` no puede cambiar el plan) | 👁️ Según rol del usuario b2g (p. ej. `CONTRALOR` no puede cambiar el plan) | ✅ Consulta + cambio de plan (rol `PROVEEDOR`) | ✅ Consulta + cambio de plan (rol `PROVEEDOR`) |
 | `/app/usuarios` y `/app/roles` (`/api/auth/users`, `/api/auth/roles`) | ✅ Global | ✅ Usuarios de su institución | 👁️ Según permiso `USER_READ` | ✅ Usuarios de su empresa | 👁️ Según permiso `USER_READ` |
 
 ## Secrets Management
@@ -118,6 +124,7 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 | Date | Feature | Change |
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Línea base de seguridad extraída de `pyproject.toml`, `user.py`, `audit_log.py` y `main.py` |
+| 2026-10-21 | `implementer` (Paquete 3) | Añadidos los 6 endpoints/pantallas de `suite-licitaciones-b2b` a la matriz por ruta; guard de segmento B2B (`/api/b2b/*` para `B2B_SUPPLIER`, `GOV_OVERSIGHT`, `PLATFORM` o permiso `B2B_ANALYTICS`); candados de cuota `B2B_PYME` (3 rubros / 10 pizarras — `403 PLAN_QUOTA_EXCEEDED`), ficha forense `locked` en PyME y cambio de plan restringido a roles de administración (`TENANT_ADMIN`/`PLATFORM_ADMIN`/`PROVEEDOR`); trazabilidad `B2B_BID_UPSERT` / `B2B_BID_DELETE` / `B2B_SECTORS_UPDATE` / `B2B_PLAN_CHANGE` en `audit_log` |
 
 ---
-_Last updated: 2026-10-20 by implementer (added Multi-Tenant Plans, Locks & B2G/B2B Route Matrix)_
+_Last updated: 2026-10-21 by implementer (added Multi-Tenant Plans, Locks, B2G/B2B Route Matrix & suite-licitaciones-b2b guards)_

@@ -243,6 +243,7 @@ erDiagram
 | Date | Feature | Change |
 |------|---------|--------|
 | 2026-10-18 | `project-scanner` | Línea base inicial extraída de los 10 modelos SQLModel y 14 migraciones Alembic |
+| 2026-10-21 | `implementer` (Paquete 3) | `suite-licitaciones-b2b` no agrega tablas: reutiliza `tenant` (`plan_tier`, `supplier_rpe`, `max_categorias_unspsc`) y `audit_log` como store inmutable con `entity_type = B2B_WATCHLIST:{tenant}` / `B2B_SECTORS:{tenant}` / `B2B_SUBSCRIPTION:{tenant}` (UPSERT/DELETE de pizarras, familias monitoreadas e historial de cambio de plan) |
 
 ### `tenants` (`app/backend/src/models/auth.py`)
 | Column | Type | Nullable | Default | Index | Description |
@@ -263,4 +264,4 @@ erDiagram
 - **`password_reset_tokens`**: Tokens efímeros (`token_hash` SHA-256, `expires_at`, `used_at`) para restablecimiento seguro de contraseña.
 
 ---
-_Last updated: 2026-10-19 by solution-designer (added Multi-Tenant & RBAC tables)_
+_Last updated: 2026-10-21 by implementer (added Multi-Tenant & RBAC tables + suite-licitaciones-b2b audit_log usage)_

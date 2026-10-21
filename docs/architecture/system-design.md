@@ -132,10 +132,31 @@ graph TB
 | **Fraccionamiento (`FRAGMENTATION`)** | **Ley 340-06** Arts. 16 y 17 Párrafo I · **Decreto 416-23** Art. 62 (Presunción de Fraccionamiento en PACC) y Arts. 65–66 | La institución subdividió una misma necesidad previsible en el PACC en 2 o más contratos dentro de la ventana temporal cuya suma acumulada obligaba a convocar una modalidad de mayor concurrencia (ej. Licitación Pública en vez de Comparación de Precios). | **División Legítima por Lotes o Excepción Certificada**: (a) El proceso fue convocado legalmente dividido en lotes geográficos para fomentar participación MiPyME, o (b) corresponde a una Excepción por Emergencia Nacional (`-PEEN-`/`-PEUR-`) amparada por Decreto Presidencial o Resolución motivada de la MAE (Art. 6 Párrafo Ley 340-06). |
 | **Colusión (`COLLUSION`)** | **Ley 340-06** Arts. 3 nums. 2 y 6, 11, 14 y 66 Párrafo II · **Ley 42-08** Art. 5 · **Ley 155-17** (Beneficiario Final) | Se comprueba en el Registro Mercantil y en la **Declaración Jurada de Beneficiario Final (Ley 155-17)** que los oferentes comparten socios, administradores, apoderados, domicilio operativo o coordinación de posturas para simular competencia. | **Coincidencia Nominal o Consorcio Declarado**: Los proveedores participan bajo un Consorcio formalmente constituido en el expediente o la coincidencia geográfica corresponde a un centro empresarial/provincia sin vínculo societario ni de control real. |
 
+## Suite de Inteligencia Comercial B2B (Paquete 3 — `suite-licitaciones-b2b`)
+
+### 1. Radar de Oportunidades (#23 `/app/oportunidades`) — Algoritmo de Emparejamiento
+- **Seguimiento de rubros en 3 niveles**: (1) selección manual persistida en `audit_log` (`B2B_SECTORS:{tenant}`); (2) inferencia automática del historial real del proveedor — top-4 familias UNSPSC por número de contratos del `supplier_rpe` del tenant; (3) *fallback* global a las familias 7214/3011/4321.
+- **Score de afinidad por oportunidad** (0–99, cap superior en 99):
+  $$\text{affinity} = 30 + (\text{rubro monitoreado?} + 60) + (\text{institución histórica?} + 20) + (\text{lote en rango }[0.25, 2.5]\times \text{ticket promedio?} + 15)$$
+  - El ticket promedio se calcula de `avg(amount_adjudicated)` del histórico del proveedor.
+- **Nivel de competencia** por proceso: `ALTA` (≥ 5 competidores o monto > RD$20M), `MEDIA` (2–4), `BAJA` (< 2).
+- El *watchlist* de pizarras en seguimiento se ordena junto a las oportunidades (labeled `in_watchlist`) y se persiste de forma inmutable vía `B2B_BID_UPSERT` / `B2B_BID_DELETE` en `audit_log`.
+
+### 2. Simulador de Precios Competitivos (#26 `/app/simulador-precios`) — Fórmulas
+- Percentiles P25/P50/P75 de la muestra de mercado del rubro UNSPSC (hasta 300 contratos recientes) y desviación del precio propuesto contra la mediana.
+- Cuatro bandas de decisión: `BAJA_TEMERARIA` (< 70 % del P25, riesgo de descalificación por precio anormalmente bajo — Arts. 96–97 Reglamento 416-23), `OPTIMA_COMPETITIVA` (P25–P50, máxima puntuación económica sin presunción legal de baja temeraria), `ZONA_MEDIA_MERCADO` (P50–P75) y `RIESGO_SOBREPRECIO` (> P75, expuesto a observación preventiva VeedorIA).
+- Salida: índice de competitividad (0–100), probabilidad de adjudicación (%), total proyectado de la oferta, desglose legal y contratos de referencia.
+
+### 3. Candados diferenciados `B2B_PYME` vs `B2B_CORPORATE`
+- Cuotas de plan (3 rubros monitoreados / 10 pizarras activas / 5 usuarios de equipo en `B2B_PYME`; ilimitado en `B2B_CORPORATE`) aplicadas tanto en la lectura (`kpis`, `usage`) como en la escritura (`403 PLAN_QUOTA_EXCEEDED`).
+- La ficha forense de competidor (`/app/competidor/:rnc` — precios compartidos por rubro UNSPSC + flags de anomalías) queda `locked` para `B2B_PYME` con nota del plan requerido (`Plan Proveedor Corporativo`).
+- El cambio de plan (`/app/suscripcion`) es auto-servicio exclusivo de administradores de organización y recalcula `max_categorias_unspsc` del tenant con traza `B2B_PLAN_CHANGE`.
+
 ## Key Decisions
 - **Arquitectura Limpia en Monorepo**: Separación estricta de `domain`, `infrastructure`, `models`, `services` y `presentation` en `app/backend` y `app/frontend`.
 - **Bucle de Retroalimentación Cerrado (`DetectionConfig`)**: Las confirmaciones y descartes de los auditores ajustan dinámicamente los pesos y umbrales de detección sin requerir redespliegue de código.
 - **Doble Motor de Base de Datos Asíncrono**: Soporte transparente para `sqlite+aiosqlite` en desarrollo ligero y `postgresql+asyncpg` en contenedores y producción.
+- **Watchlist y Suscripción B2B Sin Tablas Nuevas**: El seguimiento de pizarras, la selección de rubros y el historial de plan aprovechan el log inmutable `audit_log` con `entity_type` con prefijo de tenant (`B2B_WATCHLIST:{tenant}`), evitando migraciones y garantizando reversión lógica sin pérdida de trazabilidad.
 
 ---
-_Last updated: 2026-10-20 by implementer (added herramientas-auditoria-b2g, DGCP modality thresholds & Law 340-06 framework)_
+_Last updated: 2026-10-21 by implementer (added suite-licitaciones-b2b: Radar de Oportunidades, Simulador de Precios & plan locks)_
