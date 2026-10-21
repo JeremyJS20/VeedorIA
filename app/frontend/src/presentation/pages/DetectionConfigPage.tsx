@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { toast } from "@heroui/react"
 import { useDetectionConfig, useUpdateDetectionConfig } from "../hooks/useAuditorB2G"
+import { useAuth } from "../context/AuthContext"
 
 const MODALITY_SIGLA_MAP: Record<string, { code: string; lawRef: string }> = {
   THRESHOLD_CD_DOP: { code: "-CD-", lawRef: "Art. 16 Num. 7 · Compra Debajo del Umbral" },
@@ -32,12 +33,15 @@ function formatParameterValue(key: string, category: string, val: number): strin
 export default function DetectionConfigPage() {
   const { data, isLoading } = useDetectionConfig()
   const updateMutation = useUpdateDetectionConfig()
+  const { user } = useAuth()
 
   const [draftValues, setDraftValues] = useState<Record<string, number>>({})
   const [savedNotice, setSavedNotice] = useState(false)
   const [activeTab, setActiveTab] = useState<"MOTOR" | "MODALIDADES">("MOTOR")
 
-  const canEdit = Boolean(data?.can_edit)
+  // El backend solo habilita la edición a PLATFORM_ADMIN. Se combina con el rol
+  // efectivo de la UI para que la vista previa de roles también sea de solo lectura.
+  const canEdit = Boolean(data?.can_edit) && user?.rol?.codigo === "PLATFORM_ADMIN"
   const parameters = useMemo(() => data?.parameters ?? [], [data?.parameters])
 
   const weightsList = useMemo(() => parameters.filter((p) => p.category === "PESOS"), [parameters])
