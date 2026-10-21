@@ -1,9 +1,11 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 from enum import Enum as PyEnum
 from typing import ClassVar
 
 from sqlmodel import JSON, Field, SQLModel
+
+from src.infrastructure.time_utils import utcnow_naive
 
 
 class UserRole(str, PyEnum):
@@ -24,9 +26,9 @@ class User(SQLModel, table=True):
     password_hash: str = Field(max_length=255)
     full_name: str = Field(max_length=255)
     role: str = Field(default=UserRole.CITIZEN.value, max_length=20)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=utcnow_naive)
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        sa_column_kwargs={"onupdate": lambda: datetime.now(UTC)},
+        default_factory=utcnow_naive,
+        sa_column_kwargs={"onupdate": utcnow_naive},
     )
     extra_data: str | None = Field(default=None, sa_type=JSON)

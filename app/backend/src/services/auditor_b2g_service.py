@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.infrastructure.time_utils import utcnow_naive
 from src.models.anomaly import Anomaly
 from src.models.audit_log import AuditLog
 from src.models.contract import Contract
@@ -548,7 +549,7 @@ class AuditorB2GService:
             new_values[key] = round(clamped, 2)
             if row:
                 row.value = clamped
-                row.updated_at = datetime.now(UTC)
+                row.updated_at = utcnow_naive()
             else:
                 self.db.add(DetectionConfig(key=key, value=clamped))
 

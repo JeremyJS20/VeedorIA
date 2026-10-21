@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.infrastructure.time_utils import utcnow_naive
 from src.models.anomaly import Anomaly
 from src.models.audit_log import AuditLog
 from src.models.auth import AppUser, Tenant
@@ -354,7 +355,7 @@ class B2BSuiteService:
             entity_type=f"B2B_WATCHLIST:{tenant_id}",
             entity_id=f"bid-{p_id}",
             new_value=new_data,
-            timestamp=datetime.now(UTC),
+            timestamp=utcnow_naive(),
         )
         self.db.add(log)
         await self.db.commit()
@@ -371,7 +372,7 @@ class B2BSuiteService:
             entity_type=f"B2B_WATCHLIST:{tenant_id}",
             entity_id=bid_id,
             new_value={"process_id": clean_pid, "deleted": True},
-            timestamp=datetime.now(UTC),
+            timestamp=utcnow_naive(),
         )
         self.db.add(log)
         await self.db.commit()
@@ -767,7 +768,7 @@ class B2BSuiteService:
             entity_type=f"B2B_SECTORS:{tenant_id}",
             entity_id=f"sectors-{tenant_id}",
             new_value={"monitored_families": clean_fams},
-            timestamp=datetime.now(UTC),
+            timestamp=utcnow_naive(),
         )
         self.db.add(log)
         await self.db.commit()
@@ -874,7 +875,7 @@ class B2BSuiteService:
                 "actor_email": current_user.get("correo"),
                 "billing_cycle": payload.get("billing_cycle", "ANUAL"),
             },
-            timestamp=datetime.now(UTC),
+            timestamp=utcnow_naive(),
         )
         self.db.add(log)
         await self.db.commit()

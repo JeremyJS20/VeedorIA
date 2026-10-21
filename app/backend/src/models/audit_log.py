@@ -1,7 +1,9 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import ClassVar
 
 from sqlmodel import JSON, Field, SQLModel
+
+from src.infrastructure.time_utils import utcnow_naive
 
 
 class AuditLog(SQLModel, table=True):
@@ -16,6 +18,6 @@ class AuditLog(SQLModel, table=True):
     new_value: str | None = Field(default=None, sa_type=JSON)
     ip_address: str | None = Field(default=None, max_length=45)
     timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=utcnow_naive,
         index=True,
     )

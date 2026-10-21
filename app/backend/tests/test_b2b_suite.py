@@ -3,6 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.models.audit_log import AuditLog
 from src.models.auth import AppUser
 from src.models.contract import Contract
 from src.models.institution import Institution
@@ -162,6 +163,18 @@ async def test_b2b_suite_full_suite(client: AsyncClient, db_session: AsyncSessio
     assert bid_created["bid_id"] == "bid-601"
     assert bid_created["process_code"] == "DGCP-CCC-LPN-2026-0101"
     assert bid_created["stage"] == "GUARDADA"
+
+    # Regresión PostgreSQL: audit_log.timestamp debe persistirse naive (asyncpg rechaza aware)
+    db_session.expire_all()
+    latest_log = (
+        await db_session.execute(
+            select(AuditLog)
+            .where(AuditLog.entity_type == "B2B_WATCHLIST:5")
+            .order_by(AuditLog.id.desc())
+        )
+    ).scalars().first()
+    assert latest_log is not None
+    assert latest_log.timestamp.tzinfo is None
 
     resp_bids = await client.get("/api/b2b/bids", headers=prov_headers)
     assert resp_bids.status_code == 200
