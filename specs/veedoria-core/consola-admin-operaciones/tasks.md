@@ -107,8 +107,8 @@ flowchart TD
 - **Acceptance criteria:**
   - [x] `0` tipos `any`; `tsc -b` y `eslint` sin errores; estados de carga, vacío, error y degradado (`Redis OFFLINE`) cubiertos en ambas páginas.
   - [x] El disparo de sync y la aplicación de umbrales exigen confirmación explícita, muestran el resultado real de la API (`202`, `409`, `403`) y refrescan los KPIs.
-  - [ ] Ninguna página enlaza rutas públicas ni duplica pestañas del sidebar (`NFR-005`).
-    > ⚠️ **Parcial**: sin enlaces a rutas públicas. Persiste la duplicación conocida `/app/configuracion-deteccion` (parámetros) vs `/app/calibracion` (calibración global); el admin ve ambas y la resolvemos en la fase de polish (opción registrada: `detection_config` por organización).
+  - [x] Ninguna página enlaza rutas públicas ni duplica pestañas del sidebar (`NFR-005`).
+    > ✅ Resuelto: `/app/configuracion-deteccion` pasa a **vista de consulta** ("Parámetros y Topes") con enlace a `/app/calibracion`, que queda como **única superficie de escritura** de los 13 parámetros. Ambas rutas siguen accesibles para el `PLATFORM_ADMIN` (no se oculta ninguna) pero sin doble edición.
 - **Dependencies:** Task 2.2
 - **Files to create/modify:** `app/frontend/src/presentation/hooks/useAdminOps.ts`, `app/frontend/src/presentation/pages/SyncOperationsPage.tsx`, `app/frontend/src/presentation/pages/CalibrationConsolePage.tsx`
 

@@ -48,8 +48,8 @@
 | `GET` | `/api/auditor/processes` | JWT (`ANOMALY_READ`) | Explorador paginado de procesos institucionales con KPIs y filtro de hallazgos | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/processes/{process_id}` | JWT (`ANOMALY_READ`) | Detalle interno de expediente (contratos adjudicados y anomalías) para `ProcessInspectorDrawer` | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/collusion-network` | JWT (`ANOMALY_READ`) | Red relacional de proveedores vinculados y co-adjudicaciones (con candado `B2G_BASIC`) | herramientas-auditoria-b2g |
-| `GET` | `/api/auditor/detection-config` | JWT (`ANOMALY_READ`) | Lectura de los 13 parámetros en BD (pesos, sensibilidad y 7 topes de modalidad DGCP) | herramientas-auditoria-b2g |
-| `PUT` | `/api/auditor/detection-config` | JWT (**solo `PLATFORM_ADMIN`**; `can_edit: false` para el resto) | Actualización en PostgreSQL de pesos y topes de modalidad DGCP con traza en `AuditLog`. La edición global quedó restringida al administrador de plataforma | herramientas-auditoria-b2g |
+| `GET` | `/api/auditor/detection-config` | JWT (`ANOMALY_READ`) | Lectura de los 13 parámetros en BD (pesos, sensibilidad y 7 topes de modalidad DGCP). Alimenta la vista de consulta `/app/configuracion-deteccion` | herramientas-auditoria-b2g |
+| `PUT` | `/api/auditor/detection-config` | JWT (**solo `PLATFORM_ADMIN`**; `can_edit: false` para el resto) | Actualización de pesos y topes de modalidad DGCP con traza en `AuditLog`. Se conserva por compatibilidad de API; la UI ya no escribe aquí (superficie única: `/app/calibracion`) | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/resolutions` | JWT (`ANOMALY_READ`) | Historial paginado de dictámenes emitidos (`CONFIRMED` / `DISMISSED`) con auditor y motivo | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/reports/summary` | JWT (`ANOMALY_READ`) | Consolidado ejecutivo de cumplimiento con matriz legal condicional Ley 340-06 | herramientas-auditoria-b2g |
 | `GET` | `/api/auditor/integrations` | JWT (`ANOMALY_READ`) | Listado de llaves de interoperabilidad institucional y endpoints disponibles | herramientas-auditoria-b2g |

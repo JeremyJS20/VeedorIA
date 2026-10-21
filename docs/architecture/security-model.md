@@ -63,7 +63,7 @@ sequenceDiagram
 | `/app/auditor` (`GET/PATCH /api/anomalies/*`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
 | `/app/procesos` (`GET /api/auditor/processes`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
 | `/app/red-colusion` (`GET /api/auditor/collusion-network`) | ✅ Grafo completo | ✅ Grafo completo | 🔒 Vista bloqueada (`locked: true`) | 🚫 `403` | 🚫 `403` |
-| `/app/configuracion-deteccion` (`GET/PUT /api/auditor/detection-config`) | ✅ Lectura y Edición (única superficie de escritura junto a `/app/calibracion`) | 👁️ Solo lectura (`can_edit: false`) | 👁️ Solo lectura (`can_edit: false`) | 🚫 `403` | 🚫 `403` |
+| `/app/configuracion-deteccion` (`GET/PUT /api/auditor/detection-config`) | 👁️ **Solo lectura** (la escritura se hace en `/app/calibracion`) | 👁️ Solo lectura (`can_edit: false`) | 👁️ Solo lectura (`can_edit: false`) | 🚫 `403` | 🚫 `403` |
 | `/app/sincronizacion` (`/api/admin/sync/*`, `/api/admin/queue/status`) | ✅ Disparo, relanzamiento y salud de la cola | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |
 | `/app/calibracion` (`/api/admin/detection-config*`, `/api/admin/calibration/*`, `/api/admin/detection/run`) | ✅ Edición global, reset, apply y re-ejecución | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |
 | `/app/bitacora` (`GET /api/admin/audit-logs*`) | ✅ Consulta y exportación CSV/JSON (append-only) | 🚫 `403` | 🚫 `403` | 🚫 `403` | 🚫 `403` |

@@ -96,7 +96,7 @@ export default function DashboardLayout() {
     "/app/bandeja": "Bandeja de Anomalías",
     "/app/procesos": "Procesos Institucionales",
     "/app/red-colusion": "Red de Colusión",
-    "/app/configuracion-deteccion": "Parámetros de Detección",
+    "/app/configuracion-deteccion": "Parámetros y Topes de Detección",
     "/app/sincronizacion": "Sincronización DGCP y Cola",
     "/app/calibracion": "Calibración del Motor Estadístico",
     "/app/bitacora": "Bitácora del Sistema",
@@ -401,7 +401,7 @@ export default function DashboardLayout() {
               )}
 
               {[
-                { to: "/app/configuracion-deteccion", label: "Parámetros de Detección", icon: SlidersHorizontal },
+                { to: "/app/configuracion-deteccion", label: "Parámetros y Topes", icon: SlidersHorizontal },
                 { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
               ].map((navItem) => (
                 <NavLink
