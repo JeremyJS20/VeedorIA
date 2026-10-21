@@ -1,7 +1,6 @@
 import logging
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.schemas.anomaly import (
@@ -13,7 +12,6 @@ from src.domain.schemas.anomaly import (
 )
 from src.domain.types import ApiResponse
 from src.infrastructure.dependencies import get_db
-from src.models.sync_log import SyncLog
 from src.presentation.dependencies import (
     get_anomaly_service,
     get_optional_user,
@@ -21,6 +19,7 @@ from src.presentation.dependencies import (
 )
 from src.presentation.runners import run_detection
 from src.services.anomaly_service import AnomalyService
+from src.services.sync_lock import get_active_run
 
 logger = logging.getLogger("veedoria.presentation.routers.anomaly")
 router = APIRouter(prefix="/anomalies", tags=["anomalies"])
@@ -42,12 +41,7 @@ async def detect_anomalies(
     session: AsyncSession = Depends(get_db),
     _current_user: dict = Depends(require_permission("DETECTION_RUN")),
 ) -> ApiResponse:
-    stmt = select(SyncLog).where(
-        SyncLog.status == "running",
-        SyncLog.process_type == "detection",
-    )
-    result = await session.execute(stmt)
-    if result.scalars().first():
+    if await get_active_run(session, "detection"):
         return ApiResponse(success=False, message="La detección de anomalías ya está en progreso")
 
     try:

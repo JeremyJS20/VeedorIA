@@ -21,6 +21,7 @@ from src.services.admin_ops_errors import (
     VALIDATION_ERROR,
     AdminOpsError,
 )
+from src.services.sync_lock import get_active_run
 
 logger = logging.getLogger("veedoria.services.admin_sync")
 
@@ -104,7 +105,7 @@ class AdminSyncService:
         detections = await self._recent_logs("detection", safe_limit)
 
         last_completed = await self._last_log("sync", "completed")
-        running = await self._last_log("sync", "running")
+        running = await get_active_run(self.db, "sync")
 
         completed_stmt = (
             select(SyncLog)
@@ -158,8 +159,7 @@ class AdminSyncService:
         """Dispara una corrida de sincronización aplicando el mutex de unicidad."""
         self._assert_platform_admin(current_user)
 
-        running = await self._last_log("sync", "running")
-        if running:
+        if await get_active_run(self.db, "sync"):
             raise AdminOpsError(
                 SYNC_ALREADY_RUNNING, "La sincronización ya está en ejecución"
             )

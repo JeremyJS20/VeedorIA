@@ -1,11 +1,12 @@
 ﻿from collections.abc import Callable
+
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.dependencies import get_db
 from src.services.anomaly_service import AnomalyService
-from src.services.auth_service import AuthDomainError, AuthService
 from src.services.auditor_b2g_service import AuditorB2GService
+from src.services.auth_service import AuthDomainError, AuthService
 from src.services.b2b_suite_service import B2BSuiteService
 from src.services.dashboard_service import DashboardService
 from src.services.public_portal_service import PublicPortalService
@@ -87,6 +88,27 @@ def require_permission(perm_code: str) -> Callable:
                 detail={
                     "code": "FORBIDDEN_INSUFFICIENT_ROLE_OR_PLAN",
                     "message": f"Su rol o el plan actual de su organización no incluye el permiso '{perm_code}'.",
+                },
+            )
+        return current_user
+
+    return _checker
+
+
+def require_platform_admin() -> Callable:
+    """Guard de rol para las superficies de operación de plataforma.
+
+    Se usa en las rutas que no pasan por un servicio con `_assert_platform_admin`
+    propio (p. ej. el disparador manual de sincronización).
+    """
+
+    async def _checker(current_user: dict = Depends(get_current_user)) -> dict:
+        if current_user.get("rol", {}).get("codigo") != "PLATFORM_ADMIN":
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "FORBIDDEN_INSUFFICIENT_ROLE_OR_PLAN",
+                    "message": "Esta operación requiere el rol PLATFORM_ADMIN.",
                 },
             )
         return current_user

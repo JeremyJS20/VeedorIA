@@ -8,7 +8,9 @@ from sqlmodel import desc
 from src.domain.types import ApiResponse
 from src.infrastructure.dependencies import get_db
 from src.models.sync_log import SyncLog
+from src.presentation.dependencies import require_platform_admin
 from src.presentation.runners import run_sync as launch_sync
+from src.services.sync_lock import get_active_run
 
 logger = logging.getLogger("veedoria.presentation.routers.sync")
 router = APIRouter(prefix="/sync", tags=["sync"])
@@ -37,6 +39,7 @@ def _compute_sync_type(full: bool, skip_institutions: bool, skip_processes: bool
 @router.post("/dgcp", status_code=202)
 async def trigger_dgcp_sync(
     session: AsyncSession = Depends(get_db),
+    _current_user: dict = Depends(require_platform_admin()),
     full: bool = Query(False, description="Full rebuild: all entities from DGCP JSON API"),
     skip_institutions: bool = Query(False, description="Omitir fase de instituciones"),
     skip_processes: bool = Query(False, description="Omitir fase de procesos"),
@@ -46,9 +49,7 @@ async def trigger_dgcp_sync(
     rate_limit: float = Query(5.0, description="Requests per second a la API DGCP"),
     days_back: int | None = Query(None, description="Días hacia atrás para filtrar contratos (default: 90)"),
 ) -> ApiResponse:
-    stmt = select(SyncLog).where(SyncLog.status == "running")
-    result = await session.execute(stmt)
-    if result.scalars().first():
+    if await get_active_run(session):
         return ApiResponse(success=False, message="Sync ya está en progreso")
 
     sync_type = _compute_sync_type(full, skip_institutions, skip_processes, skip_contracts, skip_items, skip_suppliers)

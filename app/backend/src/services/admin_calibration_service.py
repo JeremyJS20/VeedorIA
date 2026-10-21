@@ -3,14 +3,13 @@
 import logging
 
 import redis
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.time_utils import utcnow_naive
 from src.models.anomaly import Anomaly
 from src.models.audit_log import AuditLog
 from src.models.detection_config import DetectionConfig
-from src.models.sync_log import SyncLog
 from src.presentation.runners import run_detection
 from src.services.admin_ops_errors import (
     DETECTION_ALREADY_RUNNING,
@@ -28,6 +27,7 @@ from src.services.calibration_core import (
     best_threshold,
     evaluate_threshold,
 )
+from src.services.sync_lock import get_active_run
 
 logger = logging.getLogger("veedoria.services.admin_calibration")
 
@@ -435,17 +435,7 @@ class AdminCalibrationService:
         """Dispara una corrida manual de detección con mutex de unicidad."""
         self._assert_platform_admin(current_user)
 
-        running_stmt = (
-            select(SyncLog)
-            .where(
-                SyncLog.process_type == "detection",
-                SyncLog.status == "running",
-            )
-            .order_by(desc(SyncLog.started_at))
-            .limit(1)
-        )
-        running = (await self.db.execute(running_stmt)).scalars().first()
-        if running:
+        if await get_active_run(self.db, "detection"):
             raise AdminOpsError(
                 DETECTION_ALREADY_RUNNING,
                 "La detección de anomalías ya está en ejecución",

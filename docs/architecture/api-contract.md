@@ -14,7 +14,7 @@
 | Method | Path | Auth | Description | Feature |
 |--------|------|------|-------------|---------|
 | `GET` | `/` | Public | Redirección automática a la documentación interactiva `/redoc` | core |
-| `POST` | `/api/sync/dgcp` | `[VERIFY]` Public / Internal | Dispara sincronización asíncrona (incremental o completa) con la API de Datos Abiertos DGCP (`202 Accepted`) | sync |
+| `POST` | `/api/sync/dgcp` | JWT (`PLATFORM_ADMIN`) | Dispara sincronización asíncrona (incremental o completa) con la API de Datos Abiertos DGCP (`202 Accepted`) | sync |
 | `GET` | `/api/sync/status` | Public | Retorna el estado de la última sincronización y el historial reciente de `sync_log` (sync y detection) | sync |
 | `POST` | `/api/anomalies/detect` | JWT (`DETECTION_RUN`) | Encola una corrida de detección de anomalías en background vía `arq` (`202 Accepted`). `AUDITOR` / `TENANT_ADMIN` / `PLATFORM_ADMIN` | anomalies |
 | `GET` | `/api/anomalies` | Public | Lista paginada de anomalías con filtros por `anomaly_type`, `status` y `min_severity` | anomalies |

@@ -267,7 +267,7 @@ Proveer una plataforma SaaS multi-audiencia (B2G, B2B y CivicTech) e imparcial d
 # Risks
 
 - Cambios de esquema o indisponibilidad temporal en el portal de Datos Abiertos de la DGCP pueden retrasar la sincronización periódica (mitigado con reintentos en `DGCPClient`, importación alternativa desde catálogos locales y trazabilidad en `SyncLog`).
-- Los endpoints de mutación (`POST /api/sync/dgcp`, `POST /api/anomalies/detect`, `PATCH /api/anomalies/{id}`) requieren activar los guards JWT antes del despliegue productivo abierto.
+- Los endpoints de mutación (`POST /api/sync/dgcp`, `POST /api/anomalies/detect`, `PATCH /api/anomalies/{id}`) requieren activar los guards JWT antes del despliegue productivo abierto. **✅ Cerrado (2026-10-21)**: los tres exigen token; `sync/dgcp` además rol `PLATFORM_ADMIN` y el dictamen toma el revisor del token.
 
 ---
 
