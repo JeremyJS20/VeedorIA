@@ -205,7 +205,18 @@ erDiagram
 
 ### `sync_log` (`app/backend/src/models/sync_log.py`) & `detection_config` (`app/backend/src/models/detection_config.py`)
 - **`sync_log`**: Bitácora de corridas de sincronización y detección (`id`, `process_type`, `sync_type`, `started_at`, `completed_at`, `records_synced`, `status`, `error_message`, `triggered_by`, `details`).
-- **`detection_config`**: Parámetros clave-valor (`key` PK `varchar(50)`, `value` `float`, `updated_at`) ajustados por el bucle de retroalimentación de anomalías.
+- **`detection_config`**: Tabla de calibración dinámica en vivo (`key` PK `varchar(50)`, `value` `float`, `updated_at`) que almacena los **13 parámetros gobernados desde `/app/configuracion-deteccion`**:
+  - **Pesos y Sensibilidad del Motor (6 claves)**:
+    - `PRICE_ANOMALY_WEIGHT` (default `1.0`), `FRAGMENTATION_WEIGHT` (default `1.0`), `COLLUSION_WEIGHT` (default `1.0`).
+    - `MIN_CRITICAL_SEVERITY` (default `0.70`), `PRICE_VARIATION_PCT_THRESHOLD` (default `35.0`%), `FRAGMENTATION_WINDOW_DAYS` (default `30.0` días).
+  - **Tabla de Umbrales por Modalidad DGCP en DOP (7 claves)**:
+    - `THRESHOLD_CD_DOP` (`300,000` — Compra por Debajo del Umbral `-CD-`).
+    - `THRESHOLD_CM_DOP` (`1,500,000` — Compra Menor `-CM-`).
+    - `THRESHOLD_CP_DOP` (`6,500,000` — Comparación de Precios `-CP-`).
+    - `THRESHOLD_PEIN_DOP` (`15,000,000` — Procedimiento de Excepción `-PEIN-`/`-PEPU-`/`-PESI-`/`-PEEX-`).
+    - `THRESHOLD_LPN_DOP` (`20,000,000` — Licitación Pública `-LPN-`/`-LPI-`/`-SOR-`).
+    - `THRESHOLD_PEEN_DOP` (`25,000,000` — Emergencia Nacional / Urgencia `-PEEN-`/`-PEUR-`).
+    - `FRAGMENTATION_THRESHOLD_DOP` (`5,000,000` — Umbral general de respaldo cuando la referencia no incluye sigla estándar).
 
 ## Relationships
 | From | To | Type | FK | ON DELETE |

@@ -43,6 +43,33 @@ sequenceDiagram
 | `POST /api/anomalies/detect` | ✅ | `[VERIFY]` Restringir con guard JWT |
 | `POST /api/sync/dgcp` | ✅ | `[VERIFY]` Restringir con guard JWT |
 
+## Matriz Consolidada de Organizaciones, Planes de Suscripción y Permisos Multi-Tenant
+
+### 1. Cuentas y Organizaciones Pre-Sembradas (`ensure_auth_seed`)
+
+| Organización (`tenant.code`) | Segmento (`tenant_type`) | Plan (`plan_tier`) | Cuenta Demo Principal | Rol (`rol.codigo`) | Alcance de Datos | Candados de Suscripción Activos |
+|------------------------------|--------------------------|--------------------|-----------------------|--------------------|------------------|---------------------------------|
+| `NEXODIGITAL` | `PLATFORM` | `PLATFORM_GLOBAL` | `admin@veedoria.gob.do` | `PLATFORM_ADMIN` | Nacional (Todas las instituciones y proveedores) | Ninguno (acceso total a B2G, B2B y Administración) |
+| `MOPC-B2G` | `GOV_INSTITUTION` | `B2G_PREMIUM` | `auditor@mopc.gob.do` | `CONTRALOR` | Acotado a `institution_id` del MOPC | Ninguno en módulos B2G (Red de Colusión, Reportes e Integraciones habilitados) |
+| `MINERD-B2G` | `GOV_INSTITUTION` | `B2G_BASIC` | `auditor@minerd.gob.do` | `AUDITOR_ANALISTA` | Acotado a `institution_id` del MINERD | 4.º KPI de Panorama B2G bloqueado; Red de Colusión (`/app/red-colusion`) en estado `locked: true`; emisión de llaves API restringida al Plan Institucional Avanzado |
+| `ACERO-B2B` | `B2B_SUPPLIER` | `B2B_CORPORATE` | `proveedor@constructora.do` | `B2B_GERENTE` | Acotado al RPE empresarial + Mercado UNSPSC | Ninguno en módulos B2B (Cuartiles de precios, competidores y tasa de adjudicación desbloqueados) |
+| `FERRETERIA-B2B` | `B2B_SUPPLIER` | `B2B_PYME` | `pyme@ferreteria.do` | `B2B_ANALISTA` | Acotado al RPE empresarial + Mercado UNSPSC | KPI de Tasa de Adjudicación bloqueado en `/app/dashboard`; tabla detallada de competidores y cuartiles avanzados bloqueados en `/app/mercado` |
+
+### 2. Matriz de Visibilidad y Control de Acceso por Ruta
+
+| Ruta Frontend / Endpoint Backend | `PLATFORM_ADMIN` | Auditor B2G Avanzado (`B2G_PREMIUM`) | Auditor B2G Básico (`B2G_BASIC`) | Proveedor Corporativo (`B2B_CORPORATE`) | Proveedor Pyme (`B2B_PYME`) |
+|----------------------------------|:----------------:|:------------------------------------:|:--------------------------------:|:---------------------------------------:|:---------------------------:|
+| `/app/dashboard` (`GET /api/dashboard/overview`) | ✅ Variante `ADMIN` (y selector `?view_mode=`) | ✅ Variante `B2G` Completa | ✅ Variante `B2G` (4.º KPI con candado) | ✅ Variante `B2B` Completa | ✅ Variante `B2B` (2.º KPI con candado) |
+| `/app/auditor` (`GET/PATCH /api/anomalies/*`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
+| `/app/procesos` (`GET /api/auditor/processes`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
+| `/app/red-colusion` (`GET /api/auditor/collusion-network`) | ✅ Grafo completo | ✅ Grafo completo | 🔒 Vista bloqueada (`locked: true`) | 🚫 `403` | 🚫 `403` |
+| `/app/configuracion-deteccion` (`GET/PUT /api/auditor/detection-config`) | ✅ Lectura y Edición | ✅ Lectura y Edición (`CONTRALOR`) | 👁️ Solo lectura (`can_edit: false`) | 🚫 `403` | 🚫 `403` |
+| `/app/resoluciones` (`GET /api/auditor/resolutions`) | ✅ Nacional | ✅ Institucional | ✅ Institucional | 🚫 `403` | 🚫 `403` |
+| `/app/reportes` (`GET /api/auditor/reports/summary`) | ✅ Nacional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | ✅ Institucional + Exportación CSV/Acta | 🚫 `403` | 🚫 `403` |
+| `/app/integraciones` (`GET/POST/DELETE /api/auditor/integrations/*`) | ✅ Emisión y Revocación | ✅ Emisión y Revocación | 🔒 Emisión bloqueada por plan | 🚫 `403` | 🚫 `403` |
+| `/app/mercado` (`GET /api/market/intelligence`) | ✅ Completo | 🚫 Redirigido a B2G | 🚫 Redirigido a B2G | ✅ 3 Subsecciones completas | 🔒 Subsecciones avanzadas con candado |
+| `/app/usuarios` y `/app/roles` (`/api/auth/users`, `/api/auth/roles`) | ✅ Global | ✅ Usuarios de su institución | 👁️ Según permiso `USER_READ` | ✅ Usuarios de su empresa | 👁️ Según permiso `USER_READ` |
+
 ## Secrets Management
 | Secret | Storage | Path / Variable |
 |--------|---------|-----------------|
@@ -93,4 +120,4 @@ La tabla `audit_log` (`app/backend/src/models/audit_log.py`) registra acciones c
 | 2026-10-18 | `project-scanner` | Línea base de seguridad extraída de `pyproject.toml`, `user.py`, `audit_log.py` y `main.py` |
 
 ---
-_Last updated: 2026-10-19 by solution-designer (autenticacion-rbac completed)_
+_Last updated: 2026-10-20 by implementer (added Multi-Tenant Plans, Locks & B2G/B2B Route Matrix)_
