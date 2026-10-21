@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+﻿import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 import {
   AlertTriangle,
@@ -55,8 +55,15 @@ export default function PriceSimulatorPage() {
     }
   }
 
+  const autoRan = useRef(false)
   useEffect(() => {
-    void handleSimulate()
+    if (autoRan.current) return
+    autoRan.current = true
+    // Simulación inicial diferida: evita renders en cascada dentro del effect
+    const t = setTimeout(() => {
+      void handleSimulate()
+    }, 0)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

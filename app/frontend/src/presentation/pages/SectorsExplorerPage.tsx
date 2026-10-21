@@ -39,7 +39,7 @@ export default function SectorsExplorerPage() {
   const handleToggleSector = async (famCode: string) => {
     setErrorMessage(null)
     const isCurrentlyMonitored = monitored.includes(famCode)
-    let nextList: string[] = []
+    let nextList: string[]
 
     if (isCurrentlyMonitored) {
       if (monitored.length <= 1) {
