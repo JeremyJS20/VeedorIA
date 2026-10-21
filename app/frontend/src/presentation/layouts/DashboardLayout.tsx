@@ -27,6 +27,9 @@ import {
   Calculator,
   Layers,
   CreditCard,
+  RefreshCw,
+  ScrollText,
+  LifeBuoy,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
@@ -91,6 +94,10 @@ export default function DashboardLayout() {
     "/app/procesos": "Procesos Institucionales",
     "/app/red-colusion": "Red de Colusión",
     "/app/configuracion-deteccion": "Parámetros de Detección",
+    "/app/sincronizacion": "Sincronización DGCP y Cola",
+    "/app/calibracion": "Calibración del Motor Estadístico",
+    "/app/bitacora": "Bitácora del Sistema",
+    "/app/soporte": "Centro de Soporte y Servicios",
     "/app/resoluciones": "Historial de Resoluciones",
     "/app/reportes": "Reportes de Cumplimiento",
     "/app/integraciones": "Integraciones Institucionales",
@@ -393,6 +400,50 @@ export default function DashboardLayout() {
               {[
                 { to: "/app/configuracion-deteccion", label: "Parámetros de Detección", icon: SlidersHorizontal },
                 { to: "/app/integraciones", label: "Integraciones y Datos", icon: KeyRound },
+              ].map((navItem) => (
+                <NavLink
+                  key={navItem.to}
+                  to={navItem.to}
+                  className={({ isActive }) =>
+                    `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div
+                          className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                        />
+                      )}
+                      <navItem.icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                      {!collapsed && (
+                        <span className="text-[13px] flex-1 truncate">{navItem.label}</span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          )}
+
+          {/* Operaciones de Plataforma (Solo Administradores Globales) */}
+          {user?.rol?.codigo === "PLATFORM_ADMIN" && (
+            <div className="space-y-1">
+              {!collapsed && (
+                <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
+                  Operaciones de Plataforma
+                </p>
+              )}
+
+              {[
+                { to: "/app/sincronizacion", label: "Sincronización DGCP", icon: RefreshCw },
+                { to: "/app/calibracion", label: "Calibración del Motor", icon: SlidersHorizontal },
+                { to: "/app/bitacora", label: "Bitácora del Sistema", icon: ScrollText },
+                { to: "/app/soporte", label: "Centro de Soporte", icon: LifeBuoy },
               ].map((navItem) => (
                 <NavLink
                   key={navItem.to}

@@ -43,6 +43,10 @@ const CompetitorProfilePage = lazy(() => import("./presentation/pages/Competitor
 const PriceSimulatorPage = lazy(() => import("./presentation/pages/PriceSimulatorPage"))
 const SectorsExplorerPage = lazy(() => import("./presentation/pages/SectorsExplorerPage"))
 const SubscriptionBillingPage = lazy(() => import("./presentation/pages/SubscriptionBillingPage"))
+const SyncOperationsPage = lazy(() => import("./presentation/pages/SyncOperationsPage"))
+const CalibrationConsolePage = lazy(() => import("./presentation/pages/CalibrationConsolePage"))
+const AuditLogPage = lazy(() => import("./presentation/pages/AuditLogPage"))
+const SupportCenterPage = lazy(() => import("./presentation/pages/SupportCenterPage"))
 
 function LandingPage() {
   return (
@@ -261,6 +265,38 @@ function App() {
                   allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}
                 >
                   <B2GIntegrationsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="sincronizacion"
+              element={
+                <RequireAuth allowedRoles={["PLATFORM_ADMIN"]}>
+                  <SyncOperationsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="calibracion"
+              element={
+                <RequireAuth allowedRoles={["PLATFORM_ADMIN"]}>
+                  <CalibrationConsolePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="bitacora"
+              element={
+                <RequireAuth allowedRoles={["PLATFORM_ADMIN"]}>
+                  <AuditLogPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="soporte"
+              element={
+                <RequireAuth allowedRoles={["PLATFORM_ADMIN"]}>
+                  <SupportCenterPage />
                 </RequireAuth>
               }
             />

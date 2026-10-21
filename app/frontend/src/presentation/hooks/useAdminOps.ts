@@ -456,8 +456,7 @@ export function useAdminTickets(filters: {
   q?: string
   page?: number
   limit?: number
-}) {
-  return useQuery({
+}) {  return useQuery({
     queryKey: ["admin", "support", "tickets", filters],
     queryFn: async () => {
       const res = await apiClient.get(
@@ -470,6 +469,17 @@ export function useAdminTickets(filters: {
         })}`
       )
       return unwrap<SupportTicketList>(res.data)
+    },
+  })
+}
+
+export function useAdminTicket(ticketId: number | null) {
+  return useQuery({
+    queryKey: ["admin", "support", "ticket", ticketId],
+    enabled: ticketId !== null,
+    queryFn: async () => {
+      const res = await apiClient.get(`/admin/support/tickets/${ticketId}`)
+      return unwrap<SupportTicket>(res.data)
     },
   })
 }
