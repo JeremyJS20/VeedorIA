@@ -23,6 +23,7 @@ from src.presentation.routers.auth_router import router as auth_router
 from src.presentation.routers.b2b_suite_router import router as b2b_suite_router
 from src.presentation.routers.dashboard_router import router as dashboard_router
 from src.presentation.routers.public_router import router as public_router
+from src.presentation.routers.support_router import router as support_router
 from src.presentation.routers.sync import router as sync_router
 from src.presentation.runners import run_detection, run_sync
 from src.services.auth_service import ensure_auth_seed
@@ -139,6 +140,7 @@ app.include_router(auditor_b2g_router, prefix="/api")
 app.include_router(integration_router, prefix="/api")
 app.include_router(b2b_suite_router, prefix="/api")
 app.include_router(admin_ops_router, prefix="/api")
+app.include_router(support_router, prefix="/api")
 
 install_admin_ops_error_handlers(app)
 

@@ -20,6 +20,7 @@ from src.presentation.routers.auth_router import router as auth_router
 from src.presentation.routers.b2b_suite_router import router as b2b_suite_router
 from src.presentation.routers.dashboard_router import router as dashboard_router
 from src.presentation.routers.public_router import router as public_router
+from src.presentation.routers.support_router import router as support_router
 from src.presentation.routers.sync import router as sync_router
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -59,6 +60,7 @@ async def client(db_session: AsyncSession) -> AsyncClient:
     test_app.include_router(b2b_suite_router, prefix="/api")
     test_app.include_router(integration_router, prefix="/api")
     test_app.include_router(admin_ops_router, prefix="/api")
+    test_app.include_router(support_router, prefix="/api")
     install_admin_ops_error_handlers(test_app)
     test_app.dependency_overrides[get_db] = lambda: db_session
 
