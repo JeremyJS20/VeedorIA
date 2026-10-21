@@ -98,7 +98,7 @@ export default function SectorsExplorerPage() {
         </button>
       </div>
 
-      {/* 3 KPI Cards matching MarketIntelligencePage */}
+      {/* 3 KPI Cards compartidas (ui/KpiCard) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           label="Cuota de Rubros Monitoreados"

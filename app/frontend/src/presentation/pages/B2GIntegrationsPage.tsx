@@ -65,7 +65,7 @@ export default function B2GIntegrationsPage() {
         </div>
       </div>
 
-      {/* 3 Summary KPI Cards matching MarketIntelligencePage */}
+      {/* 3 Summary KPI Cards (ui/KpiCard) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           label="Llaves Activas"

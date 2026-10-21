@@ -98,7 +98,7 @@ export default function ComplianceReportsPage() {
         </div>
       </div>
 
-      {/* 4 KPI Cards matching OverviewDashboardPage */}
+      {/* 4 KPI Cards compartidas (ui/KpiCard) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           label="Procesos y Contratos"

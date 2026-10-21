@@ -76,7 +76,7 @@ export default function SubscriptionBillingPage() {
         </div>
       )}
 
-      {/* 3 Quota KPI Cards matching MarketIntelligencePage */}
+      {/* 3 Quota KPI Cards (ui/KpiCard) */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((n) => (
