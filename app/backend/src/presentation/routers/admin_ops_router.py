@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, FastAPI, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.domain.types import ApiErrorResponse, ApiResponse
 from src.infrastructure.dependencies import get_db
 from src.presentation.dependencies import get_current_user
+from src.services.admin_audit_service import AdminAuditService
 from src.services.admin_calibration_service import AdminCalibrationService
 from src.services.admin_ops_errors import (
     DETECTION_ALREADY_RUNNING,
@@ -24,6 +25,7 @@ from src.services.admin_ops_errors import (
     VALIDATION_ERROR,
     AdminOpsError,
 )
+from src.services.admin_support_service import AdminSupportService
 from src.services.admin_sync_service import AdminSyncService
 
 logger = logging.getLogger("veedoria.presentation.routers.admin_ops")
@@ -68,8 +70,24 @@ class CalibrationApplyPayload(BaseModel):
     changes: dict[str, float] = Field(default_factory=dict)
 
 
+class SupportTicketUpdatePayload(BaseModel):
+    status: str | None = Field(default=None)
+    assigned_to_id: int | None = Field(default=None)
+    reply: str | None = Field(default=None)
+
+
 def get_admin_sync_service(db: AsyncSession = Depends(get_db)) -> AdminSyncService:
     return AdminSyncService(db=db)
+
+
+def get_admin_audit_service(db: AsyncSession = Depends(get_db)) -> AdminAuditService:
+    return AdminAuditService(db=db)
+
+
+def get_admin_support_service(
+    db: AsyncSession = Depends(get_db),
+) -> AdminSupportService:
+    return AdminSupportService(db=db)
 
 
 def get_admin_calibration_service(
@@ -180,3 +198,125 @@ async def trigger_detection(
 ):
     data = await service.trigger_detection(current_user)
     return ApiResponse(success=True, data=data, message="Detección encolada")
+
+
+# ── Bitácora (solo lectura estricta) ───────────────────────────────────────
+@router.get("/audit-logs", response_model=ApiResponse[dict])
+async def list_audit_logs(
+    action_type: str | None = Query(default=None),
+    user_id: str | None = Query(default=None),
+    entity_type: str | None = Query(default=None),
+    entity_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=25, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
+    service: AdminAuditService = Depends(get_admin_audit_service),
+):
+    data = await service.list_audit_logs(
+        current_user,
+        action_type=action_type,
+        user_id=user_id,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        date_from=date_from,
+        date_to=date_to,
+        page=page,
+        limit=limit,
+    )
+    return ApiResponse(success=True, data=data)
+
+
+@router.get("/audit-logs/export")
+async def export_audit_logs(
+    action_type: str | None = Query(default=None),
+    user_id: str | None = Query(default=None),
+    entity_type: str | None = Query(default=None),
+    entity_id: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    export_format: str = Query(default="csv", alias="format", pattern="^(csv|json)$"),
+    current_user: dict = Depends(get_current_user),
+    service: AdminAuditService = Depends(get_admin_audit_service),
+):
+    data = await service.export_audit_logs(
+        current_user,
+        export_format=export_format,
+        action_type=action_type,
+        user_id=user_id,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    return Response(
+        content=data["content"],
+        media_type=data["media_type"],
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{data["filename"]}"'
+            ),
+            "X-Checksum-SHA256": data["checksum_sha256"],
+        },
+    )
+
+
+# ── Health de servicios ────────────────────────────────────────────────────
+@router.get("/health/services", response_model=ApiResponse[dict])
+async def get_services_health(
+    current_user: dict = Depends(get_current_user),
+    service: AdminAuditService = Depends(get_admin_audit_service),
+):
+    data = await service.get_services_health(current_user)
+    return ApiResponse(success=True, data=data)
+
+
+# ── Bandeja administrativa de tickets ──────────────────────────────────────
+@router.get("/support/tickets", response_model=ApiResponse[dict])
+async def list_support_tickets(
+    status: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    q: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
+    service: AdminSupportService = Depends(get_admin_support_service),
+):
+    data = await service.list_tickets(
+        current_user,
+        status=status,
+        category=category,
+        q=q,
+        page=page,
+        limit=limit,
+    )
+    return ApiResponse(success=True, data=data)
+
+
+@router.get("/support/tickets/{ticket_id}", response_model=ApiResponse[dict])
+async def get_support_ticket(
+    ticket_id: int,
+    current_user: dict = Depends(get_current_user),
+    service: AdminSupportService = Depends(get_admin_support_service),
+):
+    data = await service.get_ticket(current_user, ticket_id)
+    return ApiResponse(success=True, data=data)
+
+
+@router.patch("/support/tickets/{ticket_id}", response_model=ApiResponse[dict])
+async def update_support_ticket(
+    ticket_id: int,
+    payload: SupportTicketUpdatePayload,
+    current_user: dict = Depends(get_current_user),
+    service: AdminSupportService = Depends(get_admin_support_service),
+):
+    changes = payload.model_dump(exclude_none=True)
+    if not changes:
+        raise AdminOpsError(
+            VALIDATION_ERROR,
+            "Debe enviar al menos un campo: status, assigned_to_id o reply.",
+        )
+    data = await service.update_ticket(current_user, ticket_id, changes)
+    return ApiResponse(success=True, data=data, message="Ticket actualizado")
+
