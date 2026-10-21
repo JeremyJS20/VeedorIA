@@ -89,8 +89,9 @@ export default function SyncOperationsPage() {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const running = data?.kpis?.running ?? null
-  const queueDown = queue.data?.redis === "OFFLINE" || queue.data?.worker === "DOWN"
-  const canTrigger = !running && !queueDown && !trigger.isPending
+  const redisOffline = queue.data?.redis === "OFFLINE"
+  const workerDown = queue.data?.worker === "DOWN"
+  const canTrigger = !running && !redisOffline && !workerDown && !trigger.isPending
 
   const kpis = useMemo(
     () => [
@@ -260,12 +261,26 @@ export default function SyncOperationsPage() {
         ))}
       </div>
 
-      {queueDown && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300 font-semibold">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
+      {redisOffline && (
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2 text-xs text-rose-800 dark:text-rose-300 font-semibold">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            La cola asíncrona no está disponible (Redis/worker). El histórico sigue consultable, pero los
-            disparos están deshabilitados.
+            Redis no responde. El histórico sigue consultable, pero no es posible encolar trabajos. Verifica el
+            contenedor <span className="font-mono">veedoria-redis</span> y la variable{" "}
+            <span className="font-mono">REDIS_URL</span>.
+          </span>
+        </div>
+      )}
+
+      {!redisOffline && workerDown && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300 font-semibold">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Redis está operativo, pero no hay ningún worker <span className="font-mono">arq</span> activo: los jobs
+            quedarían encolados sin procesarse. Inicia el worker con{" "}
+            <span className="font-mono">docker compose up -d worker</span> o{" "}
+            <span className="font-mono">poetry run python -m arq src.cli.arq_worker.WorkerSettings</span>. El panel
+            se actualiza automáticamente al detectarlo.
           </span>
         </div>
       )}
