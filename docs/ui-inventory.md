@@ -213,10 +213,6 @@ Entry format (one `## Name` per component):
 - Use when: any table of records with columns, loading skeleton and empty state; pass `columns`, `rows`, `rowKey` and `emptyMessage`
 - Replaces: `<table`
 - Allowed: `app/frontend/src/presentation/pages/AuditLogPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/CollusionNetworkPage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/CompetitorProfilePage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/MyBidsPipelinePage.tsx`
-- Allowed: `app/frontend/src/presentation/pages/PriceSimulatorPage.tsx`
 - Allowed: `app/frontend/src/presentation/pages/RolesMatrixPage.tsx`
 
 ---
@@ -231,7 +227,7 @@ today would fail on legacy pages; the counts below are the migration target for 
 | `KpiCard` | ~40 KPI cards with `border-l-4` across 10 pages (`AuditorPage`, `AuditResolutionsPage`, `B2BIntegrationsPage`, `CollusionNetworkPage`, `CompetitorProfilePage`, `ComplianceReportsPage`, `InstitutionalProcessesPage`, `MarketIntelligencePage`, `OpportunitiesRadarPage`, `MyBidsPipelinePage`) |
 | `StatusChip` | quedan en `AuditLogPage` y `RolesMatrixPage` (la matriz usa `Check`/`Minus`, no chips). Migrados: `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2GIntegrationsPage`, `UsersManagementPage`, `OverviewDashboardPage`, `SyncOperationsPage`, `SupportCenterPage`, `DetectionConfigPage`. |
 | `Modal` / `Drawer` | cerrado: los 6 overlays legacy usan `Modal`/`Drawer`. `FullscreenOverlay` es un componente distinto (gráfico a pantalla completa) y se conserva. |
-| `DataTable` | 15 tablas migradas en 15 archivos. Quedan 6 en `Allowed`: `AuditLogPage` (tabla de diff dentro del drawer), `CollusionNetworkPage`, `CompetitorProfilePage`, `MyBidsPipelinePage`, `PriceSimulatorPage`, `RolesMatrixPage` (columnas dinámicas por rol). |
+| `DataTable` | 19 tablas migradas. Quedan 2 excepciones declaradas: `AuditLogPage` (tabla de diff antes/después dentro del drawer de detalle, formato clave-valor) y `RolesMatrixPage` (una columna por rol, generadas dinámicamente). |
 | `Button` | 7 botones de auth migrados. Quedan 2 `<Link>` (`ForgotPasswordPage`, `ResetPasswordPage`) que conservan las clases `btn-*` porque `ui/Button` no acepta `as`; se resuelven si algún día hace falta un `ButtonLink`. |
 
 ## Missing composites (known duplication — do not re-implement; plan the extraction)

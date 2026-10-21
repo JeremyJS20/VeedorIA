@@ -13,6 +13,7 @@ import { useB2BBids, useUpsertBid, useDeleteBid } from "../hooks/useB2BSuite"
 import type { BidItem, BidStage } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import Modal from "../components/ui/Modal"
+import DataTable from "../components/ui/DataTable"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -380,85 +381,99 @@ export default function MyBidsPipelinePage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                      <th className="py-3 px-5">Proceso y Objeto</th>
-                      <th className="py-3 px-5">Institución Compradora</th>
-                      <th className="py-3 px-5">Etapa</th>
-                      <th className="py-3 px-5 text-right">Monto Oferta</th>
-                      <th className="py-3 px-5">Notas Privadas</th>
-                      <th className="py-3 px-5 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/20 text-xs">
-                    {items.map((bid) => (
-                      <tr
-                        key={bid.bid_id}
-                        className="hover:bg-surface-container-low/50 transition-colors"
+              <DataTable
+                rows={items}
+                rowKey={(bid) => bid.bid_id}
+                emptyMessage="Todavía no hay licitaciones guardadas en el pipeline."
+                columns={[
+                  {
+                    key: "proceso",
+                    header: "Proceso y Objeto",
+                    cellClassName: "max-w-[300px]",
+                    cell: (bid) => (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedProcessId(bid.process_id)}
+                          className="font-mono font-bold text-primary hover:underline text-left block cursor-pointer"
+                        >
+                          {bid.process_code}
+                        </button>
+                        <p className="font-medium text-on-surface line-clamp-1 mt-0.5">{bid.title}</p>
+                      </>
+                    ),
+                  },
+                  {
+                    key: "institucion",
+                    header: "Institución Compradora",
+                    cellClassName: "text-on-surface-variant max-w-[220px] truncate",
+                    cell: (bid) => bid.institution_name,
+                  },
+                  {
+                    key: "etapa",
+                    header: "Etapa",
+                    cellClassName: "whitespace-nowrap",
+                    cell: (bid) => (
+                      <span
+                        className={`inline-block text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg ${
+                          STAGE_BADGE_STYLES[bid.stage as BidStage]
+                        }`}
                       >
-                        <td className="py-3.5 px-5 max-w-[300px]">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProcessId(bid.process_id)}
-                            className="font-mono font-bold text-primary hover:underline text-left block cursor-pointer"
-                          >
-                            {bid.process_code}
-                          </button>
-                          <p className="font-medium text-on-surface line-clamp-1 mt-0.5">
-                            {bid.title}
-                          </p>
-                        </td>
-                        <td className="py-3.5 px-5 text-on-surface-variant max-w-[220px] truncate">
-                          {bid.institution_name}
-                        </td>
-                        <td className="py-3.5 px-5 whitespace-nowrap">
-                          <span
-                            className={`inline-block text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg ${STAGE_BADGE_STYLES[bid.stage as BidStage]}`}
-                          >
-                            {STAGE_LABELS[bid.stage as BidStage]}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface whitespace-nowrap">
-                          {formatDop(bid.bid_amount_dop)}
-                        </td>
-                        <td className="py-3.5 px-5 text-on-surface-variant max-w-[240px] truncate">
-                          {bid.notes || "—"}
-                        </td>
-                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => openEditModal(bid)}
-                              className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                              title="Editar"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedProcessId(bid.process_id)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
-                            >
-                              <span>Expediente</span>
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteMutation.mutate(bid.bid_id)}
-                              className="p-2 rounded-lg bg-surface-container-low hover:bg-red-500/15 border border-outline-variant/30 text-on-surface-variant hover:text-red-600 transition-colors cursor-pointer"
-                              title="Eliminar del pipeline"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        {STAGE_LABELS[bid.stage as BidStage]}
+                      </span>
+                    ),
+                  },
+                  {
+                    key: "monto",
+                    header: "Monto Oferta",
+                    align: "right",
+                    cellClassName: "font-mono font-bold text-on-surface whitespace-nowrap",
+                    cell: (bid) => formatDop(bid.bid_amount_dop),
+                  },
+                  {
+                    key: "notas",
+                    header: "Notas Privadas",
+                    cellClassName: "text-on-surface-variant max-w-[240px] truncate",
+                    cell: (bid) => bid.notes || "—",
+                  },
+                  {
+                    key: "acciones",
+                    header: "Acciones",
+                    align: "right",
+                    cellClassName: "whitespace-nowrap",
+                    cell: (bid) => (
+                      <div className="inline-flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(bid)}
+                          className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                          title="Editar"
+                          aria-label={`Editar ${bid.process_code}`}
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedProcessId(bid.process_id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
+                        >
+                          <span>Expediente</span>
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMutation.mutate(bid.bid_id)}
+                          className="p-2 rounded-lg bg-surface-container-low hover:bg-red-500/15 border border-outline-variant/30 text-on-surface-variant hover:text-red-600 transition-colors cursor-pointer"
+                          title="Eliminar del pipeline"
+                          aria-label={`Eliminar ${bid.process_code} del pipeline`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             </div>
           )}
         </div>

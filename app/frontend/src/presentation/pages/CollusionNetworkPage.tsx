@@ -10,6 +10,7 @@ import { useCollusionNetwork } from "../hooks/useAuditorB2G"
 import { SupplierInspectorDrawer } from "../components/ConsoleInspectorDrawers"
 import { useAuth } from "../context/AuthContext"
 import { resolvePlanLock } from "../../domain/previewProfiles"
+import DataTable from "../components/ui/DataTable"
 
 function formatCompactDop(amount: number): string {
   const v = amount || 0
@@ -328,56 +329,72 @@ export default function CollusionNetworkPage() {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                <th className="py-3 px-5">Proveedor Adjudicatario</th>
-                <th className="py-3 px-5">Registro RPE</th>
-                <th className="py-3 px-5">Organismo Principal</th>
-                <th className="py-3 px-5 text-center">Procesos</th>
-                <th className="py-3 px-5 text-center">Contratos</th>
-                <th className="py-3 px-5 text-right">Monto Acumulado</th>
-                <th className="py-3 px-5 text-right">Ficha</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20 text-xs">
-              {recurrent.map((sup, i) => (
-                <tr
-                  key={`${sup.supplier_name}-${i}`}
-                  className="hover:bg-surface-container-low/50 transition-colors"
-                >
-                  <td className="py-3.5 px-5 font-semibold text-on-surface">{sup.supplier_name}</td>
-                  <td className="py-3.5 px-5 font-mono text-on-surface-variant">{sup.rpe}</td>
-                  <td className="py-3.5 px-5 text-on-surface-variant">{sup.institution_name}</td>
-                  <td className="py-3.5 px-5 text-center font-mono font-bold text-on-surface">
-                    {sup.processes_count}
-                  </td>
-                  <td className="py-3.5 px-5 text-center font-mono text-on-surface-variant">
-                    {sup.contracts_count}
-                  </td>
-                  <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface">
-                    RD$ {sup.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}
-                  </td>
-                  <td className="py-3.5 px-5 text-right">
-                    {sup.rpe && sup.rpe !== "S/R" ? (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRpe(sup.rpe)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        <span>Ver Perfil</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    ) : (
-                      <span className="text-on-surface-variant">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          rows={recurrent}
+          rowKey={(sup) =>
+            `${sup.rpe}-${sup.supplier_name}-${sup.institution_name}-${sup.total_amount}`
+          }
+          emptyMessage="No se detectaron adjudicatarios recurrentes en la red analizada."
+          columns={[
+            {
+              key: "proveedor",
+              header: "Proveedor Adjudicatario",
+              cellClassName: "font-semibold text-on-surface",
+              cell: (sup) => sup.supplier_name,
+            },
+            {
+              key: "rpe",
+              header: "Registro RPE",
+              cellClassName: "font-mono text-on-surface-variant",
+              cell: (sup) => sup.rpe,
+            },
+            {
+              key: "organismo",
+              header: "Organismo Principal",
+              cellClassName: "text-on-surface-variant",
+              cell: (sup) => sup.institution_name,
+            },
+            {
+              key: "procesos",
+              header: "Procesos",
+              align: "center",
+              cellClassName: "font-mono font-bold text-on-surface",
+              cell: (sup) => sup.processes_count,
+            },
+            {
+              key: "contratos",
+              header: "Contratos",
+              align: "center",
+              cellClassName: "font-mono text-on-surface-variant",
+              cell: (sup) => sup.contracts_count,
+            },
+            {
+              key: "monto",
+              header: "Monto Acumulado",
+              align: "right",
+              cellClassName: "font-mono font-bold text-on-surface",
+              cell: (sup) => `RD$ ${sup.total_amount.toLocaleString("es-DO", { maximumFractionDigits: 0 })}`,
+            },
+            {
+              key: "ficha",
+              header: "Ficha",
+              align: "right",
+              cell: (sup) =>
+                sup.rpe && sup.rpe !== "S/R" ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRpe(sup.rpe)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-primary/10 text-primary border border-outline-variant/35 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <span>Ver Perfil</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <span className="text-on-surface-variant">—</span>
+                ),
+            },
+          ]}
+        />
       </div>
         </div>
       </div>

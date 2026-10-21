@@ -10,6 +10,7 @@ import {
 import { useSimulatorCatalog, useSimulatePrice } from "../hooks/useB2BSuite"
 import type { PriceSimulationResponse } from "../hooks/useB2BSuite"
 import { ProcessInspectorDrawer } from "../components/ConsoleInspectorDrawers"
+import DataTable from "../components/ui/DataTable"
 
 function formatDop(val: number): string {
   return `RD$ ${(val || 0).toLocaleString("es-DO", { maximumFractionDigits: 0 })}`
@@ -408,57 +409,68 @@ export default function PriceSimulatorPage() {
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-outline-variant/25 bg-surface-container-low/60 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                      <th className="py-3 px-5">Proceso</th>
-                      <th className="py-3 px-5">Proveedor Adjudicado</th>
-                      <th className="py-3 px-5">Institución Compradora</th>
-                      <th className="py-3 px-5 text-right">Precio Unitario</th>
-                      <th className="py-3 px-5 text-right">Monto Contrato</th>
-                      <th className="py-3 px-5 text-right">Expediente</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/20 text-xs">
-                    {refContracts.map((rc, idx) => (
-                      <tr
-                        key={`${rc.process_code}-${idx}`}
-                        className="hover:bg-surface-container-low/50 transition-colors"
+              <DataTable
+                rows={refContracts}
+                rowKey={(rc) => `${rc.process_code}-${rc.supplier_name}-${rc.unit_price_dop}`}
+                emptyMessage="No hay contratos de referencia para el rubro consultado."
+                columns={[
+                  {
+                    key: "proceso",
+                    header: "Proceso",
+                    cellClassName: "font-mono font-semibold text-primary whitespace-nowrap",
+                    cell: (rc) => (
+                      <>
+                        {rc.process_code}
+                        <span className="block text-[11px] font-normal text-on-surface-variant">
+                          {rc.signed_date}
+                        </span>
+                      </>
+                    ),
+                  },
+                  {
+                    key: "proveedor",
+                    header: "Proveedor Adjudicado",
+                    cellClassName: "font-medium text-on-surface max-w-[240px] truncate",
+                    cell: (rc) => rc.supplier_name,
+                  },
+                  {
+                    key: "institucion",
+                    header: "Institución Compradora",
+                    cellClassName: "text-on-surface-variant max-w-[240px] truncate",
+                    cell: (rc) => rc.institution_name,
+                  },
+                  {
+                    key: "precio_unitario",
+                    header: "Precio Unitario",
+                    align: "right",
+                    cellClassName: "font-mono font-bold text-primary whitespace-nowrap",
+                    cell: (rc) => formatDop(rc.unit_price_dop),
+                  },
+                  {
+                    key: "monto",
+                    header: "Monto Contrato",
+                    align: "right",
+                    cellClassName: "font-mono font-bold text-on-surface whitespace-nowrap",
+                    cell: (rc) => formatDop(rc.total_amount_dop),
+                  },
+                  {
+                    key: "expediente",
+                    header: "Expediente",
+                    align: "right",
+                    cellClassName: "whitespace-nowrap",
+                    cell: (rc) => (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProcessId(rc.process_id)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
                       >
-                        <td className="py-3.5 px-5 font-mono font-semibold text-primary whitespace-nowrap">
-                          {rc.process_code}
-                          <span className="block text-[11px] font-normal text-on-surface-variant">
-                            {rc.signed_date}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-5 font-medium text-on-surface max-w-[240px] truncate">
-                          {rc.supplier_name}
-                        </td>
-                        <td className="py-3.5 px-5 text-on-surface-variant max-w-[240px] truncate">
-                          {rc.institution_name}
-                        </td>
-                        <td className="py-3.5 px-5 text-right font-mono font-bold text-primary whitespace-nowrap">
-                          {formatDop(rc.unit_price_dop)}
-                        </td>
-                        <td className="py-3.5 px-5 text-right font-mono font-bold text-on-surface whitespace-nowrap">
-                          {formatDop(rc.total_amount_dop)}
-                        </td>
-                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedProcessId(rc.process_id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-on-surface transition-colors cursor-pointer"
-                          >
-                            <span>Expediente</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        <span>Expediente</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    ),
+                  },
+                ]}
+              />
             </div>
           )}
         </div>
