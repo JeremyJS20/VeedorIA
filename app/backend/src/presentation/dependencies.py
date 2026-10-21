@@ -1,4 +1,4 @@
-from collections.abc import Callable
+﻿from collections.abc import Callable
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,6 +6,7 @@ from src.infrastructure.dependencies import get_db
 from src.services.anomaly_service import AnomalyService
 from src.services.auth_service import AuthDomainError, AuthService
 from src.services.auditor_b2g_service import AuditorB2GService
+from src.services.b2b_suite_service import B2BSuiteService
 from src.services.dashboard_service import DashboardService
 from src.services.public_portal_service import PublicPortalService
 
@@ -28,6 +29,10 @@ def get_auditor_b2g_service(db: AsyncSession = Depends(get_db)) -> AuditorB2GSer
 
 def get_dashboard_service(db: AsyncSession = Depends(get_db)) -> DashboardService:
     return DashboardService(db=db)
+
+
+def get_b2b_suite_service(db: AsyncSession = Depends(get_db)) -> B2BSuiteService:
+    return B2BSuiteService(db=db)
 
 
 def _extract_bearer_token(authorization: str | None) -> str | None:

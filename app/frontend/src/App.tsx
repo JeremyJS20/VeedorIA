@@ -37,6 +37,12 @@ const DetectionConfigPage = lazy(() => import("./presentation/pages/DetectionCon
 const AuditResolutionsPage = lazy(() => import("./presentation/pages/AuditResolutionsPage"))
 const ComplianceReportsPage = lazy(() => import("./presentation/pages/ComplianceReportsPage"))
 const B2GIntegrationsPage = lazy(() => import("./presentation/pages/B2GIntegrationsPage"))
+const OpportunitiesRadarPage = lazy(() => import("./presentation/pages/OpportunitiesRadarPage"))
+const MyBidsPipelinePage = lazy(() => import("./presentation/pages/MyBidsPipelinePage"))
+const CompetitorProfilePage = lazy(() => import("./presentation/pages/CompetitorProfilePage"))
+const PriceSimulatorPage = lazy(() => import("./presentation/pages/PriceSimulatorPage"))
+const SectorsExplorerPage = lazy(() => import("./presentation/pages/SectorsExplorerPage"))
+const SubscriptionBillingPage = lazy(() => import("./presentation/pages/SubscriptionBillingPage"))
 
 function LandingPage() {
   return (
@@ -102,6 +108,82 @@ function App() {
                   allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
                 >
                   <MarketIntelligencePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="oportunidades"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <OpportunitiesRadarPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="mis-licitaciones"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <MyBidsPipelinePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="competidor"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <CompetitorProfilePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="competidor/:rnc"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <CompetitorProfilePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="simulador-precios"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <PriceSimulatorPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="sectores"
+              element={
+                <RequireAuth
+                  permission="B2B_ANALYTICS"
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <SectorsExplorerPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="suscripcion"
+              element={
+                <RequireAuth
+                  allowedTenantTypes={["B2B_SUPPLIER", "PLATFORM", "GOV_OVERSIGHT"]}
+                >
+                  <SubscriptionBillingPage />
                 </RequireAuth>
               }
             />

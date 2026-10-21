@@ -22,6 +22,11 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
+  Compass,
+  Briefcase,
+  Calculator,
+  Layers,
+  CreditCard,
 } from "lucide-react"
 import Logo from "../components/Logo"
 import { useAuth } from "../context/AuthContext"
@@ -76,6 +81,12 @@ export default function DashboardLayout() {
   const pageTitleMap: Record<string, string> = {
     "/app/dashboard": "Panorama Ejecutivo",
     "/app/mercado": "Inteligencia de Mercado por Rubro",
+    "/app/oportunidades": "Radar de Oportunidades B2B",
+    "/app/mis-licitaciones": "Mis Licitaciones y Pipeline",
+    "/app/simulador-precios": "Simulador de Precios y Cuartiles",
+    "/app/competidor": "Ficha Forense de Competidor",
+    "/app/sectores": "Sectores y Rubros Monitoreados",
+    "/app/suscripcion": "Suscripción y Cuotas B2B",
     "/app/bandeja": "Bandeja de Anomalías",
     "/app/procesos": "Procesos Institucionales",
     "/app/red-colusion": "Red de Colusión",
@@ -277,6 +288,53 @@ export default function DashboardLayout() {
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Suite de Licitaciones e Inteligencia Comercial B2B */}
+            {(user?.tenant?.tipo === "B2B_SUPPLIER" ||
+              user?.tenant?.tipo === "GOV_OVERSIGHT" ||
+              user?.rol?.codigo === "PLATFORM_ADMIN") && (
+              <div className="space-y-1 pt-2">
+                {!collapsed && (
+                  <p className="px-3 text-[11px] font-bold text-outline uppercase tracking-widest mb-2">
+                    Licitaciones y Mercado B2B
+                  </p>
+                )}
+
+                {[
+                  { to: "/app/oportunidades", label: "Radar de Oportunidades", icon: Compass },
+                  { to: "/app/mis-licitaciones", label: "Mis Licitaciones", icon: Briefcase },
+                  { to: "/app/simulador-precios", label: "Simulador de Precios", icon: Calculator },
+                  { to: "/app/sectores", label: "Sectores Monitoreados", icon: Layers },
+                  { to: "/app/suscripcion", label: "Plan y Suscripción", icon: CreditCard },
+                ].map((navItem) => (
+                  <NavLink
+                    key={navItem.to}
+                    to={navItem.to}
+                    className={({ isActive }) =>
+                      `group relative flex items-center ${collapsed ? "justify-center h-10 w-10 mx-auto" : "h-10 px-3"} rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-on-surface-variant hover:bg-surface-container-high hover:text-primary"
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {isActive && (
+                          <div
+                            className={`absolute left-0 w-[4px] ${collapsed ? "h-10" : "h-6"} rounded-r bg-primary`}
+                          />
+                        )}
+                        <navItem.icon className={collapsed ? "w-5 h-5" : "mr-3 w-5 h-5 shrink-0"} />
+                        {!collapsed && (
+                          <span className="text-[13px] flex-1 truncate">{navItem.label}</span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
               </div>
             )}
           </div>
@@ -615,6 +673,17 @@ export default function DashboardLayout() {
                   >
                     <UserCircle className="w-4 h-4 mr-3" />
                     Mi Perfil y Contraseña
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false)
+                      navigate("/app/suscripcion")
+                    }}
+                    className="w-full flex items-center px-4 py-2 text-[13px] text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer"
+                  >
+                    <CreditCard className="w-4 h-4 mr-3" />
+                    Mi Plan y Suscripción
                   </button>
                   <button
                     type="button"
