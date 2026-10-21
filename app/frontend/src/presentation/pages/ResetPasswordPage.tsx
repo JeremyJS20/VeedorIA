@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { Lock, KeyRound, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import Button from "../components/ui/Button"
 import { useResetPassword } from "../hooks/useAuthManagement"
 
 export default function ResetPasswordPage() {
@@ -159,13 +160,16 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={resetMutation.isPending}
-            className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
+            isDisabled={resetMutation.isPending}
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="uppercase tracking-wider text-xs"
           >
             {resetMutation.isPending ? "ACTUALIZANDO..." : "ACTUALIZAR CONTRASEÑA"}
-          </button>
+          </Button>
 
           <div className="text-center pt-2">
             <Link to="/login" className="text-[13px] font-bold text-primary hover:underline">

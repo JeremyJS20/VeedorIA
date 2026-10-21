@@ -10,6 +10,7 @@ import {
   KeyRound,
 } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import Button from "../components/ui/Button"
 import { useInvitationInfo } from "../hooks/useAuthManagement"
 
 const SAMPLE_CODES = [
@@ -80,12 +81,9 @@ export default function InvitationGatewayPage() {
                 className="w-full h-12 px-4 rounded-xl bg-surface-container-lowest dark:bg-surface-container border border-outline-variant text-sm font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
               />
             </div>
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs cursor-pointer"
-            >
+            <Button type="submit" variant="primary" size="lg" fullWidth className="uppercase tracking-wider text-xs cursor-pointer">
               Validar Código de Invitación
-            </button>
+            </Button>
           </form>
 
           <div className="pt-3 border-t border-outline-variant/25 space-y-2">
@@ -190,14 +188,17 @@ export default function InvitationGatewayPage() {
           </div>
 
           <div className="space-y-2.5">
-            <button
+            <Button
               type="button"
               onClick={() => navigate(`/registro?code=${encodeURIComponent(info.codigo)}`)}
-              className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer"
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>CREAR NUEVA CUENTA</span>
-            </button>
+            </Button>
 
             <button
               type="button"

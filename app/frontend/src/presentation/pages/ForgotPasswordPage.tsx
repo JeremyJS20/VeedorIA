@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { Link } from "react-router-dom"
 import { Mail, Lock, ShieldCheck, AlertCircle, ExternalLink } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import Button from "../components/ui/Button"
 import InsetPanel from "../components/ui/InsetPanel"
 import { useForgotPassword } from "../hooks/useAuthManagement"
 
@@ -108,13 +109,16 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={forgotMutation.isPending}
-            className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
+            isDisabled={forgotMutation.isPending}
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="uppercase tracking-wider text-xs"
           >
             {forgotMutation.isPending ? "ENVIANDO..." : "ENVIAR ENLACE"}
-          </button>
+          </Button>
 
           <div className="text-center pt-2">
             <Link

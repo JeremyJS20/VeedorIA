@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, ChevronDown } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import Button from "../components/ui/Button"
 import { useAuth } from "../context/AuthContext"
 
 const DEMO_TENANT_ACCOUNTS = [
@@ -196,13 +197,16 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={isSubmitting}
-          className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs"
+          isDisabled={isSubmitting}
+          variant="primary"
+          size="lg"
+          fullWidth
+          className="uppercase tracking-wider text-xs"
         >
           {isSubmitting ? "VERIFICANDO..." : "INICIAR SESIÓN"}
-        </button>
+        </Button>
 
         <div className="pt-3 border-t border-outline-variant/25 space-y-2.5 text-center">
           <p className="text-[13px] text-on-surface-variant">

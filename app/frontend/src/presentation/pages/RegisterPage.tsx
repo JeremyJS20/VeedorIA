@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import AuthShell from "../components/auth/AuthShell"
+import Button from "../components/ui/Button"
 import { useAuth } from "../context/AuthContext"
 import {
   useInvitationInfo,
@@ -571,12 +572,9 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs cursor-pointer"
-            >
+            <Button type="submit" variant="primary" size="lg" fullWidth className="uppercase tracking-wider text-xs cursor-pointer">
               Continuar al Paso de Activación
-            </button>
+            </Button>
           </form>
         )}
 
@@ -635,11 +633,14 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <button
+            <Button
               type="button"
-              disabled={registerMutation.isPending}
+              isDisabled={registerMutation.isPending}
               onClick={handleFinalActivation}
-              className="btn btn-primary btn-lg btn-full-width uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer"
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>
@@ -647,7 +648,7 @@ export default function RegisterPage() {
                   ? "ACTIVANDO CUENTA Y ORGANIZACIÓN..."
                   : "ACTIVAR CUENTA E INGRESAR A LA CONSOLA"}
               </span>
-            </button>
+            </Button>
           </div>
         )}
       </div>

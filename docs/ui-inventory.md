@@ -167,7 +167,9 @@ Entry format (one `## Name` per component):
 ## Button
 - Path: app/frontend/src/presentation/components/ui/Button.tsx
 - Use when: any action button; wraps HeroUI with the project `btn-{variant}` / `btn-{size}` classes
-- Replaces: -
+- Replaces: `btn-full-width`
+- Allowed: `app/frontend/src/presentation/pages/ForgotPasswordPage.tsx`
+- Allowed: `app/frontend/src/presentation/pages/ResetPasswordPage.tsx`
 
 ## FullscreenOverlay
 - Path: app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx
@@ -242,6 +244,7 @@ today would fail on legacy pages; the counts below are the migration target for 
 | `StatusChip` | status chips hand-built in `AuditLogPage`, `AuditResolutionsPage`, `InstitutionalProcessesPage`, `B2BIntegrationsPage`, `RolesMatrixPage` |
 | `Modal` / `Drawer` | 4 overlays grandfathered in `Allowed` until migrated: `MyBidsPipelinePage` (1), `UsersManagementPage` (2), `AnomalyDrawer` (1), `ConsoleInspectorDrawers` (2). `FullscreenOverlay` is a different component (fullscreen chart) and stays. |
 | `DataTable` | 18 legacy files grandfathered in `Allowed` (see the component's list). Migrados ya: `SyncOperationsPage` (2 tablas), `AuditLogPage` (1), `SupportCenterPage` (1). |
+| `Button` | 7 botones de auth migrados. Quedan 2 `<Link>` (`ForgotPasswordPage`, `ResetPasswordPage`) que conservan las clases `btn-*` porque `ui/Button` no acepta `as`; se resuelven si algún día hace falta un `ButtonLink`. |
 
 ## Missing composites (known duplication — do not re-implement; plan the extraction)
 
