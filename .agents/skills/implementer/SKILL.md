@@ -66,6 +66,7 @@ For each task:
    Est: 30min | REQ: REQ-001 | Dep: Task 3
    Proceed?
    ```
+   - **UI tasks (screens, pages, components):** read the UI inventory first (`docs/ui-inventory.md`, see `ui-inventory.md`; if missing and the project has components → `python3 sdd-scripts/ui-inventory-scan.py --write` and fill the TODOs). The proposal MUST add `Reuses:` (inventory components for each table, filter, shell, modal, chart, form layout the task needs) and `New components:` (each with one line on why no existing one fits). Do NOT write a UI element that an inventory component already covers.
 
 4a. **UI Mockup** — If the task involves frontend/UI (screens, pages, components):
    - Read the UI prompt from `mockups/prompts.md` for this task's screens
@@ -91,11 +92,14 @@ For each task:
    - JS/TS: eslint MCP
    - Python: python-analyzer MCP
    - Fix lint errors before proceeding
+   - UI tasks: `python3 sdd-scripts/validate-ui.py --only reuse --strict` — zero violations (reuse the inventory component; an exception goes in the entry's `Allowed` only with the user's OK)
 
 7. **Test** — Run relevant tests:
    - Unit tests: vitest/jest (JS/TS) or pytest (Python)
    - If test fails: fix and re-run
    - If no tests exist for this component: note it, continue
+
+7a. **Update the UI inventory** — If the task created a component other screens will use (or moved one): add/update its entry in `docs/ui-inventory.md` (Path, Use when, Replaces) in the same commit.
 
 8. **Commit** — One commit per task:
    - Message: `feat({scope}): task {N} — {description}`
@@ -168,6 +172,7 @@ For each task:
 - `security.md` — security requirements while coding
 - `testing-strategy.md` — test coverage targets and testing approach
 - `design-system-base.md` — UI tokens and component patterns
+- `ui-inventory.md` — shared components to reuse before building a screen
 
 ### ⚠️ MCP Self-Verification (verify BEFORE reporting task completion to user)
 
@@ -176,6 +181,7 @@ For each task:
 - ☐ Ran `eslint` on all modified JS/TS files — zero violations (step 7)
 - ☐ Used `sequential-thinking` for complex implementation problems (step 6, if applicable)
 - ☐ Ran `playwright` E2E tests for UI components (step 7, if applicable)
+- ☐ UI task: read the UI inventory before proposing, listed `Reuses:`/`New components:` in the plan, `validate-ui.py --only reuse --strict` passes, inventory updated for new shared components (steps 4, 6, 7a)
 - ☐ Updated implementation progress in `server-memory` (step 9)
 - ☐ If any MCP unavailable → documented in task completion report
 

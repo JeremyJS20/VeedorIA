@@ -108,6 +108,8 @@ If `product.md` scope changed (new module added) → propose update → ask appr
 - [ ] Responsive breakpoints match design-system-base.md (sm:640, md:768, lg:1024, xl:1280, 2xl:1536)
 - [ ] Dark/light mode matches theme mode — no dark mode classes if theme is light
 - [ ] Component variants match design-system-base.md catalog — no ad-hoc button/card variants
+- [ ] Shared components reused — every table, filter bar, shell, modal, chart and form layout comes from `docs/ui-inventory.md`; run `python3 sdd-scripts/validate-ui.py --only reuse --strict` and `grep` the diff for near-duplicates of inventory components
+- [ ] New shared components are registered in `docs/ui-inventory.md` (Path, Use when, Replaces)
 - [ ] Status indicators use color + icon + text (never color-only — accessibility)
 - [ ] Animation has `prefers-reduced-motion` fallback — no animation without media query guard
 - [ ] Form inputs have visible labels — never placeholder-only labels

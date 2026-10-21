@@ -12,6 +12,7 @@
   "docs_language": "es",
   "theme": "",
   "css_framework": "",
+  "ui_inventory": "docs/ui-inventory.md",
   "host": "",
   "project_host": "",
   "detected_by": "",

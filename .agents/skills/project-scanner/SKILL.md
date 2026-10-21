@@ -226,6 +226,10 @@ Rules: `.sdd-config.json` `env` applied first (project-level), `.sdd-credentials
 
 After generating `product.md`: show summary → ask once "Adjust anything or should I proceed?" → apply corrections.
 
+### 5.0. UI inventory (projects with a frontend)
+
+If the project has UI components (React/Angular/Vue/Flutter/.NET views…) and `docs/ui-inventory.md` (config `ui_inventory`) does not exist: run `python3 sdd-scripts/ui-inventory-scan.py --write`, then read each listed component and fill `Use when` and `Replaces` (the text it removes from other screens, e.g. `<table` for a table component). Remove entries that are not shared components. Show the result to the user as part of the product.md summary. Format and rules: `ui-inventory.md`.
+
 ### 5.1. Verify artifact structure
 
 If standard folders don't exist (`specs/`, `tests/`, `docs/`, `docs/diagrams/`, `db/migrations/`), create them and notify.
@@ -330,6 +334,7 @@ Assessment output format: See `references/health-check-example.md`.
 ## Related Skills
 - `structure.md` — expected project structure
 - `tech.md` — approved tech stack for detection matching
+- `ui-inventory.md` — format of the shared-components inventory
 
 ## Output
 

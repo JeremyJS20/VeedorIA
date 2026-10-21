@@ -19,6 +19,8 @@ CSS custom properties. STRUCTURE here; VALUES from active theme.
 
 Themes: `fintech` · `healthcare` · `corporate` · `insurtech` · `govtech` · `institutional` · `custom`
 
+Reuse the project's shared components first (`ui-inventory.md`); the theme tokens are the only source of colors, fonts and spacing.
+
 NEVER use hardcoded colors without consulting the theme.
 NEVER generate UI that violates the theme's MUST directives.
 NEVER produce the same layout for all pages — vary by page type (dashboard, form, list, detail, settings).

@@ -171,6 +171,7 @@ Only after ALL checks pass (or are documented as unavailable) → proceed.
         📦 .sdd-config.json → stacks: [...], theme: "{theme}", css_framework: "{framework}"
       ```
    - If sdd-sync.sh not found or fails → inform: "Run `bash sdd-sync.sh --ide {ide}` manually to sync stacks."
+8. ☐ **Seed the UI inventory** → If design.md defines Shared Components (AppShell, DataTable, FilterBar, Modal…) and `docs/ui-inventory.md` does not list them: add one entry per shared component (`Path` = where it will live, `Use when`, `Replaces`) so implementation reuses them. Format: `ui-inventory.md`.
 8. ☐ **Update ADO (design artifacts)** → Tag `design-approved` on Requirement WI + Story Points ← sum of estimates
    - Design WI Description MUST include: `Repo: {repo_url}/blob/dev/specs/{prefix}{ID}-{name}/design.md`
    - Create **Data Model** WIs (skip if frontend-only / §3.2 empty):

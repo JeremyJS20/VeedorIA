@@ -982,7 +982,7 @@ echo "   ✅ Hooks: $HOOKS_COUNT hooks"
 # --- 3d2. Validation scripts ---
 SCRIPTS_DIR="sdd-scripts"
 mkdir -p "$SCRIPTS_DIR"
-for script in validate-config.py validate-specs.py validate-language.py; do
+for script in validate-config.py validate-specs.py validate-language.py validate-ui.py ui-inventory-scan.py; do
   if [ -f "$TEMP_DIR/scripts/$script" ]; then
     cp -f "$TEMP_DIR/scripts/$script" "$SCRIPTS_DIR/$script"
   fi
@@ -991,7 +991,7 @@ done
 if [ -f "$TEMP_DIR/core/env/.sdd-config.template.json" ]; then
   cp -f "$TEMP_DIR/core/env/.sdd-config.template.json" ".sdd-config.template.json"
 fi
-SCRIPTS_COUNT=$(ls -1 "$SCRIPTS_DIR/validate-"* 2>/dev/null | wc -l)
+SCRIPTS_COUNT=$(ls -1 "$SCRIPTS_DIR/"*.py 2>/dev/null | wc -l)
 echo "   ✅ Validation scripts: $SCRIPTS_COUNT scripts"
 
 # --- 3e. Templates ---
