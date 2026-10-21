@@ -34,7 +34,7 @@
 | Herramientas de Auditoría B2G (`herramientas-auditoria-b2g`) | Explorador de procesos institucionales, red de colusión, parámetros de detección, historial de resoluciones, reportes de cumplimiento con matriz legal e interoperabilidad institucional vía llaves API (`vdia_b2g_...`) | 🟢 active |
 | Suite de Inteligencia Comercial B2B (`suite-licitaciones-b2b`) | Radar de oportunidades, pipeline de mis licitaciones, ficha forense de competidor, simulador de precios de oferta, explorador de sectores y gestión de plan, con candados de cuota `B2B_PYME` vs `B2B_CORPORATE` | 🟢 active |
 | Consola de Administración Global (`consola-admin-operaciones`) | Sincronización DGCP y cola asíncrona (#32), calibración global del motor (#33), bitácora inmutable con exportación checksummed (#35) y centro de soporte/salud de servicios (#36). Guard exclusivo `PLATFORM_ADMIN`, vista previa de roles (solo UI) y 18 endpoints `/api/admin/*` + `/api/support/*` | 🟢 active |
-| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral en la tabla **Screen Map Status** de este mismo documento. **29 implementadas · 3 parciales · 4 pendientes**. Quedan: ⬜ #3 Sankey de Gasto, #4 Comparador de Precios, #8 Descarga de Datos Abiertos, #34 Clientes y Licencias · 🟡 #28 Ajustes de Organización, #31 Dashboard de Salud, #33 Reentrenamiento ML | 🟡 partial |
+| Ecosistema Completo de 36 Pantallas (B2G, B2B, CivicTech, Settings y Admin) | Mapa integral en la tabla **Screen Map Status** de este mismo documento. **29 implementadas · 2 parciales · 4 pendientes · 1 cerrada por decisión**. Quedan: ⬜ #3 Sankey de Gasto, #4 Comparador de Precios, #8 Descarga de Datos Abiertos, #34 Clientes y Licencias · 🟡 #28 Ajustes de Organización, #33 Reentrenamiento ML · ➖ #31 salud (cubierta por `/app/soporte`, sin pantalla dedicada) | 🟡 partial |
 
 ## Screen Catalog (implemented)
 
@@ -125,14 +125,14 @@ Fuente: `docs-backup-2/internal/complete_screen_map.md`. ✅ implementada · �
 | 28 | Ajustes de Organización y Equipo | `/settings/organization` | 🟡 | `UsersManagementPage` cubre usuarios/roles; no hay ajustes de organización propios |
 | 29 | Suscripción y Facturación | `/settings/billing` | ✅ | `SubscriptionBillingPage` |
 | 30 | Perfil de Usuario | `/settings/profile` | ✅ | `UserProfilePage` |
-| 31 | Dashboard de Salud del Sistema | `/admin` | 🟡 | Salud vive dentro de `SupportCenterPage` (#36); no hay dashboard dedicado |
+| 31 | Dashboard de Salud del Sistema | `/admin` | ➖ | **Cerrada por decisión: no se construye pantalla dedicada.** La salud ya es operable en `SupportCenterPage` (`/app/soporte`): 6 componentes con `StatusChip`, `detail`, `latency_ms`, `checked_at` y refetch de 30 s sobre `GET /api/admin/health/services` (#36 del roadmap). Una pantalla propia no agrega capacidad; la brecha real es alertar la transición `OK→DOWN`, que no depende de la pantalla |
 | 32 | Consola de Ingestión ETL | `/admin/etl` | ✅ | `SyncOperationsPage` (#32 del roadmap SDD) |
 | 33 | Control de Modelos ML Globales | `/admin/ml-models` | 🟡 | `CalibrationConsolePage` cubre umbrales y re-ejecución; falta reentrenamiento de *Isolation Forest* |
 | 34 | Administración de Clientes y Licencias | `/admin/organizations` | ⬜ | Fuera de alcance del Paquete 4 |
 | 35 | Bitácora de Auditoría del Servidor | `/admin/logs` | ✅ | `AuditLogPage` (#35 del roadmap SDD) |
 | 36 | Centro de Soporte Técnico | `/admin/support` | ✅ | `SupportCenterPage` (#36 del roadmap SDD) |
 
-**Resumen**: ✅ 29 implementadas · 🟡 3 parciales · ⬜ 4 pendientes = **36**.
+**Resumen**: ✅ 29 implementadas · 🟡 2 parciales · ⬜ 4 pendientes · ➖ 1 cerrada por decisión = **36**. Las `➖` no se construyen a propósito; el motivo está en la columna de implementación.
 Rutas extra fuera del mapa oficial: `/ranking` (`RankingPage`), `/app/roles` (`RolesMatrixPage`) y `/app/usuarios` (`UsersManagementPage`).
 
 > ⚠️ **Dos numeraciones distintas — no mezclarlas.** La columna `#` de la tabla anterior es el **mapa de 36 pantallas** (`specs/veedoria-core/intake.md`). El **roadmap SDD** de los specs (Paquetes 1–4) usa su propia numeración, y **`#31` colisiona**: en el mapa es *Dashboard de Salud del Sistema*; en el roadmap es el *Panorama Ejecutivo variante ADMIN* (`consola-multi-rol-onboarding`, REQ-005, ya implementado). Al citar un `#N` hay que decir a qué tabla pertenece.
