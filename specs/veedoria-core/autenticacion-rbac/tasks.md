@@ -130,6 +130,28 @@ flowchart TD
 - **Dependencies:** Task 3.1, Task 3.2
 - **Files to create/modify:** `app/backend/tests/test_auth_multi_tenant.py`
 
+## Implementation Order Summary
+| Order | Task | Description | Est. | Depends On |
+|-------|------|-------------|------|------------|
+| 1 | 1.1 | Modelos relacionales multi-tenant + seed idempotente en PostgreSQL | ~2.5h | — |
+| 2 | 1.2 | `AuthService` + router `/api/auth/*`, `/api/usuarios/*`, `/api/tenants/*`, `/api/roles` | ~3.0h | 1.1 |
+| 3 | 2.1 | Aislamiento multi-tenant en `AnomalyService` y `anomaly_router` | ~1.5h | 1.2 |
+| 4 | 2.2 | `AuthContext`, interceptor JWT en el cliente HTTP y guardia `RequireAuth` | ~2.0h | 1.2 |
+| 5 | 3.1 | `AuthShell` + `/login`, `/recuperar-contrasena`, `/restablecer-contrasena` | ~2.2h | 2.2 |
+| 6 | 3.2 | `DashboardLayout` multi-tenant + `/app/perfil`, `/app/usuarios`, `/app/roles` | ~2.3h | 2.1, 2.2 |
+| 7 | 4.1 | Pruebas `pytest` multi-tenant + validación `tsc -b` y `eslint` | ~1.5h | 3.1, 3.2 |
+
+## Total Estimate: ~18h (includes 20% buffer)
+
+## Completion Checklist
+- [x] All tasks completed (7/7)
+- [x] All tests passing (`pytest`, incluido `tests/test_auth_multi_tenant.py` con los 3 escenarios de aislamiento, bloqueo y recuperación)
+- [x] `npx tsc -b` y `npx eslint .` con `0` errores
+- [x] Aislamiento multi-tenant verificado: DGCP (`GOV_OVERSIGHT`) recibe el total nacional y MOPC/MINERD solo los hallazgos de su institución
+- [x] Bloqueo por intentos fallidos (`HTTP 429` a los 15 min) y desbloqueo administrativo operativos
+- [x] Sin selector ficticio `"Simular Rol"`: el rol y la organización se resuelven del token en el servidor
+- [x] Documentación global actualizada (`security-model.md`, `api-contract.md`, `data-model.md`, `system-design.md`)
+
 ## Approval
 - [x] Developer: Jeremy Michel Solano Frías Date: 2026-10-19
 

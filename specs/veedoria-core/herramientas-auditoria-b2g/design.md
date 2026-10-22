@@ -75,6 +75,44 @@ flowchart LR
     NavConfig --> Cfg & Intg
 ```
 
+## Deployment
+- **Pattern**: `monorepo-split` (Frontend React 19 + Vite y Backend FastAPI asíncrono).
+- **App**: Frontend en Vercel/CDN y Backend en contenedor Docker sobre Render/AWS ECS.
+- **Infra**: PostgreSQL 16 (`veedoria-pg`) + Redis 7 (`backend-redis-1`).
+- **CI/CD**: GitHub Actions ejecutando `pytest`, `eslint`, `tsc -b` y `vite build`.
+- **Justification**: las 6 vistas de la consola B2G son SPA sobre los routers `/api/auditor/*` del mismo backend, así que se despliegan con el pipeline ya existente del monorepo y sin servicios nuevos.
+- **Discarded**: desplegar la consola B2G como aplicación separada (descartado: duplicaría `DashboardLayout`, `RequireAuth` y la navegación por rol sin aportar aislamiento real, que ya se resuelve en el servidor por `institution_id`).
+
+### Environments
+| Environment | Branch | Frontend URL | Backend API URL | Deploy trigger & Gate |
+|-------------|--------|--------------|-----------------|-----------------------|
+| **Local** | `feature/*` / `dev` | `http://localhost:5173` | `http://127.0.0.1:3001/api/auditor` | Manual (`npm run dev` + `uvicorn src.presentation.main:app --port 3001`) |
+| **Preview (PR)** | PR hacia `dev` | `https://pr-{N}-veedoria.vercel.app` | `https://api-dev.veedoria.do/api/auditor` | Automático al abrir/actualizar PR (entorno efímero de revisión) |
+| **DEV / QA** | `dev` | `https://dev.veedoria.do` | `https://api-dev.veedoria.do/api/auditor` | Automático en merge a `dev` tras CI (`pytest` + `eslint` + `tsc -b` + `vite build`) |
+| **CERT (Staging)** | `cert` / `release/*` | `https://cert.veedoria.do` | `https://api-cert.veedoria.do/api/auditor` | Promoción manual `dev → cert` · **Approval Gate: Dev + QA** |
+| **PROD** | `main` | `https://veedoria.do` | `https://api.veedoria.do/api/auditor` | Promoción manual `cert → main` + **Release Tag `vX.Y.Z`** · **Approval Gate: Dev + QA + BA** |
+
+## Database Schema
+
+**Sin tablas nuevas ni migraciones.** El módulo consume el esquema ya documentado en `docs/architecture/data-model.md` y no altera el modelo de datos.
+
+### Tablas consumidas
+| Table | Columns used | Purpose in this module |
+|-------|--------------|------------------------|
+| `process` | `id`, `dgcp_code`, `title`, `institution_id` | Listado y detalle de procesos (`#15`) con alcance por institución |
+| `contract` | `id`, `process_id`, `contract_id`, `amount_adjudicated`, `signed_date`, `status`, `supplier_name`, `rpe` | Contratos adjudicados, montos y proveedor por RPE |
+| `institution` | `id`, `dgcp_id`, `name` | Nombre de la institución compradora y alcance por `institution_id` |
+| `supplier` | `id`, `rnc`, `registered_name`, `trade_name`, `phone`, `address` | Nodos de la red de colusión (`#16`) y expediente del proveedor |
+| `anomaly` | `id`, `process_id`, `contract_id`, `anomaly_type`, `severity`, `status`, `reviewer_id`, `dismissal_reason`, `amount` | Hallazgos, dictámenes (`#18`) y métricas de los reportes (`#19`) |
+| `detection_config` | `key`, `value`, `updated_at` | Lectura de los 13 parámetros y umbrales mostrados en `#17` |
+| `tenants` | `id`, `code`, `tenant_type`, `plan_tier`, `institution_id` | Alcance por organización y candado de plan `B2G_BASIC` en `#16` |
+| `audit_log` | `id`, `user_id`, `action_type`, `entity_type`, `entity_id`, `old_value`, `new_value`, `ip_address`, `timestamp` | Trazabilidad de dictámenes, calibración, exportaciones y llaves de integración (`entity_type = 'integration_key'`) |
+
+### Indexes
+| Name | Columns | Type |
+|------|---------|------|
+| None | — | El módulo no agrega índices: reutiliza los existentes sobre `process.institution_id`, `contract.process_id`, `anomaly.contract_id` y `audit_log.timestamp`. |
+
 ## API Contracts
 
 ### 1. `GET /api/auditor/processes` (`REQ-001` — Pantalla `#15`)
@@ -221,6 +259,13 @@ Tanto en `AnomalyDrawer.tsx` como en `ComplianceReportsPage.tsx`, el sistema pre
   - **Parámetros de Detección** (`/app/configuracion-deteccion`)
   - **Integraciones Institucionales** (`/app/integraciones`)
 - En `App.tsx`, las 6 rutas nuevas se envuelven en `<RequireAuth allowedTenantTypes={["GOV_INSTITUTION", "GOV_OVERSIGHT", "PLATFORM"]}>` para impedir que usuarios del segmento proveedor (`B2B_SUPPLIER`) accedan por URL.
+
+## Architecture Updates
+- `docs/architecture/api-contract.md`: tabla de rutas `/api/auditor/*` (procesos, grafo de colusión, detección-config, resoluciones, reportes y llaves de integración), cada una etiquetada con `herramientas-auditoria-b2g`.
+- `docs/architecture/integrations.md`: emisión, enmascarado (`vdia_b2g_xxxx••••yyyy`), hash SHA-256, aislamiento multi-tenant vía `resolve_integration_caller()` y revocación de llaves de integración (`#20`).
+- `docs/architecture/system-design.md`: superficie única de escritura de los 13 parámetros en `/app/calibracion` (con `/app/configuracion-deteccion` en modo consulta) y la trazabilidad en `audit_log`.
+- `docs/architecture/security-model.md`: matriz de acceso por ruta de las 6 pantallas B2G (segmentos `GOV_INSTITUTION`, `GOV_OVERSIGHT` y `PLATFORM`).
+- `docs/architecture/data-model.md`: **sin cambios** — el módulo no agrega tablas (ver `## Database Schema`).
 
 ## Approval
 - [ ] Developer / User: Jeremy Michel Solano Frías — Date: pending

@@ -158,6 +158,14 @@ flowchart LR
 |---|-----------|----------------|---------------|
 | 1 | Las credenciales creadas en `/app/integraciones` se almacenan con prefijo enmascarado y trazabilidad en `AuditLog` / configuración de la organización sin exponer secretos en texto plano tras su emisión | Almacenamiento de metadatos de llave y hash/prefijo | — |
 
+## Out of Scope
+- Las pantallas de los demás paquetes: suite comercial B2B (`suite-licitaciones-b2b`), consola de administración global (`consola-admin-operaciones`) y el portal público (`/public/*`).
+- La **edición global** de los 13 parámetros de `detection_config` desde esta consola: `#17` los expone en modo consulta; la superficie única de escritura es `/app/calibracion` (`#33`).
+- El reentrenamiento del modelo *Isolation Forest* (`#33`) y la administración de organizaciones y licencias (`#34`).
+- Nuevas tablas o migraciones: el módulo consume el esquema existente y persiste las llaves de integración como eventos en `audit_log`.
+- Adaptadores de integración por ERP/SIGEF: la consola emite, enmascara y revoca llaves, pero no implementa conectores específicos por sistema externo.
+- Exportación a PDF nativo: los reportes se entregan como CSV y vista imprimible del dictamen institucional.
+
 ## Approval
 - [ ] Analyst / User: Jeremy Michel Solano Frías — Date: pending
 

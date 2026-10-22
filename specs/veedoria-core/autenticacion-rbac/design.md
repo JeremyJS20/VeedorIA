@@ -329,6 +329,12 @@ sequenceDiagram
 - **Bcrypt Cost 10 + SHA-256**: Contraseñas cifradas con `bcrypt.hashpw(..., bcrypt.gensalt(rounds=10))` y tokens de recuperación con `hashlib.sha256(raw_token.encode()).hexdigest()`.
 - **Multi-Tenant Server Enforcement**: `GET /api/anomalies` y `GET /api/anomalies/stats` leen el usuario autenticado mediante `get_optional_user`: si la petición proviene de un usuario autenticado cuyo tenant es `GOV_INSTITUTION`, el servidor fuerza `institution_id = user.tenant.institution_id` en las consultas SQL.
 
+## Architecture Updates
+- `docs/architecture/security-model.md`: matriz consolidada de organizaciones, planes de suscripción y permisos multi-tenant (`tenant → app_user → role → role_permission → permission`) y el enforcement de alcance en el servidor.
+- `docs/architecture/api-contract.md`: los 14 endpoints `/api/auth/*` (login, logout, `me`, recuperación y restablecimiento de contraseña, roles, tenants, usuarios y autoservicio de perfil/clave), etiquetados con `autenticacion-rbac`.
+- `docs/architecture/data-model.md`: tablas `tenants`, `roles`, `permissions`, `role_permissions` y `password_reset_tokens`.
+- `docs/architecture/system-design.md`: el motor `auth_service.py` (PyJWT, bcrypt, RBAC de 4 roles y 13 permisos, aislamiento por organización suscriptora).
+
 ## Approval
 - [x] Developer: Jeremy Michel Solano Frías Date: 2026-10-19
 

@@ -177,6 +177,15 @@ sequenceDiagram
 |---|-----------|----------------|---------------|
 | 1 | En el Paso 3 del Camino B de `/registro` (*Pago de Suscripción*), la validación de tarjeta opera como pasarela simulada de demostración sin cargos bancarios reales | Confirmación instantánea de suscripción en modo demostración | Integración futura con pasarela bancaria Azul / CardNET en producción |
 
+## Out of Scope
+- Las pantallas de los demás paquetes: consola B2G (`herramientas-auditoria-b2g`), suite comercial B2B (`suite-licitaciones-b2b`), consola de administración global (`consola-admin-operaciones`) y el portal público (`/public/*`).
+- Autenticación y emisión de sesión (`/login`, recuperación y restablecimiento de contraseña): pertenecen a `autenticacion-rbac`; este módulo solo consume la sesión activa.
+- Gestión de usuarios, organizaciones y permisos (`/app/usuarios`, `/app/roles`): pertenecen a `autenticacion-rbac`.
+- Pasarela de pago real en el Paso 3 del Camino B de `/registro`: opera como demostración (ver `## Assumptions`); no se integra Azul/CardNET ni se ejecutan cargos.
+- Nuevas tablas o migraciones: el módulo consume el modelo de identidad ya existente (`autenticacion-rbac`) y el catálogo de proveedores de la DGCP.
+- Envío de correo transaccional para invitaciones y bienvenida: el código de invitación se valida y se resuelve en pantalla.
+- Aplicación móvil nativa: la experiencia es web responsiva.
+
 ## Approval
 - [x] Approved by: Jeremy Michel Solano Frías (2026-10-20)
 
