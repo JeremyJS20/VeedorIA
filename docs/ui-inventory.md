@@ -157,9 +157,9 @@ Entry format (one `## Name` per component):
 - Use when: citizen-facing live price comparison for a list of items
 - Replaces: -
 
-## ProvincialMapCard
-- Path: app/frontend/src/presentation/components/public/ProvincialMapCard.tsx
-- Use when: showing provincial spending distribution on the civic portal
+## ProvincialSpendCard
+- Path: app/frontend/src/presentation/components/public/ProvincialSpendCard.tsx
+- Use when: showing real awarded spending per supplier province (ranked bars, all provinces, with coverage note)
 - Replaces: -
 
 ## Badge

@@ -9,9 +9,9 @@
 
 ## Metadata
 - **Based on:** [design.md](./design.md)
-- **Total estimate:** ~18h (incluye 20% buffer)
-- **Number of waves:** 4 (Wave 1, Wave 2, Wave 3, Wave 4)
-- **Number of tasks:** 7
+- **Total estimate:** ~21h (incluye 20% buffer)
+- **Number of waves:** 5 (Wave 1, Wave 2, Wave 3, Wave 4, Wave 5)
+- **Number of tasks:** 8
 - **Sprint:** [TBD]
 - **Assignee:** JSolan0
 
@@ -37,6 +37,7 @@ flowchart TD
     T2_2 --> T3_2["Task 3.2: Fichas Públicas (/public/process/:id, /public/supplier/:rnc, /public/institution/:id y /ranking)"]
     T3_1 --> T4_1["Task 4.1: Pruebas Automatizadas Backend (pytest) y Validación Frontend (tsc + eslint + vite build)"]
     T3_2 --> T4_1
+    T4_1 --> T5_1["Task 5.1: Agregación Provincial Real y Ruta Dedicada /public/budget-flow (REQ-004)"]
 ```
 
 ---
@@ -54,7 +55,7 @@ flowchart TD
 ### Task 1.2: Servicio y Router Público de Veeduría Ciudadana `/api/public/*` (`REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`) (~3h)
 - **Description:** Crear `app/backend/src/application/services/public_portal_service.py` y `app/backend/src/presentation/routers/public_router.py` (registrado en `src/presentation/main.py`) exponiendo sin requerir credenciales:
   - `GET /api/public/tenders` (filtros: `search`, `institution_id`, `province`, `min_amount`, `max_amount`, `only_with_anomalies`, `page`, `limit`).
-  - `GET /api/public/budget-overview` (nodos y enlaces Sankey de las Top 5 Instituciones hacia Top 10 Proveedores + desglose de gasto, procesos activos y alertas críticas por provincias de la República Dominicana).
+  - `GET /api/public/budget-overview` (nodos y enlaces Sankey de las Top 5 Instituciones hacia Top 10 Proveedores + distribución real del gasto, procesos y hallazgos por provincia del proveedor, con `provinces_meta.coverage_pct`).
   - `GET /api/public/price-comparison` (comparación real de precios unitarios adjudicados vs. referencia de mercado UNSPSC sobre `item`, `contract`, `institution` y `anomaly`).
   - `GET /api/public/tenders/{contract_id}` (expediente OCDS completo con tabla de `Item` y alertas de IA).
   - `GET /api/public/suppliers/{rnc}` (perfil de proveedor con RPE/RNC, monto total adjudicado, contratos ganados, instituciones compradoras y alertas).
@@ -88,17 +89,17 @@ flowchart TD
 
 ## Wave 3: UI & Integration (~4.5h)
 
-### Task 3.1: Portal de Veeduría Ciudadana (`/public` y `/explore`): Buscador + 4 Chips + Sankey + Mapa Provincial + Comparador de Precios (`REQ-003`, `REQ-004`, `REQ-005`) (~2.5h)
-- **Description:** Implementar `CivicPortalPage.tsx` y sus subcomponentes (`BudgetSankeyCard.tsx`, `ProvincialMapCard.tsx`, `LivePriceCheckerWidget.tsx`) siguiendo fielmente `pages_concept/civic_portal/design.md`:
+### Task 3.1: Portal de Veeduría Ciudadana (`/public` y `/explore`): Buscador + 4 Chips + Sankey + Ranking Provincial + Comparador de Precios (`REQ-003`, `REQ-004`, `REQ-005`) (~2.5h)
+- **Description:** Implementar `CivicPortalPage.tsx` y sus subcomponentes (`BudgetSankeyCard.tsx`, `ProvincialSpendCard.tsx`, `LivePriceCheckerWidget.tsx`) siguiendo fielmente `pages_concept/civic_portal/design.md`:
   - Buscador central `"¿Qué deseas fiscalizar hoy? (ej. Laptops en MINERD, Asfalto en Obras Públicas)"` y los **4 chips interactivos** (`"¿Cuánto gastó mi provincia?"`, `"Laptops con sobreprecio en MINERD"`, `"Proveedores con alertas en Obras Públicas"`, `"Contratos de asfalto en Santiago"`).
   - Tarjeta `"Distribución del Presupuesto Nacional de Compras"` con diagrama Sankey SVG interactivo (Top 5 Instituciones → Top 10 Proveedores).
-  - Tarjeta `"Distribución del Gasto Público por Provincias"` con mapa SVG interactivo de la República Dominicana y filtro por provincia.
+  - Tarjeta de distribución provincial con filtro por provincia (en Task 5.1 se reemplazó el esquema SVG de 10 zonas por el ranking real de 31 provincias).
   - Widget `"Comparador de Precios Unitarios en Tiempo Real"` (`Precio Adjudicado Estado` vs. `Precio Promedio Mercado` + badge `"SOBREPRECIO DETECTADO: +X%"`).
   - Listado paginado de contrataciones con filtros multicriterio y botones `"Exportar CSV"` y `"Exportar JSON"`.
 - **Acceptance criteria:**
-  - [x] Los 4 chips de sugerencia, el mapa provincial, el Sankey, el comparador de precios y la exportación CSV/JSON funcionan de forma interactiva sobre los datos reales de PostgreSQL.
+  - [x] Los 4 chips de sugerencia, la distribución provincial, el Sankey, el comparador de precios y la exportación CSV/JSON funcionan de forma interactiva sobre los datos reales de PostgreSQL.
 - **Dependencies:** Task 2.1, Task 2.2
-- **Files to create/modify:** `app/frontend/src/features/public-portal/components/BudgetSankeyCard.tsx`, `app/frontend/src/features/public-portal/components/ProvincialMapCard.tsx`, `app/frontend/src/features/public-portal/components/LivePriceCheckerWidget.tsx`, `app/frontend/src/pages/CivicPortalPage.tsx`
+- **Files to create/modify:** `app/frontend/src/presentation/components/public/BudgetSankeyCard.tsx`, `app/frontend/src/presentation/components/public/ProvincialSpendCard.tsx`, `app/frontend/src/presentation/components/public/LivePriceCheckerWidget.tsx`, `app/frontend/src/presentation/pages/CivicPortalPage.tsx`
 
 ### Task 3.2: Fichas Públicas de Proceso/Contrato (`/public/process/:id` y `/tender/:id`), Proveedor (`/public/supplier/:rnc`), Institución (`/public/institution/:id`) y Ranking (`/ranking`) (`REQ-006`) (~2h)
 - **Description:** Implementar las páginas de detalle interconectadas y registrar todas las rutas con `React.lazy()` en `App.tsx`:
@@ -124,6 +125,25 @@ flowchart TD
 
 ---
 
+## Wave 5: Corrección de la Distribución Provincial (`REQ-004`) (~2.5h)
+
+### Task 5.1: Agregación Provincial Real y Ruta Dedicada `/public/budget-flow` (`REQ-004`) (~2.5h)
+- **Description:** Reemplazar la distribución provincial fabricada de `get_budget_overview` (pesos fijos `[0.42, 0.16, 0.08, …]` sobre el total nacional) por agregación real sobre `supplier.province`, alinear el filtro `province` de `GET /api/public/tenders` a la misma fuente, y sustituir el esquema SVG de 10 zonas por un ranking real de provincias:
+  - `public_portal_service.py`: helpers `province_key`, `province_display_name` y `supplier_province_subquery`; se elimina `DR_PROVINCES_META`.
+  - `get_budget_overview`: `total_amount` = `sum(amount_adjudicated)`, `active_processes` = `count(distinct process_id)`, `critical_alerts` = `count(distinct anomaly.id)` y `share_pct` sobre el monto atribuido; se agrega `provinces_meta`.
+  - `search_tenders`: `province` resuelve por domicilio del proveedor en lugar del `ILIKE` por palabras clave.
+  - `ProvincialMapCard.tsx` → `ProvincialSpendCard.tsx`: ranking de todas las provincias con barra proporcional, nota de cobertura y panel de detalle.
+  - `BudgetFlowPage.tsx` (`/public/budget-flow`, `lazy`): compone `BudgetSankeyCard` + `ProvincialSpendCard` con la misma `queryKey`; `/public` enlaza hacia ella y `Navbar` marca `Citizen Search` activo en la subruta.
+- **Acceptance criteria:**
+  - [x] `GET /api/public/budget-overview` devuelve 31 provincias con montos, procesos y hallazgos calculados, y `provinces_meta.coverage_pct = 92.54`.
+  - [x] El monto de cada provincia coincide exactamente con `total_amount_filtered` de `GET /api/public/tenders?province=<provincia>` (verificado en Distrito Nacional, Azua y Santiago).
+  - [x] `test_public_portal_api.py` ya no afirma 10 provincias ficticias: valida la agregación real (`share_pct`, `coverage_pct`).
+  - [x] `/public/budget-flow` renderiza Sankey + ranking y la selección de provincia lleva a `/public?province=<provincia>` filtrado.
+- **Dependencies:** Task 4.1
+- **Files to create/modify:** `app/backend/src/services/public_portal_service.py`, `app/backend/tests/test_public_portal_api.py`, `app/frontend/src/presentation/components/public/ProvincialSpendCard.tsx`, `app/frontend/src/presentation/pages/BudgetFlowPage.tsx`, `app/frontend/src/presentation/pages/CivicPortalPage.tsx`, `app/frontend/src/domain/publicPortal.ts`, `app/frontend/src/App.tsx`, `docs/ui-inventory.md`
+
+---
+
 ## Implementation Order Summary
 | Order | Task | Description | Est. | Depends On |
 |-------|------|-------------|------|------------|
@@ -131,16 +151,18 @@ flowchart TD
 | 2 | 1.2 | Servicio y Router Público de Veeduría Ciudadana `/api/public/*` (`REQ-003`..`REQ-006`) | ~3.0h | — |
 | 3 | 2.1 | Cabecera Pública con `"Sync: LIVE"`, Navegación de Portada y Buscador en Vivo en `AnomalyFilters` | ~2.0h | 1.1 |
 | 4 | 2.2 | Tipos TypeScript, Cliente API, Hooks React Query y Utilidades de Exportación CSV/JSON | ~1.5h | 1.2 |
-| 5 | 3.1 | Portal de Veeduría Ciudadana (`/public` y `/explore`): Buscador + 4 Chips + Sankey + Mapa + Comparador | ~2.5h | 2.1, 2.2 |
+| 5 | 3.1 | Portal de Veeduría Ciudadana (`/public` y `/explore`): Buscador + 4 Chips + Sankey + Ranking + Comparador | ~2.5h | 2.1, 2.2 |
 | 6 | 3.2 | Fichas Públicas (`/public/process/:id`, `/public/supplier/:rnc`, `/public/institution/:id`, `/ranking`) | ~2.0h | 2.2 |
 | 7 | 4.1 | Pruebas Automatizadas Backend (`pytest`), Validación Frontend (`tsc + eslint + vite build`) y Docs | ~2.0h | 3.1, 3.2 |
+| 8 | 5.1 | Agregación provincial real + ruta `/public/budget-flow` (`REQ-004`) | ~2.5h | 4.1 |
 
-## Total Estimate: ~18h (includes 20% buffer)
+## Total Estimate: ~21h (includes 20% buffer)
 
 ## Completion Checklist
 - [x] All tasks completed
 - [x] All tests passing / TypeScript & ESLint clean
 - [x] Documentation updated (`requirements.md`, `design.md`, `tasks.md`, `test-plan.md`, `test-cases.md`)
+- [x] Distribución provincial real (sin pesos fijos) validada contra `GET /api/public/tenders?province=<provincia>`
 
 ---
 > 📍 Pendiente (sin PBI/Feature en ADO) · 🌿 `dev` · Generated by SDD Standard

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Download, FileJson, Loader2, Search, X } from "lucide-react"
+import { ArrowRight, Download, FileJson, Loader2, Search, X } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import SectionContainer from "../components/SectionContainer"
 import BudgetSankeyCard from "../components/public/BudgetSankeyCard"
-import ProvincialMapCard from "../components/public/ProvincialMapCard"
+import ProvincialSpendCard from "../components/public/ProvincialSpendCard"
 import LivePriceCheckerWidget from "../components/public/LivePriceCheckerWidget"
 import {
   usePublicBudgetOverview,
@@ -45,6 +45,7 @@ export default function CivicPortalPage() {
 
   const initialInstId = searchParams.get("institution_id")
   const initialQuery = searchParams.get("q") || ""
+  const initialProvince = searchParams.get("province") || ""
 
   const [searchInput, setSearchInput] = useState(initialQuery)
   const [debouncedSearch, setDebouncedSearch] = useState(initialQuery)
@@ -52,7 +53,7 @@ export default function CivicPortalPage() {
   const [institutionId, setInstitutionId] = useState<number | undefined>(
     initialInstId ? Number(initialInstId) : undefined,
   )
-  const [province, setProvince] = useState("")
+  const [province, setProvince] = useState(initialProvince)
   const [onlyWithAnomalies, setOnlyWithAnomalies] = useState(false)
   const [page, setPage] = useState(1)
 
@@ -417,11 +418,25 @@ export default function CivicPortalPage() {
             />
           )}
 
+          {budgetOverview && (
+            <div className="flex justify-end -mt-2">
+              <button
+                type="button"
+                onClick={() => navigate("/public/budget-flow")}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline cursor-pointer"
+              >
+                <span>Ver el flujo presupuestario completo</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {budgetOverview && (
-              <ProvincialMapCard
+              <ProvincialSpendCard
                 provinces={budgetOverview.provinces}
                 selectedProvince={province}
+                coveragePct={budgetOverview.provinces_meta?.coverage_pct}
                 onSelectProvince={(p) => {
                   setActiveChipLabel(null)
                   setProvince(p)

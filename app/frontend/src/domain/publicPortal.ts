@@ -58,11 +58,17 @@ export interface SankeyFlowLink {
 export interface ProvincialSpendItem {
   id: string
   province: string
-  region: string
   total_amount: number
   active_processes: number
   critical_alerts: number
   share_pct: number
+}
+
+export interface ProvinceAttributionMeta {
+  basis: string
+  attributed_amount: number
+  national_amount: number
+  coverage_pct: number
 }
 
 export interface BudgetOverviewResponse {
@@ -73,6 +79,7 @@ export interface BudgetOverviewResponse {
     total_flow_amount: number
   }
   provinces: ProvincialSpendItem[]
+  provinces_meta: ProvinceAttributionMeta
 }
 
 export interface PriceComparisonItem {

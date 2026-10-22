@@ -17,6 +17,7 @@ import RequireAuth from "./presentation/components/auth/RequireAuth"
 const DashboardLayout = lazy(() => import("./presentation/layouts/DashboardLayout"))
 const AuditorPage = lazy(() => import("./presentation/pages/AuditorPage"))
 const CivicPortalPage = lazy(() => import("./presentation/pages/CivicPortalPage"))
+const BudgetFlowPage = lazy(() => import("./presentation/pages/BudgetFlowPage"))
 const TenderDetailPage = lazy(() => import("./presentation/pages/TenderDetailPage"))
 const SupplierProfilePage = lazy(() => import("./presentation/pages/SupplierProfilePage"))
 const InstitutionProfilePage = lazy(() => import("./presentation/pages/InstitutionProfilePage"))
@@ -89,6 +90,7 @@ function App() {
           <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
           <Route path="/public" element={<CivicPortalPage />} />
           <Route path="/explore" element={<CivicPortalPage />} />
+          <Route path="/public/budget-flow" element={<BudgetFlowPage />} />
           <Route path="/public/process/:id" element={<TenderDetailPage />} />
           <Route path="/tender/:id" element={<TenderDetailPage />} />
           <Route path="/public/supplier/:rnc" element={<SupplierProfilePage />} />

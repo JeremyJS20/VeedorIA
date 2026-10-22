@@ -12,7 +12,7 @@
 - **Test Cases**: [test-cases.md](./test-cases.md)
 
 ## Technology Decisions
-- **Frontend**: **React `^19.2.6` + TypeScript `~6.0.2` + Vite `^8.0.12` + TailwindCSS `^4.3.1` + TanStack React Query `^5.99.0` + D3.js `^7.9.0` + `react-router-dom` `^7.14.0` + `i18next` `^26.0.3` + `lucide-react` `^1.16.0`** — Permite construir el Portal de Veeduría Ciudadana (`/public` y `/explore`) con carga diferida (`React.lazy()`), visualizaciones SVG interactivas (Diagrama Sankey Presupuestario y Mapa Geográfico Provincial de la República Dominicana), Comparador de Precios Unitarios en Tiempo Real, exportación de Datos Abiertos en CSV (UTF-8 con BOM) y JSON, y fichas públicas interconectadas (`/public/process/:id`, `/public/supplier/:rnc`, `/public/institution/:id`, `/ranking`).
+- **Frontend**: **React `^19.2.6` + TypeScript `~6.0.2` + Vite `^8.0.12` + TailwindCSS `^4.3.1` + TanStack React Query `^5.99.0` + D3.js `^7.9.0` + `react-router-dom` `^7.14.0` + `i18next` `^26.0.3` + `lucide-react` `^1.16.0`** — Permite construir el Portal de Veeduría Ciudadana (`/public`, `/explore` y `/public/budget-flow`) con carga diferida (`React.lazy()`), visualizaciones SVG interactivas (Diagrama Sankey Presupuestario y ranking real de gasto por provincia del proveedor), Comparador de Precios Unitarios en Tiempo Real, exportación de Datos Abiertos en CSV (UTF-8 con BOM) y JSON, y fichas públicas interconectadas (`/public/process/:id`, `/public/supplier/:rnc`, `/public/institution/:id`, `/ranking`).
 - **Backend**: **Python `3.12+` + FastAPI `^0.135.3` + SQLModel `^0.0.38` + SQLAlchemy Async `^2.0.49` (`asyncpg`)** — Expone un nuevo router público sin autenticación (`src/presentation/routers/public_router.py` bajo `/api/public`) y amplía `AnomalyService.get_anomalies` (`GET /api/anomalies?search=...`) con búsqueda `ILIKE` multicampo sobre las tablas reales en PostgreSQL.
 - **Database**: **PostgreSQL 16 (`veedoria-pg`)** — Consultas analíticas agregadas (`SUM`, `COUNT`, `AVG`, `CASE WHEN`) sobre las tablas existentes `institution` (`730`), `process` (`19,722`), `contract` (`20,380`), `item` (`98,869`), `supplier` (`124,361`) y `anomaly` (`1,262`) sin requerir migraciones destructivas.
 - **Cloud Services**: Despliegue `monorepo-split` (Frontend SPA en CDN/Vercel + Backend FastAPI en contenedores Docker en Render/ECS) con promoción controlada multi-ambiente (`dev → cert → main`).
@@ -26,8 +26,9 @@ flowchart TD
     subgraph Public_SPA["Frontend SPA — Portal Ciudadano (app/frontend/src)"]
         Navbar["Navbar.tsx (Badge 'Sync: LIVE' + Enlaces /public, /ranking, /app/bandeja)"]
         CivicPortal["CivicPortalPage.tsx (/public, /explore)"]
+        FlowPage["BudgetFlowPage.tsx (/public/budget-flow)"]
         SankeyCard["BudgetSankeyCard.tsx (D3/SVG Top 5 Inst -> Top 10 Proveedores)"]
-        MapCard["ProvincialMapCard.tsx (Mapa SVG RD por Provincias)"]
+        SpendCard["ProvincialSpendCard.tsx (Ranking real por Provincia del Proveedor)"]
         PriceWidget["LivePriceCheckerWidget.tsx (Adjudicado vs Mercado UNSPSC)"]
         ProcessPage["TenderDetailPage.tsx (/public/process/:id, /tender/:id)"]
         SupplierPage["SupplierProfilePage.tsx (/public/supplier/:rnc)"]
@@ -50,10 +51,12 @@ flowchart TD
         Tables[("institution (730) · process (19.7k) · contract (20.3k)\nitem (98.8k) · supplier (124.3k) · anomaly (1,262)")]
     end
 
-    Navbar --> CivicPortal & RankingPage
-    CivicPortal --> SankeyCard & MapCard & PriceWidget
+    Navbar --> CivicPortal & FlowPage & RankingPage
+    CivicPortal --> SankeyCard & SpendCard & PriceWidget
+    CivicPortal --> FlowPage
+    FlowPage --> SankeyCard & SpendCard
     CivicPortal --> ProcessPage & SupplierPage & InstPage
-    CivicPortal & ProcessPage & SupplierPage & InstPage & RankingPage --> PublicRouter
+    CivicPortal & FlowPage & ProcessPage & SupplierPage & InstPage & RankingPage --> PublicRouter
     Filters --> AnomalyRouter
     PublicRouter --> PublicService --> Tables
     AnomalyRouter --> AnomalyService --> Tables
@@ -64,6 +67,7 @@ flowchart TD
 flowchart LR
     App["App.tsx (Routes)"] --> LP["LandingPage (/)"]
     App --> CP["CivicPortalPage (/public, /explore)"]
+    App --> BFP["BudgetFlowPage (/public/budget-flow)"]
     App --> TDP["TenderDetailPage (/public/process/:id, /tender/:id)"]
     App --> SPP["SupplierProfilePage (/public/supplier/:rnc)"]
     App --> IPP["InstitutionProfilePage (/public/institution/:id)"]
@@ -73,17 +77,41 @@ flowchart LR
     CP --> NB["Navbar (Sync: LIVE)"]
     CP --> SB["NaturalLanguageSearchBar + 4 SuggestionChips"]
     CP --> BSC["BudgetSankeyCard"]
-    CP --> PMC["ProvincialMapCard"]
+    CP --> PSC["ProvincialSpendCard"]
+    BFP --> PSC
+    BFP --> BSC
     CP --> LPC["LivePriceCheckerWidget"]
     CP --> TRC["TenderResultsGrid + Export CSV/JSON"]
 ```
+
+### Agregación Provincial Real (`REQ-004`)
+
+La tarjeta provincial dejó de ser un esquema de 10 zonas con proporciones fijas y pasó a un **ranking real de todas las provincias del domicilio del proveedor**.
+
+**Base geográfica.** Ni `institution` ni `process` tienen columna de provincia; la única geografía real es `supplier.province` (98.297 de 124.361 proveedores, 31 provincias distintas con contratos).
+
+**Enlace `contract` ↔ `supplier`.** `contract.rpe` es el RPE del proveedor y `supplier.rnc` su RNC: son espacios de identificadores distintos (0 coincidencias sobre 20.380 contratos). El enlace determinista disponible es la igualdad exacta del nombre normalizado:
+
+```sql
+upper(trim(supplier.registered_name)) = upper(trim(contract.supplier_name))
+```
+
+Cubre 20.037 de 20.380 contratos (98,3%) y **92,5% del monto nacional**, sin coincidencias múltiples (98.238 nombres para 98.297 proveedores). El `92,54%` se devuelve en `provinces_meta.coverage_pct` y la tarjeta lo declara en pantalla, para que el faltante sea visible y no una omisión silenciosa.
+
+**Métricas.** `total_amount` = `sum(amount_adjudicated)`; `active_processes` = `count(distinct contract.process_id)`; `critical_alerts` = `count(distinct anomaly.id)` sobre los contratos de esa provincia; `share_pct` = porcentaje del monto atribuido. No queda ningún valor derivado de un peso fijo.
+
+**Por qué no un mapa.** El bloque SVG anterior era un esquema de 10 cajas que no correspondía a las 31 provincias reales, y con datos reales el 79,5% del monto cae en Distrito Nacional. Un ranking completo es más honesto y más informativo que un mapa parcial.
+
+**Filtro alineado.** `GET /api/public/tenders?province=<provincia>` filtra por la misma relación (provincia del proveedor) en lugar del `ILIKE` de palabras clave anterior, de modo que el monto de la tarjeta coincide exactamente con el `total_amount_filtered` de la lista.
+
+**Ruta dedicada.** `/public/budget-flow` (`BudgetFlowPage`) compone `BudgetSankeyCard` + `ProvincialSpendCard` con la misma `queryKey` de React Query; `/public` enlaza hacia ella.
 
 ## Deployment
 - **Pattern**: `monorepo-split` (SPA compilada con Vite en `app/frontend` y API REST asíncrona FastAPI en `app/backend`).
 - **App**: Frontend en CDN / Vercel Static Hosting y Backend en contenedor Uvicorn sobre Render / AWS ECS.
 - **Infra**: PostgreSQL 16 gestionado con índices sobre claves foráneas (`institution_id`, `process_id`, `contract_id`, `supplier_rpe`) y caché Redis 7.
 - **CI/CD**: GitHub Actions ejecutando `pytest`, `eslint`, `tsc -b` y `vite build` en cada Pull Request y promoción controlada con compuertas de aprobación.
-- **Justification**: Mantener las agregaciones de Sankey, Mapa Provincial, Comparador de Precios y Ranking en endpoints SQL dedicados bajo `/api/public/*` permite tiempos de respuesta `< 300ms` sin transferir decenas de miles de filas crudas al navegador.
+- **Justification**: Mantener las agregaciones de Sankey, gasto por provincia del proveedor, Comparador de Precios y Ranking en endpoints SQL dedicados bajo `/api/public/*` permite tiempos de respuesta `< 300ms` sin transferir decenas de miles de filas crudas al navegador.
 - **Discarded**: Descargar los `20,380` contratos completos al cliente para filtrar en memoria (descartado por consumo excesivo de ancho de banda y memoria en dispositivos móviles).
 
 ### Environments
@@ -133,6 +161,7 @@ flowchart LR
 
 ### GET /api/public/tenders
 - **Request**: Query params `page` (`int=1`), `limit` (`int=20`), `search` (`str | None`), `institution_id` (`int | None`), `province` (`str | None`), `min_amount` (`float | None`), `max_amount` (`float | None`), `only_with_anomalies` (`bool=False`).
+- **Province filter**: `province` recibe el nombre tal como se devuelve en `budget-overview.provinces[].id` (p. ej. `SANTO DOMINGO`, `CONCEPCIÓN DE LA VEGA`) y resuelve por domicilio del proveedor en `supplier.province`, no por coincidencia de palabras clave.
 - **Response**: `200 OK` — Objeto JSON con `total`, `page`, `limit`, `total_amount_filtered` y `data: PublicTenderSummary[]` (incluyendo conteo y severidad de alertas IA).
 - **Auth**: None (acceso público ciudadano).
 - **Errors**: `422 Unprocessable Entity` ante parámetros fuera de rango.
@@ -140,7 +169,7 @@ flowchart LR
 
 ### GET /api/public/budget-overview
 - **Request**: Sin parámetros requeridos.
-- **Response**: `200 OK` — Objeto JSON con `sankey: { institutions: SankeyNode[], suppliers: SankeyNode[], links: SankeyLink[] }` (Top 5 Instituciones hacia Top 10 Proveedores) y `provinces: ProvincialSpendItem[]` (`province`, `region`, `total_amount`, `active_processes`, `critical_alerts`).
+- **Response**: `200 OK` — Objeto JSON con `sankey: { institutions: SankeyNode[], suppliers: SankeyNode[], links: SankeyLink[], total_flow_amount }` (Top 5 Instituciones hacia Top 10 Proveedores) y `provinces: ProvincialSpendItem[]` (`id`, `province`, `total_amount`, `active_processes`, `critical_alerts`, `share_pct`) agregado por provincia del proveedor, más `provinces_meta: { basis, attributed_amount, national_amount, coverage_pct }`.
 - **Auth**: None (acceso público ciudadano).
 - **Errors**: `500 Internal Server Error` si la base de datos no está disponible.
 - **Maps to**: REQ-004
@@ -174,7 +203,9 @@ flowchart LR
 - **Maps to**: REQ-006
 
 ## Architecture Updates
-- Se registrará el router `public_router.py` en `docs/architecture/api-contract.md` y en `src/presentation/main.py` una vez implementada la funcionalidad.
+- `docs/architecture/api-contract.md`: la fila de `GET /api/public/budget-overview` pasa a describir también la distribución provincial real (antes solo mencionaba el Sankey).
+- `docs/architecture/data-model.md`: **sin cambios** — no se agregan tablas ni columnas; la agregación usa `supplier.province` y `contract.supplier_name`, que ya existen.
+- Deuda registrada (no bloqueante): persistir el RNC del proveedor en `contract` durante la ingesta (`sync_service` ya lo recibe como `numero_documento`) eliminaría el enlace por nombre y habilitaría un JOIN indexado.
 
 ## Approval
 - [x] Developer: JSolan0 Date: 2026-10-19

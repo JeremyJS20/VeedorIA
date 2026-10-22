@@ -82,7 +82,17 @@ async def test_public_portal_and_anomaly_search_flow(client: AsyncClient, db_ses
     assert r_budget.status_code == 200
     b_data = r_budget.json()["data"]
     assert len(b_data["sankey"]["institutions"]) == 1
-    assert len(b_data["provinces"]) == 10
+    # La distribución provincial se agrega por domicilio real del proveedor,
+    # no por proporciones fijas: con un solo proveedor hay una sola provincia.
+    assert len(b_data["provinces"]) == 1
+    province = b_data["provinces"][0]
+    assert province["id"] == "SANTO DOMINGO"
+    assert province["total_amount"] == 4_250_000.0
+    assert province["share_pct"] == 100.0
+    assert province["active_processes"] == 1
+    assert province["critical_alerts"] == 1
+    assert b_data["provinces_meta"]["basis"] == "supplier.province"
+    assert b_data["provinces_meta"]["coverage_pct"] == 100.0
 
     # 4. Test GET /api/public/price-comparison
     r_price = await client.get("/api/public/price-comparison")

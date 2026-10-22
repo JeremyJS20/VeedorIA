@@ -97,7 +97,7 @@ Fuente: `docs-backup-2/internal/complete_screen_map.md`. ✅ implementada · �
 |---|---|---|---|---|
 | 1 | Landing Page | `/` | ✅ | `LandingPage` |
 | 2 | Buscador Ciudadano | `/public` | ✅ | `CivicPortalPage` |
-| 3 | Sankey de Gasto | `/public/budget-flow` | ⬜ | — |
+| 3 | Sankey de Gasto | `/public/budget-flow` | ✅ | `BudgetFlowPage` (reusa `BudgetSankeyCard` + `ProvincialSpendCard`; el portal `/public` enlaza desde su Sankey) |
 | 4 | Comparador Comunitario de Precios | `/public/price-checker` | ⬜ | — |
 | 5 | Detalle de Proceso Público | `/public/process/:id` | ✅ | `TenderDetailPage` |
 | 6 | Perfil Público de Proveedor | `/public/supplier/:rnc` | ✅ | `SupplierProfilePage` |

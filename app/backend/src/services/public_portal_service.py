@@ -1,5 +1,6 @@
 import re
 import unicodedata
+
 from sqlalchemy import and_, case, desc, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,18 +11,45 @@ from src.models.item import Item
 from src.models.process import Process
 from src.models.supplier import Supplier
 
-DR_PROVINCES_META = [
-    {"id": "SD", "province": "Santo Domingo / D.N.", "region": "Ozama", "keywords": ["santo domingo", "distrito nacional", "ministerio", "dirección general", "presidencia", "senado", "cámara"]},
-    {"id": "ST", "province": "Santiago", "region": "Cibao Norte", "keywords": ["santiago", "coraasan", "edenorte", "homero", "cibao"]},
-    {"id": "LV", "province": "La Vega", "region": "Cibao Sur", "keywords": ["la vega", "constanza", "jarabacoa", "vegano"]},
-    {"id": "SC", "province": "San Cristóbal", "region": "Valdesia", "keywords": ["san cristóbal", "san cristobal", "haina", "nigua", "cambita"]},
-    {"id": "PP", "province": "Puerto Plata", "region": "Cibao Norte", "keywords": ["puerto plata", "sosúa", "cabarete", "imbert", "luperón"]},
-    {"id": "DU", "province": "Duarte (S.F. Macorís)", "region": "Cibao Nordeste", "keywords": ["duarte", "macorís", "macoris", "san francisco", "villa riva"]},
-    {"id": "LR", "province": "La Romana", "region": "Yuma", "keywords": ["la romana", "guaymate", "villa hermosa", "caleta"]},
-    {"id": "SP", "province": "San Pedro de Macorís", "region": "Higuamo", "keywords": ["san pedro", "consuegra", "quisqueya", "los llanos"]},
-    {"id": "LA", "province": "La Altagracia (Higüey)", "region": "Yuma", "keywords": ["altagracia", "higüey", "higuey", "punta cana", "bávaro", "verón", "yuma"]},
-    {"id": "AZ", "province": "Azua / Región Sur", "region": "Valdesia / Enriquillo", "keywords": ["azua", "barahona", "san juan", "baní", "bani", "peravia", "ocoa", "neiba", "pedernales"]},
-]
+_PROVINCE_NAME_PARTICLES = {"de", "del", "la", "las", "los", "y"}
+
+
+def province_key(value: str) -> str:
+    """Clave estable de provincia: mayúsculas, espacios colapsados."""
+    return " ".join(value.strip().upper().split())
+
+
+def province_display_name(value: str) -> str:
+    """Nombre legible a partir del valor crudo de la DGCP (todo en mayúsculas)."""
+    words = province_key(value).split()
+    rendered = [
+        word.lower() if idx and word.lower() in _PROVINCE_NAME_PARTICLES else word.capitalize()
+        for idx, word in enumerate(words)
+    ]
+    return " ".join(rendered)
+
+
+def supplier_province_subquery():
+    """Provincia declarada por cada proveedor, agrupada por nombre normalizado.
+
+    `contract` guarda el `rpe` del proveedor pero no su RNC, así que el único
+    enlace determinista con `supplier` es `contract.supplier_name` contra
+    `supplier.registered_name` (igualdad exacta sobre el texto normalizado).
+    """
+    supplier_key = func.upper(func.trim(Supplier.registered_name))
+    return (
+        select(
+            supplier_key.label("supplier_key"),
+            func.min(Supplier.province).label("province"),
+        )
+        .where(
+            Supplier.province.isnot(None),
+            func.trim(Supplier.province) != "",
+            Supplier.registered_name.isnot(None),
+        )
+        .group_by(supplier_key)
+        .subquery()
+    )
 
 SYNONYM_MAP: dict[str, list[str]] = {
     "minerd": ["educación", "educacion", "educativa", "ideice", "isfodosu", "inabie"],
@@ -254,19 +282,18 @@ class PublicPortalService:
             base = base.where(total_anom_expr > 0)
 
         if province and province.strip():
-            prov_clean = province.strip()
-            keywords = [prov_clean]
-            for pm in DR_PROVINCES_META:
-                if pm["id"].lower() == prov_clean.lower() or pm["province"].lower() == prov_clean.lower():
-                    keywords = pm["keywords"]
-                    break
-            clauses = []
-            for kw in keywords:
-                q_kw = f"%{kw}%"
-                clauses.append(Institution.name.ilike(q_kw))
-                clauses.append(Process.title.ilike(q_kw))
-                clauses.append(Contract.object_description.ilike(q_kw))
-            base = base.where(or_(*clauses))
+            supplier_province = supplier_province_subquery()
+            base = (
+                base.outerjoin(
+                    supplier_province,
+                    supplier_province.c.supplier_key
+                    == func.upper(func.trim(Contract.supplier_name)),
+                )
+                .where(
+                    func.upper(func.trim(supplier_province.c.province))
+                    == province_key(province)
+                )
+            )
 
         if token_filters:
             base = base.where(and_(*token_filters))
@@ -422,26 +449,62 @@ class PublicPortalService:
         )
         nat_row = (await self.db.execute(nat_stmt)).one()
         nat_amount = float(nat_row.total_amount or 0.0)
-        nat_contracts = int(nat_row.total_contracts or 0)
 
-        anom_count_stmt = select(func.count(Anomaly.id))
-        nat_anomalies = int((await self.db.execute(anom_count_stmt)).scalar() or 0)
+        supplier_province = supplier_province_subquery()
 
-        weights = [0.42, 0.16, 0.08, 0.07, 0.06, 0.05, 0.05, 0.04, 0.04, 0.03]
-        provinces_data = []
-        for idx, pm in enumerate(DR_PROVINCES_META):
-            w = weights[idx]
-            provinces_data.append(
-                {
-                    "id": pm["id"],
-                    "province": pm["province"],
-                    "region": pm["region"],
-                    "total_amount": round(nat_amount * w, 2),
-                    "active_processes": max(1, int(nat_contracts * w)),
-                    "critical_alerts": max(1, int(nat_anomalies * w)),
-                    "share_pct": round(w * 100, 1),
-                }
+        spend_stmt = (
+            select(
+                supplier_province.c.province.label("province"),
+                func.count().label("contracts"),
+                func.count(func.distinct(Contract.process_id)).label("processes"),
+                func.coalesce(func.sum(Contract.amount_adjudicated), 0.0).label("amount"),
             )
+            .select_from(Contract)
+            .join(
+                supplier_province,
+                supplier_province.c.supplier_key
+                == func.upper(func.trim(Contract.supplier_name)),
+            )
+            .where(Contract.amount_adjudicated.isnot(None), Contract.amount_adjudicated > 0)
+            .group_by(supplier_province.c.province)
+        )
+        spend_rows = (await self.db.execute(spend_stmt)).all()
+
+        alert_stmt = (
+            select(
+                supplier_province.c.province.label("province"),
+                func.count(func.distinct(Anomaly.id)).label("alerts"),
+            )
+            .select_from(Anomaly)
+            .join(Contract, Contract.id == Anomaly.contract_id)
+            .join(
+                supplier_province,
+                supplier_province.c.supplier_key
+                == func.upper(func.trim(Contract.supplier_name)),
+            )
+            .group_by(supplier_province.c.province)
+        )
+        alerts_by_province = {
+            row.province: int(row.alerts or 0)
+            for row in (await self.db.execute(alert_stmt)).all()
+        }
+
+        attributed_amount = sum(float(row.amount or 0.0) for row in spend_rows)
+        provinces_data = [
+            {
+                "id": province_key(row.province),
+                "province": province_display_name(row.province),
+                "total_amount": round(float(row.amount or 0.0), 2),
+                "active_processes": int(row.processes or 0),
+                "critical_alerts": alerts_by_province.get(row.province, 0),
+                "share_pct": (
+                    round((float(row.amount or 0.0) / attributed_amount) * 100, 2)
+                    if attributed_amount
+                    else 0.0
+                ),
+            }
+            for row in sorted(spend_rows, key=lambda r: float(r.amount or 0.0), reverse=True)
+        ]
 
         return {
             "sankey": {
@@ -451,6 +514,14 @@ class PublicPortalService:
                 "total_flow_amount": total_flow,
             },
             "provinces": provinces_data,
+            "provinces_meta": {
+                "basis": "supplier.province",
+                "attributed_amount": round(attributed_amount, 2),
+                "national_amount": round(nat_amount, 2),
+                "coverage_pct": (
+                    round((attributed_amount / nat_amount) * 100, 2) if nat_amount else 0.0
+                ),
+            },
         }
 
     async def get_price_comparisons(self, limit: int = 8) -> list[dict]:

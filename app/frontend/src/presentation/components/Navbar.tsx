@@ -46,7 +46,8 @@ export default function Navbar() {
           {navLinks.map((link) => {
             const isActive =
               location.pathname === link.path ||
-              (link.path === "/public" && location.pathname === "/explore")
+              (link.path === "/public" &&
+                (location.pathname === "/explore" || location.pathname === "/public/budget-flow"))
             return (
               <button
                 key={link.label}

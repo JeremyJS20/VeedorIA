@@ -59,15 +59,15 @@ El módulo **Portal de Veeduría Ciudadana y Mejoras de Navegación** (`buscador
 **Dependencies:** REQ-001
 **Tracker:** Pendiente
 
-### REQ-004: Diagrama Sankey de Flujo del Presupuesto Nacional y Mapa Geográfico Provincial (`/public` y `GET /api/public/budget-overview`)
+### REQ-004: Diagrama Sankey de Flujo del Presupuesto Nacional y Distribución Real por Provincia del Proveedor (`/public`, `/public/budget-flow` y `GET /api/public/budget-overview`)
 **Type:** Event-Driven
-**Rule:** WHEN se carga el Portal de Veeduría Ciudadana (`/public`), the system SHALL consultar `GET /api/public/budget-overview` y renderizar dos visualizaciones interactivas conforme a `pages_concept/civic_portal/design.md`: (1) la tarjeta `"Distribución del Presupuesto Nacional de Compras"` con un **Diagrama de Flujo Sankey SVG** que conecta las **Top 5 Instituciones Públicas** (izquierda) con los **Top 10 Proveedores Adjudicados** (derecha) mostrando en hover el monto transferido en `RD$` y el porcentaje del flujo, y (2) la tarjeta `"Distribución del Gasto Público por Provincias"` con un **Mapa SVG interactivo de la República Dominicana** coloreado en escala secuencial según volumen contratado, mostrando en hover `Total Contratado`, `Procesos Activos` y `Alertas Críticas`, y filtrando el buscador al seleccionar una provincia/región.
-**Entities:** `Institution`, `Contract`, `Supplier`, `Anomaly`, `ProvincialSpendNode`, `SankeyLink`
+**Rule:** WHEN se carga el Portal de Veeduría Ciudadana (`/public`), the system SHALL consultar `GET /api/public/budget-overview` y renderizar dos visualizaciones interactivas conforme a `pages_concept/civic_portal/design.md`: (1) la tarjeta `"Distribución del Presupuesto Nacional de Compras"` con un **Diagrama de Flujo Sankey SVG** que conecta las **Top 5 Instituciones Públicas** (izquierda) con los **Top 10 Proveedores Adjudicados** (derecha) mostrando en hover el monto transferido en `RD$` y el porcentaje del flujo, y (2) la tarjeta `"Distribución del Gasto por Provincia del Proveedor"` con un **ranking real de todas las provincias presentes en `supplier.province`** (barra proporcional al monto adjudicado, ordenada de mayor a menor) que al seleccionar una provincia muestra `Total Adjudicado`, `Procesos con adjudicación` y `Hallazgos de auditoría`, y filtra el buscador por esa provincia; la tarjeta declara explícitamente qué porcentaje del monto nacional quedó atribuido (`provinces_meta.coverage_pct`).
+**Entities:** `Institution`, `Contract`, `Supplier` (campo `province`), `Anomaly`, `ProvincialSpendNode`, `SankeyLink`
 **Error Handling:** Si un proveedor o institución tiene nombre extenso, el nodo del diagrama Sankey trunca la etiqueta visualmente y muestra el nombre completo junto al monto exacto en el tooltip.
 
 **Acceptance Criteria:**
 - [ ] Given la vista `/public`, when se renderiza la sección `"Distribución del Presupuesto Nacional de Compras"`, then muestra el diagrama Sankey conectando las principales instituciones contratantes con sus proveedores adjudicados usando datos reales de `contract` e `institution`.
-- [ ] Given la tarjeta `"Distribución del Gasto Público por Provincias"`, when el usuario pasa el cursor o hace clic sobre una provincia/región del mapa SVG, then visualiza el tooltip con `Total Contratado`, `Procesos Activos` y `Alertas Críticas` y puede filtrar las contrataciones asociadas.
+- [ ] Given la tarjeta `"Distribución del Gasto por Provincia del Proveedor"`, when el usuario pasa el cursor o hace clic sobre una provincia del ranking, then visualiza `Total Adjudicado`, `Procesos con adjudicación` y `Hallazgos de auditoría` calculados por agregación real sobre `supplier.province` (no proporciones fijas), y el monto mostrado en la tarjeta coincide con el `total_amount_filtered` que devuelve `GET /api/public/tenders?province=<provincia>`.
 
 **Priority:** Must
 **Dependencies:** REQ-003
@@ -187,7 +187,7 @@ sequenceDiagram
 ## Assumptions
 | # | Assumption | Temporary stub | Replaced when |
 |---|-----------|----------------|---------------|
-| 1 | Como el dataset histórico DGCP no incluye coordenadas GPS por contrato, la distribución geográfica por provincias/regiones se infiere a partir de la ubicación/nombre de la institución o municipio y del total nacional distribuido proporcionalmente sobre las demarcaciones | Inferencia provincial determinista sobre datos reales de `institution` y `contract` | Cuando la DGCP publique geocodificación OCDS `deliveryAddresses` por proceso |
+| 1 | El dataset histórico DGCP no incluye coordenadas GPS por contrato, y ni `institution` ni `process` tienen columna geográfica, así que la única geografía real disponible es `supplier.province` (domicilio declarado del proveedor: 98.297 de 124.361 proveedores). `contract` guarda el `rpe` del proveedor pero no su RNC, por lo que el enlace con `supplier` se resuelve por igualdad exacta del nombre normalizado | Agregación determinista por provincia del proveedor, con `provinces_meta.coverage_pct` declarando el monto atribuido (92,5% del monto nacional) | Cuando `contract` persista el RNC del proveedor en la ingesta, o la DGCP publique geocodificación OCDS `deliveryAddresses` por proceso |
 
 ## Out of Scope
 - Autenticación de usuarios (`/login`, `/register`, `/forgot-password`), cubierta en el Bloque 3.

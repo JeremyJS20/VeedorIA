@@ -27,7 +27,7 @@
 | `GET` | `/api/public/institutions` | Public | Catálogo de instituciones con conteo de contratos | buscador-ciudadano |
 | `GET` | `/api/public/institutions/{id}` | Public | Radiografía pública de una institución del Estado | buscador-ciudadano |
 | `GET` | `/api/public/suppliers/{rpe}` | Public | Radiografía pública de un proveedor del Estado | buscador-ciudadano |
-| `GET` | `/api/public/budget-overview` | Public | Flujos presupuestarios agregados para el diagrama Sankey | buscador-ciudadano |
+| `GET` | `/api/public/budget-overview` | Public | Flujos presupuestarios agregados para el diagrama Sankey y distribución real del gasto por provincia del proveedor | buscador-ciudadano |
 | `GET` | `/api/public/provincial-spend` | Public | Gasto adjudicado y alertas agregadas por provincia | buscador-ciudadano |
 | `GET` | `/api/public/rankings` | Public | Ranking de instituciones y proveedores por concentración de hallazgos | buscador-ciudadano |
 | `GET` | `/api/public/price-comparisons` | Public | Casos destacados de variación de precios frente a la mediana del mercado | buscador-ciudadano |
