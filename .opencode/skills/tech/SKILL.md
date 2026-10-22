@@ -31,3 +31,17 @@ Each stack activates specific steering from `.sdd-cache/stacks/`.
 - If `stacks[]` is empty in an existing project → project-scanner detects it
 - Stack steering is activated from local cache, does not require re-sync
 - The Developer can manually add stacks to `.sdd-config.json`
+
+## Load the stack steering before writing (REQUIRE)
+
+The stack steering is NOT loaded by itself: it comes as on-demand skills (Claude, opencode, Antigravity) or by file pattern (Kiro). Before writing or changing any of the following, invoke the skill (Claude) or read the steering file (Kiro) listed, and say which ones you loaded in the task plan:
+
+| You touch or create | Load |
+|---|---|
+| `infra/**`, `cdk/**`, `cdk.json`, any CDK stack | `cdk` + `deployment-patterns` |
+| `amplify.yml`, an Amplify app, branch or its roles | `amplify` + `cdk` |
+| `.github/workflows/**`, `azure-pipelines.yml`, `vercel.json` | `deployment-patterns` (and the `pipeline-builder` power) |
+| DynamoDB / Lambda / Cognito / S3 / SQS-SNS / EventBridge / Step Functions / SES / Secrets Manager / VPC resources | the skill with that service name |
+| Secrets, env vars or credentials of a deployed app | `secrets-manager` + `security` |
+
+If a skill is not available in the IDE, say so in the plan; do not continue from memory.

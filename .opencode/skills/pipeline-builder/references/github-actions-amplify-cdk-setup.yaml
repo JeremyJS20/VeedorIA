@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Setup Infrastructure (one-time per environment) — GitHub Actions + CDK + Amplify
+# Reference pattern: unisigma_portal. Replace the double-underscore placeholders (see github-actions-amplify-cdk.yaml):
+#   __PROJECT__, __INFRA_STACK__, __APP_DIR__, __INFRA_DIR__, plus
+#   __GITHUB_REPO__  "owner/repo", e.g. "FactoriaUnipago/portal-web"
+#
+# Run ONCE per environment after the PR is merged to dev. Prerequisites (no IAM users, no access keys):
+#   1. GitHub PAT (repo + secrets:write) → secret SETUP_GITHUB_PAT.
+#   2. GitHub Environments dev/cert (prod when it exists) and secret AWS_ROLE_ARN_<ENV> with the
+#      platform OIDC role for that environment.
+#
+# What it does: one `cdk deploy` of __INFRA_STACK__-<Env>: secrets, Amplify roles, log group, alarms and the
+# Amplify APP + its branch (everything by CDK, no Amplify CLI). Then it stores AMPLIFY_APP_ID_<ENV> as a
+# GitHub variable. No `cdk bootstrap`: platform accounts already have it (qualifier and permissions
+# boundary come from __INFRA_DIR__/cdk.json). Later deploys (ci-cd.yml) reuse the previous GitHubAccessToken.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Setup Infrastructure (one-time)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: [dev, cert, prod]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  INFRA_DIR: __INFRA_DIR__
+  NODE_VERSION: '24'
+  AWS_REGION: us-east-1
+  REPO: __GITHUB_REPO__
+  ENV: ${{ github.event.inputs.environment }}
+
+jobs:
+  setup:
+    name: '🔧 Setup ${{ github.event.inputs.environment }}'
+    runs-on: ubuntu-latest
+    # The platform OIDC role requires the GitHub Environment in the token (sub = environment:<env>).
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.INFRA_DIR }}/package-lock.json
+      - name: Install CDK dependencies
+        run: npm ci
+        working-directory: ${{ env.INFRA_DIR }}
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets[format('AWS_ROLE_ARN_{0}', github.event.inputs.environment)] }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Verify assumed identity
+        run: aws sts get-caller-identity
+      - name: CDK Deploy (Infra + Amplify)
+        run: |
+          SUFFIX="$(echo "${ENV:0:1}" | tr '[:lower:]' '[:upper:]')${ENV:1}"
+          npx cdk deploy "__INFRA_STACK__-${SUFFIX}" --require-approval never \
+            --parameters "GitHubAccessToken=${{ secrets.SETUP_GITHUB_PAT }}" \
+            --outputs-file cdk-outputs.json
+        working-directory: ${{ env.INFRA_DIR }}
+        env:
+          CDK_ENV: ${{ env.ENV }}
+      - name: Extract CDK outputs (Amplify)
+        id: cdk
+        run: |
+          APP_ID=$(jq -r 'to_entries[] | select(.key | test("__INFRA_STACK__")) | .value.AmplifyAppId' cdk-outputs.json)
+          APP_URL=$(jq -r 'to_entries[] | select(.key | test("__INFRA_STACK__")) | .value.AmplifyUrl // empty' cdk-outputs.json)
+          echo "app_id=$APP_ID" >> $GITHUB_OUTPUT
+          echo "app_url=$APP_URL" >> $GITHUB_OUTPUT
+        working-directory: ${{ env.INFRA_DIR }}
+      # The GitHub variable with the App ID is read by ci-cd.yml.
+      - name: Save AMPLIFY_APP_ID
+        env:
+          GH_TOKEN: ${{ secrets.SETUP_GITHUB_PAT }}
+        run: |
+          gh variable set "AMPLIFY_APP_ID_${{ env.ENV }}" --repo "${{ env.REPO }}" --body "${{ steps.cdk.outputs.app_id }}"
+          echo "✅ AMPLIFY_APP_ID_${{ env.ENV }}=${{ steps.cdk.outputs.app_id }}"
+      - name: Print results
+        run: |
+          echo "🎉 Infra + Amplify for ${{ env.ENV }} ready"
+          echo "  Amplify App ID: ${{ steps.cdk.outputs.app_id }}"
+          echo "  URL:            ${{ steps.cdk.outputs.app_url }}"
+          echo "  Push to the environment branch → Amplify builds and deploys (amplify.yml)"

@@ -66,6 +66,7 @@ For each task:
    Est: 30min | REQ: REQ-001 | Dep: Task 3
    Proceed?
    ```
+   - **Infra, pipeline or AWS-service tasks** (anything in the "Load the stack steering before writing" table of `tech.md`: CDK, Amplify, workflows, DynamoDB, Lambda, secrets…): invoke the matching skill / read the steering BEFORE proposing, and add `Steering loaded:` to the proposal with the names. If one is unavailable, say so; do not continue from memory.
    - **UI tasks (screens, pages, components):** read the UI inventory first (`docs/ui-inventory.md`, see `ui-inventory.md`; if missing and the project has components → `python3 sdd-scripts/ui-inventory-scan.py --write` and fill the TODOs). The proposal MUST add `Reuses:` (inventory components for each table, filter, shell, modal, chart, form layout the task needs) and `New components:` (each with one line on why no existing one fits). Do NOT write a UI element that an inventory component already covers.
 
 4a. **UI Mockup** — If the task involves frontend/UI (screens, pages, components):
@@ -173,6 +174,7 @@ For each task:
 - `testing-strategy.md` — test coverage targets and testing approach
 - `design-system-base.md` — UI tokens and component patterns
 - `ui-inventory.md` — shared components to reuse before building a screen
+- `deployment-patterns.md`, `cdk`, `amplify` and the AWS service steering — see the load-by-path table in `tech.md`
 
 ### ⚠️ MCP Self-Verification (verify BEFORE reporting task completion to user)
 
@@ -181,6 +183,7 @@ For each task:
 - ☐ Ran `eslint` on all modified JS/TS files — zero violations (step 7)
 - ☐ Used `sequential-thinking` for complex implementation problems (step 6, if applicable)
 - ☐ Ran `playwright` E2E tests for UI components (step 7, if applicable)
+- ☐ Infra/pipeline/AWS task: loaded the skills from the `tech.md` table before proposing and listed them under `Steering loaded:` (step 4)
 - ☐ UI task: read the UI inventory before proposing, listed `Reuses:`/`New components:` in the plan, `validate-ui.py --only reuse --strict` passes, inventory updated for new shared components (steps 4, 6, 7a)
 - ☐ Updated implementation progress in `server-memory` (step 9)
 - ☐ If any MCP unavailable → documented in task completion report

@@ -1,0 +1,197 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CI/CD — GitHub Actions + AWS Amplify (app) + AWS CDK (infra)
+# Reference pattern: unisigma_portal (fullstack-amplify-cdk). Replace the double-underscore placeholders:
+#   __PROJECT__      human name, e.g. "Portal Web"
+#   __INFRA_STACK__  CDK stack prefix; the stack is "<prefix>-<Env>" (Dev, Cert, Prod), e.g. "PortalInfra"
+#   __APP_DIR__      folder of the Next.js app (usually "app")
+#   __INFRA_DIR__    folder of the CDK app (usually "infra")
+#
+# Who deploys what:
+#   - App code:  AWS Amplify, by webhook on push to the connected branch (build = amplify.yml), with
+#                one preview per PR. NOT this workflow.
+#   - Infra:     this workflow (CDK) with the platform OIDC role, only when infra changed (push to dev)
+#                or on demand (workflow_dispatch: diff = safe preview, deploy = apply).
+#   - The Amplify app, its branch, roles and env vars are defined in CDK. Never edit them by console
+#     or CLI: the next CDK deploy overwrites them.
+# Platform accounts already have the CDK bootstrap: do NOT run `cdk bootstrap` here (see
+# deployment-patterns.md → "CDK Bootstrap por deployment pattern").
+# Secrets / variables (GitHub): AWS_ROLE_ARN_<ENV> (OIDC role per environment), SETUP_GITHUB_PAT,
+# variable AMPLIFY_APP_ID_<ENV> (written by the setup workflow).
+# ═══════════════════════════════════════════════════════════════════════════════
+name: CI/CD - __PROJECT__
+
+# Skip runs that cannot affect the app or its infra (docs, specs, agent folders): saves Actions minutes.
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '__APP_DIR__/**'
+      - '__INFRA_DIR__/**'
+      - 'amplify.yml'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - '__APP_DIR__/**'
+      - '__INFRA_DIR__/**'
+      - 'amplify.yml'
+      - '.github/workflows/ci-cd.yml'
+  workflow_dispatch:
+    inputs:
+      deploy_infra:
+        description: 'Deploy CDK infrastructure'
+        required: true
+        type: boolean
+        default: false
+      environment:
+        description: 'Target environment (when deploy_infra=true)'
+        required: false
+        type: choice
+        options: [dev, cert, prod]
+      infra_mode:
+        description: 'diff = only show changes (safe); deploy = apply'
+        required: false
+        type: choice
+        default: diff
+        options: [diff, deploy]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+# A new push to the same PR cancels the previous run. On push to dev the group is unique per run:
+# never cancelled, because it could interrupt a CDK deploy.
+concurrency:
+  group: ci-cd-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  APP_DIR: __APP_DIR__
+  INFRA_DIR: __INFRA_DIR__
+  NODE_VERSION: '24'
+
+jobs:
+  # One job for every gate: a single checkout + setup-node + npm ci (Actions bills each job per minute).
+  quality:
+    name: '✅ Quality Gate (frontend)'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.APP_DIR }}/package-lock.json
+      - run: npm ci
+        working-directory: ${{ env.APP_DIR }}
+      # Type Check goes BEFORE Lint: type errors must block before lint rules are evaluated.
+      - name: '🔍 Type Check'
+        run: npx tsc --noEmit
+        working-directory: ${{ env.APP_DIR }}
+      - name: '🎨 Lint'
+        run: npx eslint src/ --max-warnings=0
+        working-directory: ${{ env.APP_DIR }}
+      - name: '🧪 Unit Tests'
+        run: npx vitest run --coverage
+        working-directory: ${{ env.APP_DIR }}
+      - name: '🔒 Security Audit'
+        run: npm audit --audit-level=critical --omit=dev
+        working-directory: ${{ env.APP_DIR }}
+      - name: '📦 Build'
+        run: npx next build
+        working-directory: ${{ env.APP_DIR }}
+
+  # Did the push touch the CDK app itself? Only then is a deploy needed on push to dev.
+  infra-changes:
+    name: '🔎 Infra changes'
+    if: github.event_name == 'push' && github.ref_name == 'dev'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          BEFORE="${{ github.event.before }}"
+          # Branch creation (before = 000…) or unreachable before: assume there are changes.
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # List the CDK stack, config, bin, cdk.json and dependency files; adjust to your infra layout.
+          CHANGES=$(git diff --name-only "$BEFORE" "${{ github.sha }}" -- \
+            __INFRA_DIR__/lib/ __INFRA_DIR__/bin/ __INFRA_DIR__/cdk.json \
+            __INFRA_DIR__/package.json __INFRA_DIR__/package-lock.json)
+          echo "$CHANGES"
+          if [ -n "$CHANGES" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "changed=false" >> "$GITHUB_OUTPUT"; fi
+
+  deploy-infra:
+    name: '🏗️ Deploy Infra (CDK)'
+    # Manual (deploy_infra) or push to dev with infra changes; always after the quality gate passes.
+    if: >-
+      !cancelled() && needs.quality.result == 'success' && (
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_infra == 'true') ||
+        (github.event_name == 'push' && needs.infra-changes.outputs.changed == 'true'))
+    runs-on: ubuntu-latest
+    needs: [quality, infra-changes]
+    env:
+      # On push there are no inputs: dev + deploy.
+      DEPLOY_ENV: ${{ github.event.inputs.environment || 'dev' }}
+      DEPLOY_MODE: ${{ github.event.inputs.infra_mode || 'deploy' }}
+    concurrency:
+      group: deploy-infra-${{ github.event.inputs.environment || 'dev' }}
+      cancel-in-progress: false
+    # The platform OIDC role requires the GitHub Environment in the token (sub = environment:<env>).
+    environment:
+      name: ${{ github.event.inputs.environment || 'dev' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.INFRA_DIR }}/package-lock.json
+      - run: npm ci
+        working-directory: ${{ env.INFRA_DIR }}
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets[format('AWS_ROLE_ARN_{0}', env.DEPLOY_ENV)] }}
+          aws-region: us-east-1
+      - name: Verify assumed identity
+        run: aws sts get-caller-identity
+      - name: Resolve stack
+        id: stack
+        run: |
+          ENV="${{ env.DEPLOY_ENV }}"
+          echo "name=__INFRA_STACK__-${ENV^}" >> "$GITHUB_OUTPUT"
+      - name: CDK Diff
+        run: npx cdk diff "${{ steps.stack.outputs.name }}"
+        working-directory: ${{ env.INFRA_DIR }}
+        env:
+          CDK_ENV: ${{ env.DEPLOY_ENV }}
+      - name: CDK Deploy
+        if: env.DEPLOY_MODE == 'deploy'
+        # GitHubAccessToken: NoEcho parameter with the PAT Amplify uses to connect the repository.
+        run: |
+          npx cdk deploy "${{ steps.stack.outputs.name }}" --require-approval never \
+            --parameters "GitHubAccessToken=${{ secrets.SETUP_GITHUB_PAT }}" \
+            --outputs-file cdk-outputs.json
+        working-directory: ${{ env.INFRA_DIR }}
+        env:
+          CDK_ENV: ${{ env.DEPLOY_ENV }}
+      # CloudFormation changes to Amplify env vars do NOT trigger a build, and Next.js reads them only at
+      # build time: start one so the published app matches what was just deployed.
+      - name: Rebuild the app in Amplify
+        if: env.DEPLOY_MODE == 'deploy'
+        run: |
+          APP_ID=$(jq -r 'to_entries[] | select(.key | test("__INFRA_STACK__")) | .value.AmplifyAppId // empty' cdk-outputs.json)
+          case "${{ env.DEPLOY_ENV }}" in prod) BRANCH=main ;; *) BRANCH="${{ env.DEPLOY_ENV }}" ;; esac
+          if [ -z "$APP_ID" ]; then echo "ℹ️ This environment has no Amplify app"; exit 0; fi
+          JOB=$(aws amplify start-job --app-id "$APP_ID" --branch-name "$BRANCH" --job-type RELEASE \
+            --job-reason "Infra deployed from GitHub Actions (run ${{ github.run_id }})" \
+            --query 'jobSummary.jobId' --output text)
+          echo "✅ Build $JOB started in $APP_ID/$BRANCH"
+        working-directory: ${{ env.INFRA_DIR }}

@@ -20,7 +20,7 @@ Aplican SIEMPRE, independientemente de la plataforma:
 | Stack detectado | Deployment recomendado | Razón |
 |---|---|---|
 | Next.js (fullstack) | `fullstack-vercel` | Nativo de Vercel, SSR/ISR optimizado |
-| Next.js (fullstack) + custom infra | `fullstack-amplify-cdk` | Amplify for app (SSR, previews), CDK for infra (secrets, WAF, OIDC, Amplify service role + compute role). `--platform WEB_COMPUTE` + `--iam-service-role-arn` + `--compute-role-arn`. Self-bootstrapping setup. CDK bootstrap con `--toolkit-stack-name CDKToolkit-{project}`. |
+| Next.js (fullstack) + custom infra | `fullstack-amplify-cdk` | Amplify para la app (SSR, previews), CDK para la infra (secretos, WAF, OIDC, app de Amplify y sus dos roles). Ver «Patrón de referencia: fullstack-amplify-cdk» abajo. |
 | React + Node/Express (junto) | `fullstack-vercel` | Vercel maneja ambos como serverless functions |
 | React/Angular + Python/Django/FastAPI | `monorepo-split` | Python no corre en Vercel → backend a AWS |
 | React/Angular + Java/Spring | `multi-repo` | Backend pesado → AWS ECS, ciclos de release diferentes |
@@ -54,7 +54,7 @@ feature/* ──PR──→ dev ──PR──→ main
 
 > **Amplify and Vercel** provide PR previews built-in (automatic, per-PR URL, auto-cleanup on PR close). For those platforms, use previews — no shared staging needed. For AWS CDK-only or Azure projects without previews, use shared staging (see `environment-strategy.md` — "Staging for QA").
 >
-> For `fullstack-amplify-cdk`, setup is self-bootstrapping (3 temporary secrets → 1 pipeline run → done). Works with both GitHub Actions and ADO Pipelines. CDK bootstrap SIEMPRE con `--toolkit-stack-name CDKToolkit-{project}` — ver `stacks/aws/cdk.md` → "Bootstrap".
+> For `fullstack-amplify-cdk`, ver el patrón de referencia abajo. CDK bootstrap: `--toolkit-stack-name CDKToolkit-{project}` salvo en cuentas de plataforma que ya lo traen (ver «CDK Bootstrap por deployment pattern»).
 
 ### GitHub + AWS (backend-only)
 
@@ -89,6 +89,29 @@ feature/* ──PR──→ dev ──gate──→ cert ──gate──→ pro
 | hotfix cert → prod | Tech Lead (fast-track) | Fix verified, no side effects |
 
 **Staging for QA**: Shared staging resource group in DEV subscription. Same pattern as AWS.
+
+## Patrón de referencia: fullstack-amplify-cdk
+
+Tomado de `unisigma_portal` (funcionando en dev). Pipelines listos: `pipeline-builder/references/github-actions-amplify-cdk.yaml` (CI/CD) y `github-actions-amplify-cdk-setup.yaml` (setup de un ambiente).
+
+| Qué | Quién lo despliega | Cuándo |
+|---|---|---|
+| Código de la app | **Amplify**, por webhook a la rama conectada (build según `amplify.yml`), con un preview por PR | Cada push; no es GitHub Actions |
+| Infra (secretos, roles, app y rama de Amplify, alarmas) | **GitHub Actions + CDK**, con el rol OIDC de plataforma | Push a `dev` que toque `infra/` (filtro de rutas), o manual con `diff` (solo muestra) o `deploy` |
+| Backend (si existe) | Workflow aparte | Siempre después de build y tests |
+| Quality gates (tsc, eslint, vitest, `npm audit`, build) | GitHub Actions, un solo job | Check obligatorio del PR |
+
+Reglas del patrón:
+- **La app de Amplify, su rama, sus roles y sus variables se definen en CDK** (`CfnApp` + `CfnBranch`). No se editan por consola ni CLI: el siguiente `cdk deploy` los pisa. Un cambio de variable es un cambio en el stack.
+- **Credenciales por OIDC**, sin access keys: un rol por cuenta (`AWS_ROLE_ARN_<ENV>` en GitHub) y un GitHub Environment por ambiente, porque el rol exige `sub = environment:<env>`.
+- El PAT de GitHub con el que Amplify conecta el repo entra como parámetro CloudFormation `NoEcho` (`GitHubAccessToken`, secreto `SETUP_GITHUB_PAT`); los deploys siguientes reutilizan el valor anterior.
+- El setup de un ambiente se corre **una vez** (workflow manual): hace el `cdk deploy` del stack y guarda `AMPLIFY_APP_ID_<ENV>` como variable de GitHub.
+- Un cambio de variables de Amplify por CloudFormation **no dispara un build** y Next.js las lee al compilar: tras el `cdk deploy`, lanzar `aws amplify start-job --job-type RELEASE`.
+- Un push que no toca la app ni la infra no lanza nada (filtro `paths`); en PR, un push nuevo cancela la corrida anterior, en push a `dev` nunca (podría cortar un deploy).
+- Ambientes: DEV y CERT comparten cuenta (stack `<Infra>-Dev` y `-Cert`, ramas `dev` y `cert` de Amplify); PROD tiene cuenta y rol propios. Promoción: DEV automático, CERT con Tech Lead + QA, PROD con Dev + QA + BA. Rollback: DEV revertir el commit; CERT/PROD redesplegar la versión anterior desde Amplify.
+- Secretos: del runtime en Secrets Manager (`<prefijo>/<proyecto>/<env>/…`); de CI en GitHub (`AWS_ROLE_ARN_<ENV>`, `SETUP_GITHUB_PAT`). Nunca valores en el repo ni en la plantilla del stack.
+
+Roles de Amplify (servicio y cómputo): los dos con confianza solo en `amplify.amazonaws.com`. Definidos en CDK, el `CfnApp` recibe ambos a la vez (así funciona en unisigma). Con la CLI `create-app` el rol de cómputo se asigna en un paso aparte. Si el build falla con `Unable to assume specified IAM Role` con los roles bien, ver `stacks/aws/amplify.md`.
 
 ## Servicios AWS por tipo de app
 
@@ -134,4 +157,6 @@ Todo proyecto que usa CDK necesita `cdk bootstrap` antes del primer deploy. Ver 
 | `monorepo-split` | `CDKToolkit-{project}` | Backend en AWS, frontend en Vercel |
 | `multi-repo` | `CDKToolkit-{project}` | Cada repo su propio toolkit stack |
 
-> **Regla**: SIEMPRE usar `--toolkit-stack-name CDKToolkit-{project}`. No hay downside y previene conflictos si la cuenta se comparte.
+> **Regla**: usar `--toolkit-stack-name CDKToolkit-{project}` cuando el proyecto hace su propio bootstrap; previene conflictos si la cuenta se comparte.
+>
+> **Excepción — cuentas de plataforma**: si la cuenta ya trae el bootstrap (qualifier y permissions boundary configurados en `infra/cdk.json`, como `fas`), NO correr `cdk bootstrap` ni crear otro toolkit. Los pipelines solo hacen `cdk deploy`.

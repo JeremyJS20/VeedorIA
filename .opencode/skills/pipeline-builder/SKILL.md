@@ -29,10 +29,12 @@ Before generating ANY pipeline YAML, you MUST read the corresponding reference:
 |---------------|---------------------|
 | Azure Pipelines pipeline | `references/azure-pipelines-example.yaml` |
 | GitHub Actions pipeline | `references/github-actions-example.yaml` |
+| GitHub Actions pipeline for `fullstack-amplify-cdk` (Amplify app + CDK infra) | `references/github-actions-amplify-cdk.yaml` (CI/CD) and `references/github-actions-amplify-cdk-setup.yaml` (one-time setup per environment); pattern in `deployment-patterns.md` → "Patrón de referencia: fullstack-amplify-cdk" |
 | CI/CD spec document | `specs/_templates/ci-cd-template.md` |
 
 NEVER generate a pipeline without reading the corresponding reference.
 NEVER generate a ci-cd.md without reading the template first.
+For pipelines that deploy CDK or Amplify, also load the `cdk`, `amplify` and `deployment-patterns` steering first (see the load-by-path table in `tech.md`) and list them in your proposal.
 
 ### Minimum required structure (safety net)
 
