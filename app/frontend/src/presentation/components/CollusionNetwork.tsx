@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef } from "react"
 import * as d3 from "d3"
+import { useElementWidth } from "../hooks/useElementWidth"
 import type { CollusionLink } from "../../domain/anomaly"
 
 interface NodeDatum {
@@ -36,9 +37,10 @@ const REASON_LABELS: Record<string, string> = {
 
 export default function CollusionNetwork({ links, fullscreen, className = "" }: CollusionNetworkProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const width = useElementWidth(svgRef)
 
   useEffect(() => {
-    if (!svgRef.current || links.length === 0) return
+    if (!svgRef.current || links.length === 0 || width <= 0) return
 
     const d3Links = links.map((l) => ({ ...l }))
 
@@ -49,8 +51,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       .attr("class", "fixed pointer-events-none bg-surface-container-lowest dark:bg-surface-container-high text-on-surface text-xs rounded-xl shadow-2xl border border-outline-variant/40 px-3.5 py-2.5 max-w-80 leading-relaxed").style("z-index", "9999")
       .style("display", "none")
 
-    const width = svgRef.current.clientWidth
-    const height = fullscreen ? svgRef.current.clientHeight : 300
+    const height = fullscreen ? (svgRef.current.clientHeight || 480) : 300
     const margin = 40
     const innerWidth = width - margin * 2
     const innerHeight = height - margin * 2
@@ -302,7 +303,7 @@ export default function CollusionNetwork({ links, fullscreen, className = "" }: 
       simulation.stop()
       tooltip.remove()
     }
-  }, [links, fullscreen])
+  }, [links, fullscreen, width])
 
   if (links.length === 0) {
     return (

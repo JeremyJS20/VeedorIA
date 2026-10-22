@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import * as d3 from "d3"
+import { useElementWidth } from "../hooks/useElementWidth"
 import type { TimelineEntry } from "../../domain/anomaly"
 
 interface FragmentationBarChartProps {
@@ -11,9 +12,10 @@ interface FragmentationBarChartProps {
 
 export default function FragmentationBarChart({ entries, threshold, fullscreen, className = "" }: FragmentationBarChartProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const width = useElementWidth(svgRef)
 
   useEffect(() => {
-    if (!svgRef.current || entries.length === 0) return
+    if (!svgRef.current || entries.length === 0 || width <= 0) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
@@ -22,8 +24,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
       .attr("class", "fixed pointer-events-none bg-surface-container-lowest dark:bg-surface-container-high text-on-surface text-xs rounded-xl shadow-2xl border border-outline-variant/40 px-3.5 py-2.5 max-w-72 leading-relaxed").style("z-index", "9999")
       .style("display", "none")
 
-    const width = svgRef.current.clientWidth
-    const height = fullscreen ? svgRef.current.clientHeight : 200
+    const height = fullscreen ? (svgRef.current.clientHeight || 480) : 200
     const margin = { top: 20, right: 16, bottom: 52, left: 68 }
     const innerWidth = width - margin.left - margin.right
     const innerHeight = height - margin.top - margin.bottom
@@ -173,7 +174,7 @@ export default function FragmentationBarChart({ entries, threshold, fullscreen, 
     return () => {
       tooltip.remove()
     }
-  }, [entries, threshold, fullscreen])
+  }, [entries, threshold, fullscreen, width])
 
   if (entries.length === 0) {
     return (

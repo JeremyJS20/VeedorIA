@@ -7,7 +7,7 @@ interface DrawerProps {
   title: ReactNode
   subtitle?: ReactNode
   children: ReactNode
-  /** Clase de ancho máximo del panel; por defecto `max-w-xl`. */
+  /** Clase de ancho máximo del panel; por defecto 36rem (`max-w-xl` está roto, ver abajo). */
   maxWidth?: string
   /** Clases del contenedor del cuerpo (por defecto `p-5`). */
   bodyClassName?: string
@@ -21,7 +21,9 @@ export default function Drawer({
   title,
   subtitle,
   children,
-  maxWidth = "max-w-xl",
+  // ⚠️ `max-w-xl` está roto en este proyecto: el tema define `--spacing-xl` y
+  // Tailwind resuelve `max-w-xl` contra ese namespace (64px en vez de 36rem).
+  maxWidth = "max-w-[36rem]",
   bodyClassName = "p-5",
   footer,
 }: DrawerProps) {

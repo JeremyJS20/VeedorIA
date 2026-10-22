@@ -193,7 +193,7 @@ export default function CompetitorProfilePage() {
                       <p className="text-xs font-bold text-on-surface">
                         Inteligencia Forense de Competidores Restringida
                       </p>
-                      <p className="text-xs text-on-surface-variant max-w-md mx-auto">
+                      <p className="text-xs text-on-surface-variant max-w-[28rem] mx-auto">
                         Actualice al{" "}
                         <span className="font-semibold text-primary">
                           {forensic?.required_plan_label ?? "Plan Proveedor Corporativo"}

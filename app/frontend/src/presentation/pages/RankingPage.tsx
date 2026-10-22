@@ -59,7 +59,7 @@ export default function RankingPage() {
 
           <section className="bg-surface rounded-lg p-6 md:p-8 border border-outline-variant/30 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 max-w-[28rem]">
                 <Search className="w-4 h-4 text-outline absolute left-3.5 top-3" />
                 <input
                   type="text"

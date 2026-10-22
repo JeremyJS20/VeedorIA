@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import * as d3 from "d3"
+import { useElementWidth } from "../hooks/useElementWidth"
 import type { MarketPrice } from "../../domain/anomaly"
 
 interface PriceScatterProps {
@@ -11,10 +12,11 @@ interface PriceScatterProps {
 
 export default function PriceScatter({ data, median, fullscreen, className = "" }: PriceScatterProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const width = useElementWidth(svgRef)
   const tooltipRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!svgRef.current || !tooltipRef.current || data.length === 0) return
+    if (!svgRef.current || !tooltipRef.current || data.length === 0 || width <= 0) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
@@ -22,7 +24,6 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
     const tooltip = d3.select(tooltipRef.current)
     tooltip.style("display", "none")
 
-    const width = svgRef.current.clientWidth || 480
     const height = fullscreen ? (svgRef.current.clientHeight || 520) : 180
     const margin = { top: 20, right: 20, bottom: 28, left: 68 }
     const innerWidth = Math.max(100, width - margin.left - margin.right)
@@ -171,7 +172,7 @@ export default function PriceScatter({ data, median, fullscreen, className = "" 
     svg.on("dblclick", () => {
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity)
     })
-  }, [data, median, fullscreen])
+  }, [data, median, fullscreen, width])
 
   if (data.length === 0) return null
 

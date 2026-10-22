@@ -1,10 +1,14 @@
 import { useEffect, type ReactNode } from "react"
 import { X } from "lucide-react"
 
+/* ⚠️ No usar `max-w-md|lg|xl` (ni `xs`/`sm`): el tema de abajo define
+   `--spacing-{xs,sm,md,lg,xl}` y Tailwind resuelve `max-w-<esa clave>` contra ese
+   namespace, así que `max-w-lg` vale 2.5rem (40px) en vez de 32rem. Usar valor
+   arbitrario (`max-w-[32rem]`) o la escala numérica (`max-w-2xl`+). */
 const SIZE_CLASSES = {
-  sm: "max-w-md",
-  md: "max-w-lg",
-  lg: "max-w-2xl",
+  sm: "max-w-[28rem]",
+  md: "max-w-[32rem]",
+  lg: "max-w-[42rem]",
 } as const
 
 export type ModalSize = keyof typeof SIZE_CLASSES

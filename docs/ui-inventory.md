@@ -38,6 +38,7 @@ Entry format (one `## Name` per component):
 - Path: app/frontend/src/presentation/components/CollusionNetwork.tsx
 - Use when: rendering the supplier collusion graph (D3 force layout) from `GET /api/auditor/collusion-network`
 - Replaces: -
+- Rule: el ancho del SVG sale de `useElementWidth` (`presentation/hooks/useElementWidth.ts`). NO medir con `clientWidth` una sola vez: si el contenedor mide 0 al montar, el gráfico se dibuja dentro de un SVG de 0 px y queda invisible para siempre (el efecto no vuelve a correr).
 
 ## ConsoleInspectorDrawers
 - Path: app/frontend/src/presentation/components/ConsoleInspectorDrawers.tsx
@@ -58,6 +59,7 @@ Entry format (one `## Name` per component):
 - Path: app/frontend/src/presentation/components/FragmentationBarChart.tsx
 - Use when: showing contract fragmentation over time against the DGCP modality threshold
 - Replaces: -
+- Rule: el ancho del SVG sale de `useElementWidth` (`presentation/hooks/useElementWidth.ts`). NO medir con `clientWidth` una sola vez: si el contenedor mide 0 al montar, el ancho interno queda negativo y el gráfico no se ve.
 
 ## HeroSection
 - Path: app/frontend/src/presentation/components/HeroSection.tsx
@@ -98,6 +100,7 @@ Entry format (one `## Name` per component):
 - Path: app/frontend/src/presentation/components/PriceScatter.tsx
 - Use when: plotting unit prices against the UNSPSC median to expose overpricing
 - Replaces: -
+- Rule: el ancho del SVG sale de `useElementWidth` (`presentation/hooks/useElementWidth.ts`). NO medir con `clientWidth` una sola vez ni usar `clientWidth || 480`: el fallback dibuja el gráfico a 480 unidades dentro de un SVG de 0 px, o sea invisible.
 
 ## PricingSection
 - Path: app/frontend/src/presentation/components/PricingSection.tsx
@@ -210,11 +213,13 @@ Entry format (one `## Name` per component):
 - Replaces: `fixed inset-0`
 - Allowed: `app/frontend/src/presentation/components/ui/Drawer.tsx`
 - Allowed: `app/frontend/src/presentation/components/ui/FullscreenOverlay.tsx`
+- Rule: el ancho va por la prop `size` (28/32/42rem). NO pasar `max-w-md|lg|xl` ni `max-w-xs|sm`: el `@theme` define `--spacing-{xs,sm,md,lg,xl}` y Tailwind resuelve esas claves contra ese namespace, así que `max-w-lg` vale 40px en vez de 32rem (el modal salía de 40px). Usar valor arbitrario `max-w-[32rem]` o la escala numérica `max-w-2xl`+
 
 ## Drawer
 - Path: app/frontend/src/presentation/components/ui/Drawer.tsx
 - Use when: right-side detail panel (record detail, ticket, audit entry) with sticky header and ESC/backdrop close
 - Replaces: -
+- Rule: el ancho va por `maxWidth` y el default es `max-w-[36rem]`. NO pasar `max-w-md|lg|xl` ni `max-w-xs|sm` (colisionan con `--spacing-*` y valen 24/40/64px — los drawers por defecto salían de 64px). Para un ancho propio usar `sm:w-[520px] lg:w-[580px]` o `max-w-[Nrem]`
 
 ## DataTable
 - Path: app/frontend/src/presentation/components/ui/DataTable.tsx

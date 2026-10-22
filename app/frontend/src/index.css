@@ -39,6 +39,13 @@
   --spacing-gutter: 1.5rem;
   --spacing-margin-desktop: 3rem;
 
+  /* ⚠️ Estas claves ocupan el namespace `--spacing-*` con los nombres xs/sm/md/lg/xl,
+     y Tailwind resuelve `max-w-{xs,sm,md,lg,xl}` contra ESE namespace: `max-w-lg`
+     sale `max-width: var(--spacing-lg)` = 2.5rem = 40px, no 32rem. Declarar
+     `--container-*` en este bloque NO lo arregla (Tailwind las descarta).
+     Por eso en este proyecto NO se usan `max-w-md|lg|xl` (ni `max-w-xs|sm`):
+     usar valor arbitrario (`max-w-[32rem]`) o la escala numérica (`max-w-2xl`+). */
+
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
   --color-primary-container: var(--primary-container);
